@@ -1,0 +1,17 @@
+{
+  "name": "dev-inn",
+  "version": "1.0.0",
+  "description": "DevInn - Booking Management System",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "build:web": "pnpm --filter web build",
+    "dev:api": "pnpm --filter api dev",
+    "build:api": "pnpm --filter api build"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
