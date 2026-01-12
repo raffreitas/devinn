@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DevInn.Core/DevInn.Core.csproj" />
+    <Project Path="src/DevInn.Infrastructure/DevInn.Infrastructure.csproj" />
+    <Project Path="src/DevInn.WebApi/DevInn.WebApi.csproj" />
+  </Folder>
+</Solution>
