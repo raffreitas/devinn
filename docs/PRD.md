@@ -1,8 +1,8 @@
 # PRD - Sistema de Gestão de Hospedagem (DevInn SaaS)
 
 **Versão:** 1.0
-**Status:** Em Definição
-**Responsável:** Especialista em Produto & [Seu Nome]
+**Status:** Aprovado
+**Responsável:** Especialista em Produto
 
 ---
 

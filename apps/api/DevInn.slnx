@@ -1,3 +1,6 @@
 <Solution>
-  <Project Path="src/DevInn/DevInn.csproj" />
+    <Folder Name="/Solution Items/">
+        <File Path="compose.yaml" />
+    </Folder>
+    <Project Path="src/DevInn/DevInn.csproj" />
 </Solution>
