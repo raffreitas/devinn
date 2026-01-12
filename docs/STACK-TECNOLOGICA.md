@@ -1,4 +1,4 @@
-# Especificação Técnica da Stack - StayManager SaaS
+# Especificação Técnica da Stack - DevInn SaaS
 
 **Versão:** 1.0
 **Data:** Janeiro 2026
@@ -186,7 +186,7 @@ export default api;
 ### 2.6 Estrutura de Pastas Frontend
 
 ```
-staymanager-web/
+devinn-web/
 ├── app/
 │   ├── (auth)/
 │   │   ├── login/
@@ -454,7 +454,7 @@ RecurringJob.AddOrUpdate<BookingSyncJob>(
 ### 3.6 Estrutura de Pastas Backend
 
 ```
-StayManager.API/
+DevInn.API/
 ├── Controllers/
 │   ├── AuthController.cs
 │   ├── BookingsController.cs
@@ -520,7 +520,7 @@ StayManager.API/
 ├── Program.cs
 ├── appsettings.json
 ├── appsettings.Development.json
-└── StayManager.API.csproj
+└── DevInn.API.csproj
 ```
 
 ---
@@ -546,7 +546,7 @@ StayManager.API/
 // appsettings.json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=your-neon-host.neon.tech;Port=5432;Database=staymanager;Username=your-user;Password=your-password;SSL Mode=Require"
+    "DefaultConnection": "Host=your-neon-host.neon.tech;Port=5432;Database=devinn;Username=your-user;Password=your-password;SSL Mode=Require"
   }
 }
 ```
@@ -555,13 +555,13 @@ StayManager.API/
 
 ```bash
 # Criar migration
-dotnet ef migrations add InitialCreate -p StayManager.API -s StayManager.API
+dotnet ef migrations add InitialCreate -p DevInn.API -s DevInn.API
 
 # Aplicar migration
-dotnet ef database update -p StayManager.API -s StayManager.API
+dotnet ef database update -p DevInn.API -s DevInn.API
 
 # Gerar script SQL
-dotnet ef migrations script -p StayManager.API -o migration.sql
+dotnet ef migrations script -p DevInn.API -o migration.sql
 ```
 
 ### 4.4 Estratégias de Multi-tenancy
@@ -613,9 +613,9 @@ public class MultiTenancyMiddleware
 # 1. Conectar repositório no Vercel
 # 2. Configurar variáveis de ambiente:
 
-NEXT_PUBLIC_API_URL=https://api.staymanager.com
+NEXT_PUBLIC_API_URL=https://api.devinn.com
 NEXTAUTH_SECRET=your-nextauth-secret
-NEXTAUTH_URL=https://staymanager.com
+NEXTAUTH_URL=https://devinn.com
 ```
 
 **Alternativas:** Netlify, Cloudflare Pages
@@ -729,12 +729,12 @@ NEXT_PUBLIC_ENABLE_BOOKING_INTEGRATION=true
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=staymanager;Username=postgres;Password=postgres"
+    "DefaultConnection": "Host=localhost;Database=devinn;Username=postgres;Password=postgres"
   },
   "Jwt": {
     "Key": "your-super-secret-jwt-key-min-32-chars",
-    "Issuer": "staymanager-api",
-    "Audience": "staymanager-web",
+    "Issuer": "devinn-api",
+    "Audience": "devinn-web",
     "ExpiresInHours": 1
   },
   "BookingCom": {
@@ -785,7 +785,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
             "http://localhost:3000",
-            "https://staymanager.com"
+            "https://devinn.com"
         )
         .AllowAnyMethod()
         .AllowAnyHeader()

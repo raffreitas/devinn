@@ -1,4 +1,4 @@
-# PRD - Sistema de Gestão de Hospedagem (StayManager SaaS)
+# PRD - Sistema de Gestão de Hospedagem (DevInn SaaS)
 
 **Versão:** 1.0
 **Status:** Em Definição
@@ -7,7 +7,7 @@
 ---
 
 ## 1. Visão Geral do Produto
-O **StayManager** é uma plataforma SaaS (Software as a Service) de gestão de propriedades (PMS) projetada para proprietários de pousadas que precisam centralizar operações dispersas. O sistema permite a gestão de inventário por categorias, visualização de disponibilidade via mapa (Gantt), integração com canais de venda externos (Booking/Airbnb) e controle financeiro de receitas e despesas.
+O **DevInn** é uma plataforma SaaS (Software as a Service) de gestão de propriedades (PMS) projetada para proprietários de pousadas que precisam centralizar operações dispersas. O sistema permite a gestão de inventário por categorias, visualização de disponibilidade via mapa (Gantt), integração com canais de venda externos (Booking/Airbnb) e controle financeiro de receitas e despesas.
 
 ### 1.1 Problema
 Atualmente, a gestão é feita de forma fragmentada, sem um controle centralizado de ocupação, o que gera riscos de overbooking e falta de clareza sobre a saúde financeira (lucro líquido real após taxas).

@@ -10,7 +10,7 @@
 ## 1. Visão Geral da Integração
 
 ### 1.1 Objetivo
-Integrar o **StayManager** com a **Booking.com Connectivity API** para sincronização bidirecional de:
+Integrar o **DevInn** com a **Booking.com Connectivity API** para sincronização bidirecional de:
 - Reservas (pull de novas reservas e atualizações)
 - Valores financeiros (diárias, taxas e comissões do Booking.com)
 - Disponibilidade e preços (push de inventário)
@@ -35,7 +35,7 @@ Integrar o **StayManager** com a **Booking.com Connectivity API** para sincroniz
 ### 2.1 Foundational Solutions (Obrigatórias para MVP)
 
 #### **Reservations API** (Prioridade Alta)
-Sincronização de reservas criadas no Booking.com para o StayManager.
+Sincronização de reservas criadas no Booking.com para o DevInn.
 
 **Funcionalidades:**
 - **Pull de Reservas:** Buscar novas reservas e atualizações
@@ -65,7 +65,7 @@ GET /payments/v1/payouts
 ```
 
 #### **Rates and Availability API** (Prioridade Média)
-Envio de preços e disponibilidade do StayManager para o Booking.com.
+Envio de preços e disponibilidade do DevInn para o Booking.com.
 
 **Funcionalidades:**
 - Atualizar preços por data e tipo de quarto
@@ -80,7 +80,7 @@ POST /rates-availability/v1/rates
 
 ---
 
-## 3. Mapeamento de Dados: Booking.com → StayManager
+## 3. Mapeamento de Dados: Booking.com → DevInn
 
 ### 3.1 Entidade: Reservation
 
@@ -111,7 +111,7 @@ POST /rates-availability/v1/rates
 }
 ```
 
-#### Mapeamento para Booking (StayManager)
+#### Mapeamento para Booking (DevInn)
 ```typescript
 {
   id: generateUUID(),
@@ -155,7 +155,7 @@ POST /rates-availability/v1/rates
 }
 ```
 
-#### Extensão da Entidade Booking (StayManager)
+#### Extensão da Entidade Booking (DevInn)
 ```typescript
 // Adicionar campos à tabela Booking:
 {
@@ -187,7 +187,7 @@ POST /rates-availability/v1/rates
 
 ```mermaid
 sequenceDiagram
-    participant Cron as StayManager (Cron Job)
+    participant Cron as DevInn (Cron Job)
     participant API as Booking.com API
     participant DB as Database
 
@@ -220,7 +220,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Booking as Booking.com
-    participant Webhook as StayManager Webhook Endpoint
+    participant Webhook as DevInn Webhook Endpoint
     participant Queue as Fila de Processamento
     participant Worker as Worker Processor
     participant DB as Database
@@ -249,7 +249,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant System as StayManager
+    participant System as DevInn
     participant API as Booking Payments API
     participant DB as Database
     participant Dashboard as Dashboard Financeiro
@@ -409,7 +409,7 @@ CREATE INDEX idx_sync_log_date ON booking_sync_log(inn_id, created_at DESC);
 │  ☐ Enviar disponibilidade automaticamente   │
 │                                              │
 │  URL do Webhook (copiar):                   │
-│  https://app.staymanager.com/api/webhooks/  │
+│  https://app.devinn.com/api/webhooks/  │
 │  booking/123e4567-e89b                      │
 │                                              │
 └─────────────────────────────────────────────┘
@@ -533,7 +533,7 @@ async function fetchWithRetry(url, options, retries = 0) {
 ### Fase 2: Reservations API (Semana 3-4)
 - [ ] Implementar endpoint de webhook
 - [ ] Criar job cron de sincronização (pull)
-- [ ] Mapear dados Booking → StayManager
+- [ ] Mapear dados Booking → DevInn
 - [ ] Criar tela de configuração de integração
 - [ ] Testar em ambiente sandbox
 - [ ] Adicionar indicadores visuais ("Badge Booking")
