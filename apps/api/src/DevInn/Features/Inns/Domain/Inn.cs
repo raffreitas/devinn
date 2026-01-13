@@ -9,8 +9,8 @@ public sealed class Inn : AggregateRoot
     public string City { get; private set; }
     public string Country { get; private set; }
     public string State { get; private set; }
-    public string Phone { get; set; }
-    public string Email { get; set; }
+    public string Phone { get; private set; }
+    public string Email { get; private set; }
 
     public Inn(string name, string address, string city, string country, string state, string phone, string email)
     {

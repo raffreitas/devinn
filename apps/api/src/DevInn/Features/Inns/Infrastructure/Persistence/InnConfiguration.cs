@@ -18,5 +18,7 @@ internal sealed class InnConfiguration : IEntityTypeConfiguration<Inn>
         builder.Property(x => x.State).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Phone).IsRequired().HasMaxLength(20);
         builder.Property(x => x.Email).IsRequired().HasMaxLength(200);
+        builder.Property(e => e.CreatedAt).IsRequired();
+        builder.Property(e => e.UpdatedAt).IsRequired();
     }
 }

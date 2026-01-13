@@ -1,6 +1,5 @@
 ﻿using DevInn.Features.Inns.Domain;
 using DevInn.Shared.Extensions;
-using DevInn.Shared.Persistence;
 using DevInn.Shared.Persistence.Context;
 
 using FluentResults;
