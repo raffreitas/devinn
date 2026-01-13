@@ -1,0 +1,23 @@
+using DevInn.Application.Features.Inventory.RoomCategories.CreateRoomCategory;
+using DevInn.WebApi.Common;
+
+namespace DevInn.WebApi.Endpoints.Inventory.RoomCategories;
+
+public sealed class CreateRoomCategoryEndpoint : IEndpoint
+{
+    private const string Route = "api/v1/room-categories";
+
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost(Route, async (CreateRoomCategoryInput input, ICreateRoomCategoryUseCase uc, CancellationToken ct) =>
+            {
+                var result = await uc.ExecuteAsync(input, ct);
+                return result.ToCreated($"{Route}/{result.Value}");
+            })
+            .WithTags(Tags.RoomCategories)
+            .WithName("Create Room Category")
+            .Produces<ApiResource<Guid>>(StatusCodes.Status201Created)
+            .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity);
+    }
+}

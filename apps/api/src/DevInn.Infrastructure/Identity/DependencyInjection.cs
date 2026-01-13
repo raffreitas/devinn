@@ -1,5 +1,6 @@
 using DevInn.Application.Common.Identity;
 using DevInn.Application.Common.Identity.Abstractions;
+using DevInn.Infrastructure.Common.Extensions;
 using DevInn.Infrastructure.Identity.Context;
 using DevInn.Infrastructure.Identity.Models;
 using DevInn.Infrastructure.Identity.Services;
@@ -24,7 +25,7 @@ public static class DependencyInjection
         services.AddDbContext<IdentityDbContext>(options =>
         {
             options.UseNpgsql(
-                    configuration.GetConnectionString("DefaultConnection"),
+                    configuration.GetConnectionStringOrThrow("DatabaseConnection"),
                     sqlOptions => sqlOptions.EnableRetryOnFailure())
                 .UseSnakeCaseNamingConvention();
         });
@@ -48,7 +49,7 @@ public static class DependencyInjection
             .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
             .AddPolicy(Roles.SuperAdmin, policy => policy.RequireRole(Roles.SuperAdmin))
             .AddPolicy(Roles.InnAdmin, policy => policy.RequireRole(Roles.InnAdmin, Roles.SuperAdmin));
-        
+
         // Add Services
         services.AddScoped<IIdentityService, IdentityService>();
     }

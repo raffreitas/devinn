@@ -17,6 +17,8 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new InnConfiguration());
+        modelBuilder.ApplyConfiguration(new RoomCategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new RoomConfiguration());
 
         modelBuilder.Entity<RoomCategory>().HasQueryFilter(r => r.InnId == tenantContext.Tenant.Id);
         modelBuilder.Entity<Room>().HasQueryFilter(r => r.InnId == tenantContext.Tenant.Id);

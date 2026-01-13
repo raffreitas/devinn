@@ -12,6 +12,17 @@ public sealed class Room : Entity
     public Room(
         Guid categoryId,
         int number,
+        string? name)
+    {
+        CategoryId = categoryId;
+        Number = number;
+        Name = name;
+        Status = RoomStatus.Inactive;
+    }
+
+    public void Update(
+        Guid categoryId,
+        int number,
         string? name,
         RoomStatus status)
     {

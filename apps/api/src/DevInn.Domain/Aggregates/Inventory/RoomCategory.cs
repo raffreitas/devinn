@@ -23,4 +23,11 @@ public sealed class RoomCategory : Entity
         BasePrice = basePrice;
         ExtraPersonPrice = extraPersonPrice;
     }
+
+    public void Update(string name, int maxCapacity, string description)
+    {
+        Name = name;
+        Description = description;
+        MaxCapacity = maxCapacity;
+    }
 }

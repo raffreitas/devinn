@@ -10,26 +10,26 @@ namespace DevInn.WebApi.Common;
 
 public static class ResultExtensions
 {
-    public static IResult ToOk<T>(this Result<T> result, Metadata? metadata = null) where T : notnull
+    public static IResult ToOk<T>(this Result<T> result) where T : notnull
     {
         return result.IsFailed
             ? result.ToError()
-            : TypedResults.Ok(new ApiResource<T> { Data = result.Value, Metadata = metadata });
+            : TypedResults.Ok(new ApiResource<T>(result.Value));
     }
 
     public static IResult ToCreated<T>(this Result<T> result, string? location = null) where T : notnull
     {
         return result.IsFailed
             ? result.ToError()
-            : TypedResults.Created(location, new ApiResource<T> { Data = result.Value });
+            : TypedResults.Created(location, new ApiResource<T>(result.Value));
     }
 
-    public static IResult ToNoContent<T>(this Result<T> result) where T : notnull
+    public static IResult ToNoContent(this Result result)
     {
         return result.IsFailed ? result.ToError() : TypedResults.NoContent();
     }
 
-    private static ProblemHttpResult ToError<T>(this Result<T> result) where T : notnull
+    private static ProblemHttpResult ToError(this IResultBase result)
     {
         if (result.IsSuccess)
             throw new InvalidOperationException("Não é possível converter um resultado bem-sucedido em um erro.");

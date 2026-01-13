@@ -1,6 +1,7 @@
 ﻿using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Application.Features.Auth;
 using DevInn.Application.Features.Inns;
+using DevInn.Application.Features.Inventory;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +13,7 @@ public static class ApplicationModule
     {
         services.AddInnFeature();
         services.AddAuthFeature();
+        services.AddInventoryFeature();
 
         services.AddScoped<ITenantContext, TenantContext>();
 
