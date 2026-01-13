@@ -11,7 +11,13 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
 {
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        string[] publicPaths = ["/health", "/scalar", "/openapi", "/api/v1/auth/login"];
+        string[] publicPaths =
+        [
+            "/health",
+            "/scalar",
+            "/openapi",
+            "/api/v1/auth/login"
+        ];
         if (publicPaths.Any(path => context.Request.Path.StartsWithSegments(path, StringComparison.OrdinalIgnoreCase)))
         {
             await next(context);
@@ -44,8 +50,7 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             await context.Response.WriteAsJsonAsync(new ProblemDetails
             {
-                Title = "Erro interno do servidor",
-                Status = StatusCodes.Status500InternalServerError,
+                Title = "Erro interno do servidor", Status = StatusCodes.Status500InternalServerError,
             });
             return;
         }

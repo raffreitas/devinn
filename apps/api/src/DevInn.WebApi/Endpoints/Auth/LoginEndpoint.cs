@@ -12,11 +12,10 @@ public sealed class LoginEndpoint : IEndpoint
         app.MapPost(Route, async (LoginInput input, ILoginUseCase uc, CancellationToken ct) =>
             {
                 var result = await uc.ExecuteAsync(input, ct);
-                // TODO: Gerar cookie de autenticação
                 return result.ToOk();
             })
             .WithTags(Tags.Authentication)
-            .Produces<ApiResource<Guid>>()
+            .Produces<ApiResource<LoginOutput>>()
             .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity);
     }
