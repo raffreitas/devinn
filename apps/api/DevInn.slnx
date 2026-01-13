@@ -2,5 +2,8 @@
     <Folder Name="/Solution Items/">
         <File Path="compose.yaml" />
     </Folder>
-    <Project Path="src/DevInn/DevInn.csproj" />
+    <Project Path="src/DevInn.Application/DevInn.Application.csproj" />
+    <Project Path="src/DevInn.Domain/DevInn.Domain.csproj" />
+    <Project Path="src/DevInn.Infrastructure/DevInn.Infrastructure.csproj" />
+    <Project Path="src/DevInn.WebApi/DevInn.WebApi.csproj" />
 </Solution>
