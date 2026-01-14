@@ -1,11 +1,21 @@
+using System.Text.Json.Serialization;
+
 using DevInn.Application;
 using DevInn.Infrastructure;
+using DevInn.WebApi.Common.ExceptionHandlers;
 using DevInn.WebApi.Endpoints;
 using DevInn.WebApi.Middlewares;
 
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddOpenApi();
 
@@ -27,6 +37,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Middlewares
+app.UseExceptionHandler();
 app.UseMiddleware<TenantMiddleware>();
 
 app.MapEndpoints();
