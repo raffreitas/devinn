@@ -1,6 +1,4 @@
-﻿using DevInn.Domain.Aggregates.Inventory;
-
-namespace DevInn.Application.Features.Inventory.Rooms.GetRooms;
+﻿namespace DevInn.Application.Features.Inventory.Rooms.GetRooms;
 
 public sealed record RoomResponse(
     Guid Id,
@@ -8,5 +6,5 @@ public sealed record RoomResponse(
     string CategoryName,
     int Number,
     string Name,
-    RoomStatus Status
+    string Status
 );

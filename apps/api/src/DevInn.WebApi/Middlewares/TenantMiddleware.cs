@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 
+using DevInn.Application.Common.Identity;
 using DevInn.Application.Common.Tenancy;
 using DevInn.Application.Common.Tenancy.Abstractions;
 
@@ -26,7 +27,7 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
 
         var tenantId = ExtractTenantId(context);
 
-        if (tenantId == Guid.Empty)
+        if (tenantId == Guid.Empty && !context.User.IsInRole(nameof(UserRole.SuperAdmin)))
         {
             logger.LogWarning("Nenhum tenant identificado na requisição para {Path}", context.Request.Path);
             context.Response.StatusCode = StatusCodes.Status400BadRequest;

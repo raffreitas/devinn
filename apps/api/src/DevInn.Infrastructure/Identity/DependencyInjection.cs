@@ -46,7 +46,6 @@ public static class DependencyInjection
 
         // Configure Auth
         services.AddAuthorizationBuilder()
-            .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
             .AddPolicy(Roles.SuperAdmin, policy => policy.RequireRole(Roles.SuperAdmin))
             .AddPolicy(Roles.InnAdmin, policy => policy.RequireRole(Roles.InnAdmin, Roles.SuperAdmin));
 

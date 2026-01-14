@@ -17,6 +17,7 @@ public sealed class LoginEndpoint : IEndpoint
             .WithTags(Tags.Authentication)
             .Produces<ApiResource<LoginOutput>>()
             .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
-            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity);
+            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)
+            .AllowAnonymous();
     }
 }
