@@ -1,35 +1,39 @@
 import {
-  Home,
-  Package,
+  BedDouble,
   Calendar,
-  DollarSign,
-  Layers,
+  CreditCard,
+  Home,
+  LayoutGrid,
   Receipt,
+  Settings,
 } from "lucide-react";
+import { TenantSelector } from "@/features/tenants/components/tenant-selector";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
 } from "@/shared/components/ui/sidebar";
 
 const navigation = [
   { title: "Dashboard", href: "/", icon: Home },
-  { title: "Categorias", href: "/inventory/categories", icon: Layers },
-  { title: "Quartos", href: "/inventory/rooms", icon: Package },
+  { title: "Categorias", href: "/inventory/categories", icon: LayoutGrid },
+  { title: "Quartos", href: "/inventory/rooms", icon: BedDouble },
   { title: "Reservas", href: "/bookings", icon: Calendar },
-  { title: "Financeiro", href: "/financial", icon: DollarSign },
+  { title: "Financeiro", href: "/financial", icon: CreditCard },
   { title: "Despesas", href: "/financial/expenses", icon: Receipt },
+  { title: "Configurações", href: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
+        <TenantSelector />
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>

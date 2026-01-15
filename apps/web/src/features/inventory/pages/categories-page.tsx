@@ -134,6 +134,8 @@ export function CategoriesPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-50 sm:w-auto">Nome</TableHead>
+                      <TableHead>Capacidade</TableHead>
+                      <TableHead>Preço Base</TableHead>
                       <TableHead className="hidden md:table-cell">
                         Descrição
                       </TableHead>
@@ -145,6 +147,13 @@ export function CategoriesPage() {
                       <TableRow key={category.id}>
                         <TableCell className="font-medium">
                           {category.name}
+                        </TableCell>
+                        <TableCell>{category.capacity} Pessoas</TableCell>
+                        <TableCell>
+                          {new Intl.NumberFormat("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          }).format(category.basePrice)}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {category.description || "-"}

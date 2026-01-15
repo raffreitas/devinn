@@ -5,7 +5,6 @@ using DevInn.Infrastructure.Identity.Context;
 using DevInn.Infrastructure.Identity.Models;
 using DevInn.Infrastructure.Identity.Services;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -46,8 +45,9 @@ public static class DependencyInjection
 
         // Configure Auth
         services.AddAuthorizationBuilder()
-            .AddPolicy(Roles.SuperAdmin, policy => policy.RequireRole(Roles.SuperAdmin))
-            .AddPolicy(Roles.InnAdmin, policy => policy.RequireRole(Roles.InnAdmin, Roles.SuperAdmin));
+            .AddPolicy(Policies.SuperAdminOnly, policy => policy.RequireRole(nameof(UserRole.SuperAdmin)))
+            .AddPolicy(Policies.InnAdminOnly,
+                policy => policy.RequireRole(nameof(UserRole.InnAdmin), nameof(UserRole.SuperAdmin)));
 
         // Add Services
         services.AddScoped<IIdentityService, IdentityService>();

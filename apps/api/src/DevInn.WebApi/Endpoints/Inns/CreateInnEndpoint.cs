@@ -1,4 +1,4 @@
-﻿using DevInn.Application.Features.Inns.CreateInn;
+﻿using DevInn.Application.Features.Inns.Commands.CreateInn;
 using DevInn.WebApi.Common;
 
 using Mediator;

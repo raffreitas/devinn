@@ -1,5 +1,6 @@
-import { api } from "@/shared/lib/http-client";
 import type { SignInRequest } from "@/features/auth/types";
+import { api } from "@/shared/lib/http-client";
+import { STORAGE_KEYS, storage } from "@/shared/lib/storage";
 import type { ApiResponse } from "@/shared/types";
 
 interface SignInResponse {
@@ -16,14 +17,20 @@ export const authService = {
       },
     );
 
-    const token = response.data.data?.accessToken!;
-    localStorage.setItem("token", token);
+    const token = response.data.data?.accessToken;
+    if (!token) {
+      throw new Error("No access token received");
+    }
+    storage.set(STORAGE_KEYS.TOKEN, token);
 
     return { token };
   },
 
   signOut: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("selected_inn_id");
+    storage.remove(STORAGE_KEYS.TOKEN);
+    storage.remove(STORAGE_KEYS.TENANT_ID);
+
+    // Limpa o cache do React Query
+    window.location.href = "/sign-in";
   },
 };

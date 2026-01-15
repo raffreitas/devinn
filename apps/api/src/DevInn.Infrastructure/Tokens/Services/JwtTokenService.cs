@@ -20,11 +20,14 @@ internal sealed class JwtTokenService(IOptions<JwtTokenOptions> options) : IToke
         var signinKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey));
         var credentials = new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256);
 
+        var roleClaims = request.Roles
+            .SelectMany(role => new List<Claim> { new(ClaimTypes.Role, role), new("role", role) });
+
         List<Claim> claims =
         [
             new(JwtRegisteredClaimNames.Sub, request.UserId.ToString()),
+            ..roleClaims
         ];
-        claims.AddRange(request.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         if (request.TenantId is not null)
             claims.Add(new Claim("tenant_id", request.TenantId.Value.ToString()));

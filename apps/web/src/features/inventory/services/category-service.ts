@@ -1,38 +1,32 @@
 import { api } from "@/shared/lib/http-client";
-import type {
-  Category,
-  CreateCategoryRequest,
-  UpdateCategoryRequest,
-} from "../types";
+import type { ApiResponse } from "@/shared/types";
+import type { Category, CreateCategoryRequest } from "../types";
 
 export const categoryService = {
-  getAll: async (): Promise<Category[]> => {
-    const response = await api.get<Category[]>("/api/v1/room-categories");
+  create: async (data: CreateCategoryRequest) => {
+    const response = await api.post<ApiResponse<string>>(
+      "/api/v1/room-categories",
+      data,
+    );
     return response.data;
   },
 
-  getById: async (id: string): Promise<Category> => {
-    const response = await api.get<Category>(`/api/v1/room-categories/${id}`);
-    return response.data;
+  getAll: async () => {
+    const response = await api.get<ApiResponse<Category[]>>(
+      "/api/v1/room-categories",
+    );
+    return response.data.data;
   },
 
-  create: async (data: CreateCategoryRequest): Promise<Category> => {
-    const response = await api.post<Category>("/api/v1/room-categories", data);
-    return response.data;
-  },
-
-  update: async (
-    id: string,
-    data: UpdateCategoryRequest,
-  ): Promise<Category> => {
-    const response = await api.put<Category>(
+  update: async (id: string, data: CreateCategoryRequest) => {
+    const response = await api.put<ApiResponse<void>>(
       `/api/v1/room-categories/${id}`,
       data,
     );
     return response.data;
   },
 
-  delete: async (id: string): Promise<void> => {
+  delete: async (id: string) => {
     await api.delete(`/api/v1/room-categories/${id}`);
   },
 };

@@ -1,11 +1,13 @@
+import { jwtDecode } from "jwt-decode";
 import {
   createContext,
-  useContext,
-  useState,
-  useEffect,
   type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
-import { jwtDecode } from "jwt-decode";
+import { STORAGE_KEYS, storage } from "@/shared/lib/storage";
 
 interface JWTPayload {
   sub: string;
@@ -20,6 +22,7 @@ interface TenantContextData {
   setInnId: (innId: string) => void;
   userRole: "SuperAdmin" | "InnAdmin" | null;
   isLoading: boolean;
+  clearTenant: () => void;
 }
 
 const TenantContext = createContext<TenantContextData | undefined>(undefined);
@@ -36,19 +39,21 @@ export function TenantProvider({ children }: TenantProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = storage.get(STORAGE_KEYS.TOKEN);
 
     if (token) {
       try {
         const decoded = jwtDecode<JWTPayload>(token);
         setUserRole(decoded.role);
+        console.log(decoded)
 
         // Se for InnAdmin, o inn_id vem do JWT
         if (decoded.role === "InnAdmin" && decoded.inn_id) {
           setInnIdState(decoded.inn_id);
+          storage.set(STORAGE_KEYS.TENANT_ID, decoded.inn_id);
         } else if (decoded.role === "SuperAdmin") {
           // Para SuperAdmin, tenta recuperar do localStorage
-          const savedInnId = localStorage.getItem("selected_inn_id");
+          const savedInnId = storage.get(STORAGE_KEYS.TENANT_ID);
           if (savedInnId) {
             setInnIdState(savedInnId);
           }
@@ -61,12 +66,15 @@ export function TenantProvider({ children }: TenantProviderProps) {
     setIsLoading(false);
   }, []);
 
-  const setInnId = (newInnId: string) => {
+  const setInnId = useCallback((newInnId: string) => {
     setInnIdState(newInnId);
-    if (userRole === "SuperAdmin") {
-      localStorage.setItem("selected_inn_id", newInnId);
-    }
-  };
+    storage.set(STORAGE_KEYS.TENANT_ID, newInnId);
+  }, []);
+
+  const clearTenant = useCallback(() => {
+    setInnIdState(null);
+    storage.remove(STORAGE_KEYS.TENANT_ID);
+  }, []);
 
   return (
     <TenantContext.Provider
@@ -75,6 +83,7 @@ export function TenantProvider({ children }: TenantProviderProps) {
         setInnId,
         userRole,
         isLoading,
+        clearTenant,
       }}
     >
       {children}

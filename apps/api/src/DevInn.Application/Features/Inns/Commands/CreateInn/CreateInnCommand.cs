@@ -6,7 +6,7 @@ using FluentValidation;
 
 using Mediator;
 
-namespace DevInn.Application.Features.Inns.CreateInn;
+namespace DevInn.Application.Features.Inns.Commands.CreateInn;
 
 public sealed record CreateInnCommand(
     string Name,

@@ -7,8 +7,6 @@ using DevInn.WebApi.Configuration;
 using DevInn.WebApi.Endpoints;
 using DevInn.WebApi.Middlewares;
 
-using Scalar.AspNetCore;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureHttpJsonOptions(options =>

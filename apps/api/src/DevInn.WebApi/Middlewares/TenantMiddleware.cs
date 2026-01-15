@@ -3,6 +3,7 @@
 using DevInn.Application.Common.Identity;
 using DevInn.Application.Common.Tenancy;
 using DevInn.Application.Common.Tenancy.Abstractions;
+using DevInn.WebApi.Common;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +23,19 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
         if (publicPaths.Any(path => context.Request.Path.StartsWithSegments(path, StringComparison.OrdinalIgnoreCase)))
         {
             await next(context);
+            return;
+        }
+
+        if (context.User.Identity is { IsAuthenticated: false })
+        {
+            logger.LogWarning("Requisição não autenticada para {Path}", context.Request.Path);
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsJsonAsync(new ApiProblemDetails
+            {
+                Title = "Não autorizado",
+                Status = StatusCodes.Status401Unauthorized,
+                Detail = "A requisição não foi autenticada."
+            });
             return;
         }
 
@@ -62,7 +76,7 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
     private static Guid ExtractTenantId(HttpContext context)
     {
         // 1. Verificar header customizado
-        if (context.Request.Headers.TryGetValue("X-Tenant-Id", out var tenantHeader) &&
+        if (context.Request.Headers.TryGetValue("X-Inn-Id", out var tenantHeader) &&
             Guid.TryParse(tenantHeader.ToString(), out var tenantFromHeader))
         {
             return tenantFromHeader;

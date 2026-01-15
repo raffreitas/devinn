@@ -1,20 +1,14 @@
 export interface Category {
   id: string;
   name: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
+  capacity: number;
+  description: string;
+  basePrice: number;
+  extraPersonPrice: number;
 }
 
-export interface CreateCategoryRequest {
-  name: string;
-  description?: string;
-}
-
-export interface UpdateCategoryRequest {
-  name: string;
-  description?: string;
-}
+export type CreateCategoryRequest = Omit<Category, "id">;
+export type UpdateCategoryRequest = CreateCategoryRequest;
 
 export type RoomStatus = "Active" | "Maintenance" | "Inactive";
 

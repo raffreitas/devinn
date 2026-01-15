@@ -30,6 +30,14 @@ const categorySchema = z.object({
     .string()
     .max(500, "Descrição deve ter no máximo 500 caracteres")
     .optional(),
+  capacity: z.coerce
+    .number()
+    .min(1, "Capacidade mínima é 1")
+    .max(10, "Capacidade máxima é 10"),
+  basePrice: z.coerce.number().min(0, "Preço base deve ser maior ou igual a 0"),
+  extraPersonPrice: z.coerce
+    .number()
+    .min(0, "Preço extra deve ser maior ou igual a 0"),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -52,6 +60,9 @@ export function CategoryFormDialog({
     defaultValues: {
       name: category?.name || "",
       description: category?.description || "",
+      capacity: category?.capacity || 2,
+      basePrice: category?.basePrice || 0,
+      extraPersonPrice: category?.extraPersonPrice || 0,
     },
   });
 
@@ -62,7 +73,7 @@ export function CategoryFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-106.25">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
             {category ? "Editar Categoria" : "Nova Categoria"}
@@ -77,7 +88,7 @@ export function CategoryFormDialog({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
+            className="space-y-6"
           >
             <FormField
               control={form.control}
@@ -92,6 +103,60 @@ export function CategoryFormDialog({
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="capacity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Capacidade (Pessoas)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Ex: 2"
+                        {...field}
+                        min={1}
+                        max={10}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="hidden md:block"></div> {/* Spacer if needed, or remove */}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="basePrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Preço Base (R$)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0.00" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="extraPersonPrice"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Preço Pessoa Extra (R$)</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="0.00" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}

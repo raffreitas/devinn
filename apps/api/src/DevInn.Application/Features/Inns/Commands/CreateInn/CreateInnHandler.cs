@@ -7,7 +7,7 @@ using FluentResults;
 
 using Mediator;
 
-namespace DevInn.Application.Features.Inns.CreateInn;
+namespace DevInn.Application.Features.Inns.Commands.CreateInn;
 
 internal sealed class CreateInnHandler(IInnRepository innRepository, IUnitOfWork uow)
     : ICommandHandler<CreateInnCommand, Result<Guid>>
