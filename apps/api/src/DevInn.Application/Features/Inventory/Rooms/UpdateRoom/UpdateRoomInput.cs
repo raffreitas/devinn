@@ -1,5 +1,6 @@
 using DevInn.Application.Common.Validation;
 using DevInn.Domain.Aggregates.Inventory;
+using DevInn.Domain.Aggregates.Inventory.Enums;
 
 using FluentValidation;
 
