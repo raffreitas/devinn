@@ -4,6 +4,10 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { api } from "@/shared/lib/http-client";
 import { AppSidebar } from "@/shared/components/app-sidebar";
 import { TenantProvider } from "@/shared/contexts/tenant-context";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/shared/components/ui/sidebar";
 
 export function AppLayout() {
   const navigate = useNavigate();
@@ -32,16 +36,16 @@ export function AppLayout() {
 
   return (
     <TenantProvider>
-      <div className="flex min-h-screen bg-background text-foreground antialiased">
+      <SidebarProvider>
         <AppSidebar />
+        <SidebarTrigger />
 
-        {/* Main Content */}
-        <main className="flex-1 lg:pl-64">
-          <div className="container mx-auto p-4 md:p-6 lg:p-8">
+        <div className="flex min-h-screen flex-col antialiased">
+          <main className="flex flex-1 flex-col gap-4 p-8 pt-6">
             <Outlet />
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
+      </SidebarProvider>
     </TenantProvider>
   );
 }

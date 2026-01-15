@@ -1,7 +1,7 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/shared/components/ui/button';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
+} from "@/shared/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,16 +17,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
-import type { Category } from '../types';
+} from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
+import type { Category } from "../types";
 
 const categorySchema = z.object({
   name: z
     .string()
-    .min(1, 'Nome é obrigatório')
-    .max(100, 'Nome deve ter no máximo 100 caracteres'),
-  description: z.string().max(500, 'Descrição deve ter no máximo 500 caracteres').optional(),
+    .min(1, "Nome é obrigatório")
+    .max(100, "Nome deve ter no máximo 100 caracteres"),
+  description: z
+    .string()
+    .max(500, "Descrição deve ter no máximo 500 caracteres")
+    .optional(),
 });
 
 type CategoryFormData = z.infer<typeof categorySchema>;
@@ -47,8 +50,8 @@ export function CategoryFormDialog({
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
-      name: category?.name || '',
-      description: category?.description || '',
+      name: category?.name || "",
+      description: category?.description || "",
     },
   });
 
@@ -61,16 +64,21 @@ export function CategoryFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>{category ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+          <DialogTitle>
+            {category ? "Editar Categoria" : "Nova Categoria"}
+          </DialogTitle>
           <DialogDescription>
             {category
-              ? 'Atualize as informações da categoria'
-              : 'Adicione uma nova categoria de acomodação'}
+              ? "Atualize as informações da categoria"
+              : "Adicione uma nova categoria de acomodação"}
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -108,7 +116,7 @@ export function CategoryFormDialog({
                 Cancelar
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Salvando...' : 'Salvar'}
+                {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
               </Button>
             </DialogFooter>
           </form>

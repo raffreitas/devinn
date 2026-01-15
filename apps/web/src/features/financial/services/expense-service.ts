@@ -1,6 +1,10 @@
-import type { Expense, CreateExpenseRequest, UpdateExpenseRequest } from '../types';
+import type {
+  Expense,
+  CreateExpenseRequest,
+  UpdateExpenseRequest,
+} from "../types";
 
-const STORAGE_KEY_PREFIX = 'expenses_';
+const STORAGE_KEY_PREFIX = "expenses_";
 
 function getStorageKey(innId: string): string {
   return `${STORAGE_KEY_PREFIX}${innId}`;
@@ -16,18 +20,26 @@ function saveExpenses(innId: string, expenses: Expense[]): void {
 }
 
 export const expenseService = {
-  getAll: async (innId: string, startDate?: string, endDate?: string): Promise<Expense[]> => {
+  getAll: async (
+    innId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<Expense[]> => {
     let expenses = getExpenses(innId);
 
     if (startDate) {
-      expenses = expenses.filter((e) => new Date(e.date) >= new Date(startDate));
+      expenses = expenses.filter(
+        (e) => new Date(e.date) >= new Date(startDate),
+      );
     }
 
     if (endDate) {
       expenses = expenses.filter((e) => new Date(e.date) <= new Date(endDate));
     }
 
-    return expenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return expenses.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
   },
 
   getById: async (innId: string, id: string): Promise<Expense | null> => {
@@ -35,7 +47,10 @@ export const expenseService = {
     return expenses.find((e) => e.id === id) || null;
   },
 
-  create: async (innId: string, data: CreateExpenseRequest): Promise<Expense> => {
+  create: async (
+    innId: string,
+    data: CreateExpenseRequest,
+  ): Promise<Expense> => {
     const expense: Expense = {
       id: crypto.randomUUID(),
       innId,
@@ -55,12 +70,16 @@ export const expenseService = {
     return expense;
   },
 
-  update: async (innId: string, id: string, data: UpdateExpenseRequest): Promise<Expense> => {
+  update: async (
+    innId: string,
+    id: string,
+    data: UpdateExpenseRequest,
+  ): Promise<Expense> => {
     const expenses = getExpenses(innId);
     const index = expenses.findIndex((e) => e.id === id);
 
     if (index === -1) {
-      throw new Error('Despesa não encontrada');
+      throw new Error("Despesa não encontrada");
     }
 
     const expense = expenses[index];

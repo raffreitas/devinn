@@ -1,6 +1,6 @@
-export type BookingStatus = 'scheduled' | 'hosting' | 'completed' | 'cancelled';
-export type PaymentStatus = 'pending' | 'partial' | 'paid';
-export type PaymentMethod = 'pix' | 'cash' | 'credit_card' | 'debit_card';
+export type BookingStatus = "scheduled" | "hosting" | "completed" | "cancelled";
+export type PaymentStatus = "pending" | "partial" | "paid";
+export type PaymentMethod = "pix" | "cash" | "credit_card" | "debit_card";
 
 export interface Guest {
   name: string;

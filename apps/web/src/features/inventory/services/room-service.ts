@@ -1,10 +1,10 @@
-import { api } from '@/shared/lib/http-client';
+import { api } from "@/shared/lib/http-client";
 import type {
   Room,
   CreateRoomRequest,
   UpdateRoomRequest,
   PaginatedResponse,
-} from '../types';
+} from "../types";
 
 interface GetRoomsParams {
   page?: number;
@@ -15,7 +15,7 @@ interface GetRoomsParams {
 
 export const roomService = {
   getAll: async (params?: GetRoomsParams): Promise<PaginatedResponse<Room>> => {
-    const response = await api.get<PaginatedResponse<Room>>('/api/v1/rooms', {
+    const response = await api.get<PaginatedResponse<Room>>("/api/v1/rooms", {
       params,
     });
     return response.data;
@@ -27,7 +27,7 @@ export const roomService = {
   },
 
   create: async (data: CreateRoomRequest): Promise<Room> => {
-    const response = await api.post<Room>('/api/v1/rooms', data);
+    const response = await api.post<Room>("/api/v1/rooms", data);
     return response.data;
   },
 

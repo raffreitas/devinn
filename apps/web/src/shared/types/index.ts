@@ -7,4 +7,4 @@ export type ApiProblem = {
 
 export type ApiResponse<T> = {
   data?: T;
-}
+};

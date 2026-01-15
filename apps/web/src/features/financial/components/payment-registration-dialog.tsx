@@ -1,7 +1,7 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/shared/components/ui/button';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
+} from "@/shared/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -18,23 +18,23 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+} from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import type { Booking, PaymentMethod } from '@/features/bookings/types';
+} from "@/shared/components/ui/select";
+import type { Booking, PaymentMethod } from "@/features/bookings/types";
 
 const paymentSchema = z.object({
   amount: z
-    .number({ error: 'Valor é obrigatório' })
-    .positive('Valor deve ser maior que 0'),
-  method: z.enum(['pix', 'cash', 'credit_card', 'debit_card'], {
-    error: 'Método de pagamento é obrigatório',
+    .number({ error: "Valor é obrigatório" })
+    .positive("Valor deve ser maior que 0"),
+  method: z.enum(["pix", "cash", "credit_card", "debit_card"], {
+    error: "Método de pagamento é obrigatório",
   }),
   notes: z.string().optional(),
 });
@@ -44,7 +44,11 @@ type PaymentFormData = z.infer<typeof paymentSchema>;
 interface PaymentRegistrationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (amount: number, method: PaymentMethod, notes?: string) => Promise<void>;
+  onSubmit: (
+    amount: number,
+    method: PaymentMethod,
+    notes?: string,
+  ) => Promise<void>;
   booking: Booking;
 }
 
@@ -60,8 +64,8 @@ export function PaymentRegistrationDialog({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       amount: remainingAmount,
-      method: 'pix',
-      notes: '',
+      method: "pix",
+      notes: "",
     },
   });
 
@@ -83,7 +87,9 @@ export function PaymentRegistrationDialog({
         <div className="py-4 space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Valor total:</span>
-            <span className="font-medium">R$ {booking.pricing.total.toFixed(2)}</span>
+            <span className="font-medium">
+              R$ {booking.pricing.total.toFixed(2)}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Já pago:</span>
@@ -92,7 +98,9 @@ export function PaymentRegistrationDialog({
             </span>
           </div>
           <div className="flex justify-between pt-2 border-t">
-            <span className="text-muted-foreground font-semibold">Restante:</span>
+            <span className="text-muted-foreground font-semibold">
+              Restante:
+            </span>
             <span className="text-destructive font-bold">
               R$ {remainingAmount.toFixed(2)}
             </span>
@@ -100,7 +108,10 @@ export function PaymentRegistrationDialog({
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="amount"
@@ -131,7 +142,10 @@ export function PaymentRegistrationDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Método de Pagamento</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />
@@ -140,8 +154,12 @@ export function PaymentRegistrationDialog({
                     <SelectContent>
                       <SelectItem value="pix">PIX</SelectItem>
                       <SelectItem value="cash">Dinheiro</SelectItem>
-                      <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
-                      <SelectItem value="debit_card">Cartão de Débito</SelectItem>
+                      <SelectItem value="credit_card">
+                        Cartão de Crédito
+                      </SelectItem>
+                      <SelectItem value="debit_card">
+                        Cartão de Débito
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -164,11 +182,17 @@ export function PaymentRegistrationDialog({
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Registrando...' : 'Registrar Pagamento'}
+                {form.formState.isSubmitting
+                  ? "Registrando..."
+                  : "Registrar Pagamento"}
               </Button>
             </DialogFooter>
           </form>

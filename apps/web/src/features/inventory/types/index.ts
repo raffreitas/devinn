@@ -16,7 +16,7 @@ export interface UpdateCategoryRequest {
   description?: string;
 }
 
-export type RoomStatus = 'Active' | 'Maintenance' | 'Inactive';
+export type RoomStatus = "Active" | "Maintenance" | "Inactive";
 
 export interface Room {
   id: string;

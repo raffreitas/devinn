@@ -1,14 +1,14 @@
 export type ExpenseCategory =
-  | 'water'
-  | 'electricity'
-  | 'gas'
-  | 'internet'
-  | 'maintenance'
-  | 'salaries'
-  | 'supplies'
-  | 'marketing'
-  | 'taxes'
-  | 'other';
+  | "water"
+  | "electricity"
+  | "gas"
+  | "internet"
+  | "maintenance"
+  | "salaries"
+  | "supplies"
+  | "marketing"
+  | "taxes"
+  | "other";
 
 export interface Expense {
   id: string;

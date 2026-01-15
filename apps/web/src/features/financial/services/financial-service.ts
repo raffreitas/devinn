@@ -1,13 +1,17 @@
-import { startOfMonth, endOfMonth, parseISO } from 'date-fns';
-import { bookingService } from '@/features/bookings/services/booking-service';
-import { expenseService } from './expense-service';
-import type { FinancialMetrics, MonthlyFinancialData, ExpenseCategory } from '../types';
+import { startOfMonth, endOfMonth, parseISO } from "date-fns";
+import { bookingService } from "@/features/bookings/services/booking-service";
+import { expenseService } from "./expense-service";
+import type {
+  FinancialMetrics,
+  MonthlyFinancialData,
+  ExpenseCategory,
+} from "../types";
 
 export const financialService = {
   getMonthlyData: async (
     innId: string,
     year: number,
-    month: number
+    month: number,
   ): Promise<MonthlyFinancialData> => {
     const date = new Date(year, month - 1, 1);
     const startDate = startOfMonth(date).toISOString();
@@ -38,7 +42,10 @@ export const financialService = {
       .reduce((sum, booking) => sum + booking.totalPaid, 0);
 
     // Calculate total expenses
-    const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+    const totalExpenses = expenses.reduce(
+      (sum, expense) => sum + expense.amount,
+      0,
+    );
 
     // Calculate expenses by category
     const expensesByCategory: Record<ExpenseCategory, number> = {

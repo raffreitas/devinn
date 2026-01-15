@@ -18,8 +18,12 @@ import { Input } from "@/shared/components/ui/input";
 import { authService } from "../services/auth-service";
 
 const signInSchema = z.object({
-  email: z.email({ error: "E-mail inválido" }).min(1, { error: "E-mail é obrigatório" }),
-  password: z.string({ error: "Senha inválida" }).min(6, { error: "Senha deve ter no mínimo 6 caracteres" }),
+  email: z
+    .email({ error: "E-mail inválido" })
+    .min(1, { error: "E-mail é obrigatório" }),
+  password: z
+    .string({ error: "Senha inválida" })
+    .min(6, { error: "Senha deve ter no mínimo 6 caracteres" }),
 });
 
 type SignInSchema = z.infer<typeof signInSchema>;
@@ -121,4 +125,3 @@ export function SignInPage() {
     </div>
   );
 }
-

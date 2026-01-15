@@ -1,31 +1,31 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { Plus, Eye, Trash2, Filter } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Plus, Eye, Trash2, Filter } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/shared/components/ui/card';
+} from "@/shared/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
+} from "@/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { Skeleton } from '@/shared/components/ui/skeleton';
+} from "@/shared/components/ui/select";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -33,31 +33,39 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table';
-import { useTenant } from '@/shared/contexts/tenant-context';
-import { roomService } from '@/features/inventory/services/room-service';
-import { bookingService } from '../services/booking-service';
-import { BookingFormDialog } from '../components/booking-form-dialog';
-import { GuestDetailsPanel } from '../components/guest-details-panel';
-import type { Booking, BookingStatus, PaymentStatus, CreateBookingRequest } from '../types';
+} from "@/shared/components/ui/table";
+import { useTenant } from "@/shared/contexts/tenant-context";
+import { roomService } from "@/features/inventory/services/room-service";
+import { bookingService } from "../services/booking-service";
+import { BookingFormDialog } from "../components/booking-form-dialog";
+import { GuestDetailsPanel } from "../components/guest-details-panel";
+import type {
+  Booking,
+  BookingStatus,
+  PaymentStatus,
+  CreateBookingRequest,
+} from "../types";
 
 const statusConfig: Record<
   BookingStatus,
-  { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }
+  {
+    label: string;
+    variant: "default" | "secondary" | "outline" | "destructive";
+  }
 > = {
-  scheduled: { label: 'Agendada', variant: 'default' },
-  hosting: { label: 'Hospedando', variant: 'secondary' },
-  completed: { label: 'Concluída', variant: 'outline' },
-  cancelled: { label: 'Cancelada', variant: 'destructive' },
+  scheduled: { label: "Agendada", variant: "default" },
+  hosting: { label: "Hospedando", variant: "secondary" },
+  completed: { label: "Concluída", variant: "outline" },
+  cancelled: { label: "Cancelada", variant: "destructive" },
 };
 
 const paymentStatusConfig: Record<
   PaymentStatus,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' }
+  { label: string; variant: "default" | "secondary" | "destructive" }
 > = {
-  paid: { label: 'Pago', variant: 'default' },
-  partial: { label: 'Parcial', variant: 'secondary' },
-  pending: { label: 'Pendente', variant: 'destructive' },
+  paid: { label: "Pago", variant: "default" },
+  partial: { label: "Parcial", variant: "secondary" },
+  pending: { label: "Pendente", variant: "destructive" },
 };
 
 export function BookingsListPage() {
@@ -65,18 +73,19 @@ export function BookingsListPage() {
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | undefined>();
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterPaymentStatus, setFilterPaymentStatus] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState<string>("all");
   const queryClient = useQueryClient();
 
   const { data: bookings, isLoading } = useQuery({
-    queryKey: ['bookings', innId, filterStatus, filterPaymentStatus],
+    queryKey: ["bookings", innId, filterStatus, filterPaymentStatus],
     queryFn: () => {
       if (!innId) return [];
       return bookingService.getAll(innId, {
-        status: filterStatus !== 'all' ? (filterStatus as BookingStatus) : undefined,
+        status:
+          filterStatus !== "all" ? (filterStatus as BookingStatus) : undefined,
         paymentStatus:
-          filterPaymentStatus !== 'all'
+          filterPaymentStatus !== "all"
             ? (filterPaymentStatus as PaymentStatus)
             : undefined,
       });
@@ -85,46 +94,46 @@ export function BookingsListPage() {
   });
 
   const { data: roomsData } = useQuery({
-    queryKey: ['rooms'],
+    queryKey: ["rooms"],
     queryFn: () => roomService.getAll(),
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: CreateBookingRequest) => {
-      if (!innId) throw new Error('Inn ID não encontrado');
+      if (!innId) throw new Error("Inn ID não encontrado");
       const room = roomsData?.items.find((r) => r.id === data.roomId);
-      if (!room) throw new Error('Quarto não encontrado');
+      if (!room) throw new Error("Quarto não encontrado");
 
       return bookingService.create(innId, data, {
         id: room.id,
         roomNumber: room.roomNumber,
-        categoryName: room.categoryName || '',
+        categoryName: room.categoryName || "",
         capacity: room.capacity,
         basePrice: room.basePrice,
         extraGuestPrice: room.extraGuestPrice,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      toast.success('Reserva criada com sucesso');
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      toast.success("Reserva criada com sucesso");
       setFormDialogOpen(false);
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Erro ao criar reserva');
+      toast.error(error.message || "Erro ao criar reserva");
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      if (!innId) throw new Error('Inn ID não encontrado');
+      if (!innId) throw new Error("Inn ID não encontrado");
       return bookingService.delete(innId, id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookings'] });
-      toast.success('Reserva excluída com sucesso');
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      toast.success("Reserva excluída com sucesso");
     },
     onError: () => {
-      toast.error('Erro ao excluir reserva');
+      toast.error("Erro ao excluir reserva");
     },
   });
 
@@ -138,7 +147,7 @@ export function BookingsListPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta reserva?')) {
+    if (confirm("Tem certeza que deseja excluir esta reserva?")) {
       await deleteMutation.mutateAsync(id);
     }
   };
@@ -151,7 +160,9 @@ export function BookingsListPage() {
   if (!innId) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">Selecione uma pousada para continuar</p>
+        <p className="text-muted-foreground">
+          Selecione uma pousada para continuar
+        </p>
       </div>
     );
   }
@@ -160,8 +171,12 @@ export function BookingsListPage() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Reservas</h1>
-          <p className="text-sm text-muted-foreground mt-1">Gerencie as reservas da pousada</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Reservas
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Gerencie as reservas da pousada
+          </p>
         </div>
         <Button onClick={handleNew} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
@@ -191,7 +206,10 @@ export function BookingsListPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={filterPaymentStatus} onValueChange={setFilterPaymentStatus}>
+              <Select
+                value={filterPaymentStatus}
+                onValueChange={setFilterPaymentStatus}
+              >
                 <SelectTrigger className="w-full sm:w-45">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue />
@@ -221,23 +239,31 @@ export function BookingsListPage() {
                     <TableRow>
                       <TableHead className="w-20">Quarto</TableHead>
                       <TableHead>Hóspede</TableHead>
-                      <TableHead className="hidden md:table-cell">Check-in</TableHead>
-                      <TableHead className="hidden lg:table-cell">Check-out</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Check-in
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Check-out
+                      </TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead className="hidden sm:table-cell">Pagamento</TableHead>
+                      <TableHead className="hidden sm:table-cell">
+                        Pagamento
+                      </TableHead>
                       <TableHead className="w-30 text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {bookings.map((booking) => (
                       <TableRow key={booking.id}>
-                        <TableCell className="font-medium">{booking.roomNumber}</TableCell>
+                        <TableCell className="font-medium">
+                          {booking.roomNumber}
+                        </TableCell>
                         <TableCell>{booking.guest.name}</TableCell>
                         <TableCell className="hidden md:table-cell">
-                          {format(new Date(booking.checkIn), 'dd/MM/yyyy')}
+                          {format(new Date(booking.checkIn), "dd/MM/yyyy")}
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
-                          {format(new Date(booking.checkOut), 'dd/MM/yyyy')}
+                          {format(new Date(booking.checkOut), "dd/MM/yyyy")}
                         </TableCell>
                         <TableCell>
                           <Badge variant={statusConfig[booking.status].variant}>
@@ -245,7 +271,11 @@ export function BookingsListPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
-                          <Badge variant={paymentStatusConfig[booking.paymentStatus].variant}>
+                          <Badge
+                            variant={
+                              paymentStatusConfig[booking.paymentStatus].variant
+                            }
+                          >
                             {paymentStatusConfig[booking.paymentStatus].label}
                           </Badge>
                         </TableCell>
@@ -259,7 +289,11 @@ export function BookingsListPage() {
                               <Eye className="h-4 w-4" />
                               <span className="sr-only">Ver detalhes</span>
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(booking.id)}>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(booking.id)}
+                            >
                               <Trash2 className="h-4 w-4" />
                               <span className="sr-only">Excluir</span>
                             </Button>
@@ -273,7 +307,9 @@ export function BookingsListPage() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-muted-foreground mb-4">Nenhuma reserva cadastrada</p>
+              <p className="text-muted-foreground mb-4">
+                Nenhuma reserva cadastrada
+              </p>
               <Button onClick={handleNew}>
                 <Plus className="mr-2 h-4 w-4" />
                 Criar primeira reserva

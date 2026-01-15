@@ -1,4 +1,4 @@
-import { differenceInDays } from 'date-fns';
+import { differenceInDays } from "date-fns";
 import type {
   Booking,
   CreateBookingRequest,
@@ -7,9 +7,9 @@ import type {
   PricingBreakdown,
   Payment,
   PaymentMethod,
-} from '../types';
+} from "../types";
 
-const STORAGE_KEY_PREFIX = 'bookings_';
+const STORAGE_KEY_PREFIX = "bookings_";
 
 function getStorageKey(innId: string): string {
   return `${STORAGE_KEY_PREFIX}${innId}`;
@@ -30,7 +30,7 @@ function calculatePricing(
   numberOfGuests: number,
   basePrice: number,
   extraGuestPrice: number,
-  roomCapacity: number
+  roomCapacity: number,
 ): PricingBreakdown {
   const nights = differenceInDays(new Date(checkOut), new Date(checkIn));
   const extraGuests = Math.max(0, numberOfGuests - roomCapacity);
@@ -55,7 +55,7 @@ function checkConflict(
   roomId: string,
   checkIn: string,
   checkOut: string,
-  excludeBookingId?: string
+  excludeBookingId?: string,
 ): boolean {
   const bookings = getBookings(innId);
   const newCheckIn = new Date(checkIn);
@@ -64,7 +64,7 @@ function checkConflict(
   return bookings.some((booking) => {
     if (booking.id === excludeBookingId) return false;
     if (booking.roomId !== roomId) return false;
-    if (booking.status === 'cancelled') return false;
+    if (booking.status === "cancelled") return false;
 
     const existingCheckIn = new Date(booking.checkIn);
     const existingCheckOut = new Date(booking.checkOut);
@@ -78,18 +78,21 @@ function checkConflict(
 }
 
 export const bookingService = {
-  getAll: async (innId: string, filters?: BookingFilters): Promise<Booking[]> => {
+  getAll: async (
+    innId: string,
+    filters?: BookingFilters,
+  ): Promise<Booking[]> => {
     let bookings = getBookings(innId);
 
     if (filters?.startDate) {
       bookings = bookings.filter(
-        (b) => new Date(b.checkIn) >= new Date(filters.startDate!)
+        (b) => new Date(b.checkIn) >= new Date(filters.startDate!),
       );
     }
 
     if (filters?.endDate) {
       bookings = bookings.filter(
-        (b) => new Date(b.checkOut) <= new Date(filters.endDate!)
+        (b) => new Date(b.checkOut) <= new Date(filters.endDate!),
       );
     }
 
@@ -98,11 +101,13 @@ export const bookingService = {
     }
 
     if (filters?.paymentStatus) {
-      bookings = bookings.filter((b) => b.paymentStatus === filters.paymentStatus);
+      bookings = bookings.filter(
+        (b) => b.paymentStatus === filters.paymentStatus,
+      );
     }
 
-    return bookings.sort((a, b) =>
-      new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime()
+    return bookings.sort(
+      (a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime(),
     );
   },
 
@@ -114,12 +119,26 @@ export const bookingService = {
   create: async (
     innId: string,
     data: CreateBookingRequest,
-    room: { id: string; roomNumber: string; categoryName: string; capacity: number; basePrice: number; extraGuestPrice: number }
+    room: {
+      id: string;
+      roomNumber: string;
+      categoryName: string;
+      capacity: number;
+      basePrice: number;
+      extraGuestPrice: number;
+    },
   ): Promise<Booking> => {
     // Check for conflicts
-    const hasConflict = checkConflict(innId, data.roomId, data.checkIn, data.checkOut);
+    const hasConflict = checkConflict(
+      innId,
+      data.roomId,
+      data.checkIn,
+      data.checkOut,
+    );
     if (hasConflict) {
-      throw new Error('Já existe uma reserva para este quarto no período selecionado');
+      throw new Error(
+        "Já existe uma reserva para este quarto no período selecionado",
+      );
     }
 
     const pricing = calculatePricing(
@@ -128,7 +147,7 @@ export const bookingService = {
       data.numberOfGuests,
       room.basePrice,
       room.extraGuestPrice,
-      room.capacity
+      room.capacity,
     );
 
     const booking: Booking = {
@@ -142,8 +161,8 @@ export const bookingService = {
       checkOut: data.checkOut,
       numberOfGuests: data.numberOfGuests,
       pricing,
-      status: 'scheduled',
-      paymentStatus: 'pending',
+      status: "scheduled",
+      paymentStatus: "pending",
       payments: [],
       totalPaid: 0,
       notes: data.notes,
@@ -162,13 +181,13 @@ export const bookingService = {
     innId: string,
     id: string,
     data: UpdateBookingRequest,
-    room?: { capacity: number; basePrice: number; extraGuestPrice: number }
+    room?: { capacity: number; basePrice: number; extraGuestPrice: number },
   ): Promise<Booking> => {
     const bookings = getBookings(innId);
     const index = bookings.findIndex((b) => b.id === id);
 
     if (index === -1) {
-      throw new Error('Reserva não encontrada');
+      throw new Error("Reserva não encontrada");
     }
 
     const booking = bookings[index];
@@ -178,9 +197,17 @@ export const bookingService = {
       const checkIn = data.checkIn || booking.checkIn;
       const checkOut = data.checkOut || booking.checkOut;
 
-      const hasConflict = checkConflict(innId, booking.roomId, checkIn, checkOut, id);
+      const hasConflict = checkConflict(
+        innId,
+        booking.roomId,
+        checkIn,
+        checkOut,
+        id,
+      );
       if (hasConflict) {
-        throw new Error('Já existe uma reserva para este quarto no período selecionado');
+        throw new Error(
+          "Já existe uma reserva para este quarto no período selecionado",
+        );
       }
     }
 
@@ -194,7 +221,7 @@ export const bookingService = {
           data.numberOfGuests || booking.numberOfGuests,
           room.basePrice,
           room.extraGuestPrice,
-          room.capacity
+          room.capacity,
         );
       }
     }
@@ -228,13 +255,13 @@ export const bookingService = {
     bookingId: string,
     amount: number,
     method: PaymentMethod,
-    notes?: string
+    notes?: string,
   ): Promise<Booking> => {
     const bookings = getBookings(innId);
     const index = bookings.findIndex((b) => b.id === bookingId);
 
     if (index === -1) {
-      throw new Error('Reserva não encontrada');
+      throw new Error("Reserva não encontrada");
     }
 
     const booking = bookings[index];
@@ -248,12 +275,12 @@ export const bookingService = {
     };
 
     const newTotalPaid = booking.totalPaid + amount;
-    let paymentStatus: 'pending' | 'partial' | 'paid' = 'pending';
+    let paymentStatus: "pending" | "partial" | "paid" = "pending";
 
     if (newTotalPaid >= booking.pricing.total) {
-      paymentStatus = 'paid';
+      paymentStatus = "paid";
     } else if (newTotalPaid > 0) {
-      paymentStatus = 'partial';
+      paymentStatus = "partial";
     }
 
     const updatedBooking: Booking = {
@@ -275,7 +302,7 @@ export const bookingService = {
     roomId: string,
     checkIn: string,
     checkOut: string,
-    excludeBookingId?: string
+    excludeBookingId?: string,
   ): boolean => {
     return checkConflict(innId, roomId, checkIn, checkOut, excludeBookingId);
   },

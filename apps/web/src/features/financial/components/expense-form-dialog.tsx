@@ -1,11 +1,11 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/shared/components/ui/button';
-import { Calendar } from '@/shared/components/ui/calendar';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/shared/components/ui/button";
+import { Calendar } from "@/shared/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
+} from "@/shared/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -21,45 +21,50 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+} from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/shared/components/ui/popover';
+} from "@/shared/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { cn } from '@/shared/lib/utils';
-import type { Expense } from '../types';
+} from "@/shared/components/ui/select";
+import { cn } from "@/shared/lib/utils";
+import type { Expense } from "../types";
 
 const expenseSchema = z.object({
   category: z.enum(
     [
-      'water',
-      'electricity',
-      'gas',
-      'internet',
-      'maintenance',
-      'salaries',
-      'supplies',
-      'marketing',
-      'taxes',
-      'other',
+      "water",
+      "electricity",
+      "gas",
+      "internet",
+      "maintenance",
+      "salaries",
+      "supplies",
+      "marketing",
+      "taxes",
+      "other",
     ],
     {
-      error: 'Categoria é obrigatória',
-    }
+      error: "Categoria é obrigatória",
+    },
   ),
-  description: z.string().min(1, 'Descrição é obrigatória').max(200, 'Máximo 200 caracteres'),
-  amount: z.number({ error: 'Valor é obrigatório' }).positive('Valor deve ser maior que 0'),
-  date: z.date({ error: 'Data é obrigatória' }),
-  notes: z.string().max(500, 'Máximo 500 caracteres').optional(),
+  description: z
+    .string()
+    .min(1, "Descrição é obrigatória")
+    .max(200, "Máximo 200 caracteres"),
+  amount: z
+    .number({ error: "Valor é obrigatório" })
+    .positive("Valor deve ser maior que 0"),
+  date: z.date({ error: "Data é obrigatória" }),
+  notes: z.string().max(500, "Máximo 500 caracteres").optional(),
 });
 
 type ExpenseFormData = z.infer<typeof expenseSchema>;
@@ -67,7 +72,9 @@ type ExpenseFormData = z.infer<typeof expenseSchema>;
 interface ExpenseFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: Omit<ExpenseFormData, 'date'> & { date: string }) => Promise<void>;
+  onSubmit: (
+    data: Omit<ExpenseFormData, "date"> & { date: string },
+  ) => Promise<void>;
   expense?: Expense;
 }
 
@@ -80,11 +87,11 @@ export function ExpenseFormDialog({
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
-      category: expense?.category || 'other',
-      description: expense?.description || '',
+      category: expense?.category || "other",
+      description: expense?.description || "",
       amount: expense?.amount || 0,
       date: expense ? new Date(expense.date) : new Date(),
-      notes: expense?.notes || '',
+      notes: expense?.notes || "",
     },
   });
 
@@ -100,14 +107,21 @@ export function ExpenseFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-125">
         <DialogHeader>
-          <DialogTitle>{expense ? 'Editar Despesa' : 'Nova Despesa'}</DialogTitle>
+          <DialogTitle>
+            {expense ? "Editar Despesa" : "Nova Despesa"}
+          </DialogTitle>
           <DialogDescription>
-            {expense ? 'Atualize as informações da despesa' : 'Registre uma nova despesa'}
+            {expense
+              ? "Atualize as informações da despesa"
+              : "Registre uma nova despesa"}
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -115,7 +129,10 @@ export function ExpenseFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoria</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue />
@@ -167,7 +184,10 @@ export function ExpenseFormDialog({
                 <FormItem>
                   <FormLabel>Descrição</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: Conta de energia de janeiro" {...field} />
+                    <Input
+                      placeholder="Ex: Conta de energia de janeiro"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,12 +206,12 @@ export function ExpenseFormDialog({
                         <Button
                           variant="outline"
                           className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
                           )}
                         >
                           {field.value ? (
-                            format(field.value, 'PPP', { locale: ptBR })
+                            format(field.value, "PPP", { locale: ptBR })
                           ) : (
                             <span>Selecione a data</span>
                           )}
@@ -228,11 +248,15 @@ export function ExpenseFormDialog({
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Salvando...' : 'Salvar'}
+                {form.formState.isSubmitting ? "Salvando..." : "Salvar"}
               </Button>
             </DialogFooter>
           </form>

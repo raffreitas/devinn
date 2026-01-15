@@ -1,12 +1,12 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/shared/components/ui/button';
-import { Calendar } from '@/shared/components/ui/calendar';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/shared/components/ui/button";
+import { Calendar } from "@/shared/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
+} from "@/shared/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -23,40 +23,47 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/shared/components/ui/form';
-import { Input } from '@/shared/components/ui/input';
+} from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/shared/components/ui/popover';
+} from "@/shared/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { cn } from '@/shared/lib/utils';
-import { roomService } from '@/features/inventory/services/room-service';
-import { useTenant } from '@/shared/contexts/tenant-context';
-import { bookingService } from '../services/booking-service';
-import type { Booking, CreateBookingRequest } from '../types';
+} from "@/shared/components/ui/select";
+import { cn } from "@/shared/lib/utils";
+import { roomService } from "@/features/inventory/services/room-service";
+import { useTenant } from "@/shared/contexts/tenant-context";
+import { bookingService } from "../services/booking-service";
+import type { Booking, CreateBookingRequest } from "../types";
 
-const bookingSchema = z.object({
-  roomId: z.string().min(1, 'Quarto é obrigatório'),
-  checkIn: z.date({ error: 'Data de check-in é obrigatória' }),
-  checkOut: z.date({ error: 'Data de check-out é obrigatória' }),
-  numberOfGuests: z.number().int().min(1, 'Número de hóspedes deve ser no mínimo 1'),
-  guestName: z.string().min(1, 'Nome do hóspede é obrigatório'),
-  guestEmail: z.string().email('E-mail inválido'),
-  guestPhone: z.string().min(10, 'Telefone deve ter no mínimo 10 dígitos'),
-  guestDocument: z.string().min(11, 'Documento deve ter no mínimo 11 dígitos'),
-  notes: z.string().optional(),
-}).refine((data) => data.checkOut > data.checkIn, {
-  message: 'Data de check-out deve ser posterior ao check-in',
-  path: ['checkOut'],
-});
+const bookingSchema = z
+  .object({
+    roomId: z.string().min(1, "Quarto é obrigatório"),
+    checkIn: z.date({ error: "Data de check-in é obrigatória" }),
+    checkOut: z.date({ error: "Data de check-out é obrigatória" }),
+    numberOfGuests: z
+      .number()
+      .int()
+      .min(1, "Número de hóspedes deve ser no mínimo 1"),
+    guestName: z.string().min(1, "Nome do hóspede é obrigatório"),
+    guestEmail: z.string().email("E-mail inválido"),
+    guestPhone: z.string().min(10, "Telefone deve ter no mínimo 10 dígitos"),
+    guestDocument: z
+      .string()
+      .min(11, "Documento deve ter no mínimo 11 dígitos"),
+    notes: z.string().optional(),
+  })
+  .refine((data) => data.checkOut > data.checkIn, {
+    message: "Data de check-out deve ser posterior ao check-in",
+    path: ["checkOut"],
+  });
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
@@ -80,28 +87,29 @@ export function BookingFormDialog({
   const { innId } = useTenant();
 
   const { data: roomsData } = useQuery({
-    queryKey: ['rooms'],
+    queryKey: ["rooms"],
     queryFn: () => roomService.getAll(),
   });
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-      roomId: preselectedRoom || booking?.roomId || '',
-      checkIn: preselectedDate || (booking ? new Date(booking.checkIn) : undefined),
+      roomId: preselectedRoom || booking?.roomId || "",
+      checkIn:
+        preselectedDate || (booking ? new Date(booking.checkIn) : undefined),
       checkOut: booking ? new Date(booking.checkOut) : undefined,
       numberOfGuests: booking?.numberOfGuests || 2,
-      guestName: booking?.guest.name || '',
-      guestEmail: booking?.guest.email || '',
-      guestPhone: booking?.guest.phone || '',
-      guestDocument: booking?.guest.document || '',
-      notes: booking?.notes || '',
+      guestName: booking?.guest.name || "",
+      guestEmail: booking?.guest.email || "",
+      guestPhone: booking?.guest.phone || "",
+      guestDocument: booking?.guest.document || "",
+      notes: booking?.notes || "",
     },
   });
 
-  const selectedRoomId = form.watch('roomId');
-  const checkIn = form.watch('checkIn');
-  const checkOut = form.watch('checkOut');
+  const selectedRoomId = form.watch("roomId");
+  const checkIn = form.watch("checkIn");
+  const checkOut = form.watch("checkOut");
 
   const selectedRoom = roomsData?.items.find((r) => r.id === selectedRoomId);
 
@@ -113,12 +121,12 @@ export function BookingFormDialog({
         data.roomId,
         data.checkIn.toISOString(),
         data.checkOut.toISOString(),
-        booking?.id
+        booking?.id,
       );
 
       if (hasConflict) {
-        form.setError('checkIn', {
-          message: 'Já existe reserva neste período',
+        form.setError("checkIn", {
+          message: "Já existe reserva neste período",
         });
         return;
       }
@@ -146,14 +154,21 @@ export function BookingFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{booking ? 'Editar Reserva' : 'Nova Reserva'}</DialogTitle>
+          <DialogTitle>
+            {booking ? "Editar Reserva" : "Nova Reserva"}
+          </DialogTitle>
           <DialogDescription>
-            {booking ? 'Atualize as informações da reserva' : 'Criar uma nova reserva'}
+            {booking
+              ? "Atualize as informações da reserva"
+              : "Criar uma nova reserva"}
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             {/* Room and Dates Section */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium">Informações da Reserva</h3>
@@ -164,7 +179,10 @@ export function BookingFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Quarto</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione um quarto" />
@@ -172,10 +190,10 @@ export function BookingFormDialog({
                       </FormControl>
                       <SelectContent>
                         {roomsData?.items
-                          .filter((room) => room.status === 'Active')
+                          .filter((room) => room.status === "Active")
                           .map((room) => (
                             <SelectItem key={room.id} value={room.id}>
-                              {room.roomNumber} - {room.categoryName} (R${' '}
+                              {room.roomNumber} - {room.categoryName} (R${" "}
                               {room.basePrice.toFixed(2)})
                             </SelectItem>
                           ))}
@@ -199,12 +217,12 @@ export function BookingFormDialog({
                             <Button
                               variant="outline"
                               className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground",
                               )}
                             >
                               {field.value ? (
-                                format(field.value, 'PPP', { locale: ptBR })
+                                format(field.value, "PPP", { locale: ptBR })
                               ) : (
                                 <span>Selecione a data</span>
                               )}
@@ -239,12 +257,12 @@ export function BookingFormDialog({
                             <Button
                               variant="outline"
                               className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground",
                               )}
                             >
                               {field.value ? (
-                                format(field.value, 'PPP', { locale: ptBR })
+                                format(field.value, "PPP", { locale: ptBR })
                               ) : (
                                 <span>Selecione a data</span>
                               )}
@@ -279,7 +297,9 @@ export function BookingFormDialog({
                           min={1}
                           max={selectedRoom?.capacity || 10}
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       {selectedRoom && (
@@ -320,7 +340,11 @@ export function BookingFormDialog({
                     <FormItem>
                       <FormLabel>E-mail</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="joao@example.com" {...field} />
+                        <Input
+                          type="email"
+                          placeholder="joao@example.com"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -372,11 +396,15 @@ export function BookingFormDialog({
             />
 
             <DialogFooter className="flex-col sm:flex-row gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Reserva'}
+                {form.formState.isSubmitting ? "Salvando..." : "Salvar Reserva"}
               </Button>
             </DialogFooter>
           </form>
