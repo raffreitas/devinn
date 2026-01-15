@@ -1,6 +1,8 @@
 using DevInn.Application.Features.Inventory.RoomCategories.CreateRoomCategory;
 using DevInn.WebApi.Common;
 
+using Mediator;
+
 namespace DevInn.WebApi.Endpoints.Inventory.RoomCategories;
 
 public sealed class CreateRoomCategoryEndpoint : IEndpoint
@@ -9,9 +11,9 @@ public sealed class CreateRoomCategoryEndpoint : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost(Route, async (CreateRoomCategoryInput input, ICreateRoomCategoryUseCase uc, CancellationToken ct) =>
+        app.MapPost(Route, async (CreateRoomCategoryCommand command, ISender sender, CancellationToken ct) =>
             {
-                var result = await uc.ExecuteAsync(input, ct);
+                var result = await sender.Send(command, ct);
                 return result.ToCreated($"{Route}/{result.Value}");
             })
             .WithTags(Tags.RoomCategories)

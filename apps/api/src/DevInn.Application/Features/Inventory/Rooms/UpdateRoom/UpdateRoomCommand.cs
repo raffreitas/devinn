@@ -2,21 +2,25 @@ using DevInn.Application.Common.Validation;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Aggregates.Inventory.Enums;
 
+using FluentResults;
+
 using FluentValidation;
+
+using Mediator;
 
 namespace DevInn.Application.Features.Inventory.Rooms.UpdateRoom;
 
-public sealed record UpdateRoomInput(
+public sealed record UpdateRoomCommand(
     Guid Id,
     Guid CategoryId,
     int Number,
     string Name,
-    RoomStatus Status)
+    RoomStatus Status) : ICommand<Result>
 {
     public Validation Validate() => new UpdateRoomValidator().Validate(this).ToFailure();
 };
 
-public sealed class UpdateRoomValidator : AbstractValidator<UpdateRoomInput>
+public sealed class UpdateRoomValidator : AbstractValidator<UpdateRoomCommand>
 {
     public UpdateRoomValidator()
     {

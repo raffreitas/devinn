@@ -1,6 +1,8 @@
 ﻿using DevInn.Application.Features.Auth.Login;
 using DevInn.WebApi.Common;
 
+using Mediator;
+
 namespace DevInn.WebApi.Endpoints.Auth;
 
 public sealed class LoginEndpoint : IEndpoint
@@ -9,13 +11,13 @@ public sealed class LoginEndpoint : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost(Route, async (LoginInput input, ILoginUseCase uc, CancellationToken ct) =>
+        app.MapPost(Route, async (LoginCommand command, ISender sender, CancellationToken ct) =>
             {
-                var result = await uc.ExecuteAsync(input, ct);
+                var result = await sender.Send(command, ct);
                 return result.ToOk();
             })
             .WithTags(Tags.Authentication)
-            .Produces<ApiResource<LoginOutput>>()
+            .Produces<ApiResource<LoginResult>>()
             .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)
             .AllowAnonymous();

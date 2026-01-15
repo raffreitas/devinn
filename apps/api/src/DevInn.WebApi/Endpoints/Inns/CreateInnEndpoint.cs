@@ -1,6 +1,8 @@
 ﻿using DevInn.Application.Features.Inns.CreateInn;
 using DevInn.WebApi.Common;
 
+using Mediator;
+
 namespace DevInn.WebApi.Endpoints.Inns;
 
 public sealed class CreateInnEndpoint : IEndpoint
@@ -9,9 +11,9 @@ public sealed class CreateInnEndpoint : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost(Route, async (CreateInnInput input, ICreateInnUseCase uc, CancellationToken ct) =>
+        app.MapPost(Route, async (CreateInnCommand command, ISender sender, CancellationToken ct) =>
             {
-                var result = await uc.ExecuteAsync(input, ct);
+                var result = await sender.Send(command, ct);
                 return result.ToCreated($"{Route}/{result.Value}");
             })
             .WithTags(Tags.Inns)

@@ -1,20 +1,24 @@
 using DevInn.Application.Common.Validation;
 
+using FluentResults;
+
 using FluentValidation;
+
+using Mediator;
 
 namespace DevInn.Application.Features.Inventory.RoomCategories.CreateRoomCategory;
 
-public sealed record CreateRoomCategoryInput(
+public sealed record CreateRoomCategoryCommand(
     string Name,
     int Capacity,
     string Description,
     decimal BasePrice,
-    decimal ExtraPersonPrice)
+    decimal ExtraPersonPrice) : ICommand<Result<Guid>>
 {
     public Validation Validate() => new CreateRoomCategoryValidator().Validate(this).ToFailure();
 };
 
-public sealed class CreateRoomCategoryValidator : AbstractValidator<CreateRoomCategoryInput>
+public sealed class CreateRoomCategoryValidator : AbstractValidator<CreateRoomCategoryCommand>
 {
     public CreateRoomCategoryValidator()
     {

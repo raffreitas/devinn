@@ -1,6 +1,8 @@
 using DevInn.Application.Features.Inventory.Rooms.CreateRoom;
 using DevInn.WebApi.Common;
 
+using Mediator;
+
 namespace DevInn.WebApi.Endpoints.Inventory.Rooms;
 
 public sealed class CreateRoomEndpoint : IEndpoint
@@ -9,9 +11,9 @@ public sealed class CreateRoomEndpoint : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost(Route, async (CreateRoomInput input, ICreateRoomUseCase uc, CancellationToken ct) =>
+        app.MapPost(Route, async (CreateRoomCommand command, ISender sender, CancellationToken ct) =>
             {
-                var result = await uc.ExecuteAsync(input, ct);
+                var result = await sender.Send(command, ct);
                 return result.ToCreated($"{Route}/{result.Value}");
             })
             .WithTags(Tags.Rooms)

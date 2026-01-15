@@ -1,4 +1,3 @@
-using DevInn.Application.Common.Abstractions;
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.Validation;
@@ -6,24 +5,22 @@ using DevInn.Domain.Aggregates.Inventory.Abstractions;
 
 using FluentResults;
 
+using Mediator;
+
 namespace DevInn.Application.Features.Inventory.Rooms.DeleteRoom;
 
-public interface IDeleteRoomUseCase : IUseCase<DeleteRoomInput, Result>;
-
-internal sealed class DeleteRoomUseCase(
+internal sealed class DeleteRoomHandler(
     IRoomRepository roomRepository,
-    IUnitOfWork uow) : IDeleteRoomUseCase
+    IUnitOfWork uow) : ICommandHandler<DeleteRoomCommand, Result>
 {
-    public async ValueTask<Result> ExecuteAsync(
-        DeleteRoomInput input,
-        CancellationToken cancellationToken = default)
+    public async ValueTask<Result> Handle(DeleteRoomCommand command, CancellationToken cancellationToken)
     {
-        var validation = input.Validate();
+        var validation = command.Validate();
 
         if (validation.IsFailure)
             return Result.Fail(validation.ToError());
 
-        var room = await roomRepository.GetByIdAsync(input.Id, cancellationToken);
+        var room = await roomRepository.GetByIdAsync(command.Id, cancellationToken);
         if (room == null)
             return Result.Fail(new NotFoundError("Quarto não encontrado"));
 

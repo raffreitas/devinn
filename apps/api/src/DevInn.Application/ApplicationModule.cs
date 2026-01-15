@@ -1,7 +1,4 @@
 ﻿using DevInn.Application.Common.Tenancy.Abstractions;
-using DevInn.Application.Features.Auth;
-using DevInn.Application.Features.Inns;
-using DevInn.Application.Features.Inventory;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,9 +8,7 @@ public static class ApplicationModule
 {
     public static IServiceCollection AddApplicationModule(this IServiceCollection services)
     {
-        services.AddInnFeature();
-        services.AddAuthFeature();
-        services.AddInventoryFeature();
+        services.AddMediator(o => o.ServiceLifetime = ServiceLifetime.Scoped);
 
         services.AddScoped<ITenantContext, TenantContext>();
 

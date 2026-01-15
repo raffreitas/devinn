@@ -1,22 +1,20 @@
 using Dapper;
 
-using DevInn.Application.Common.Abstractions;
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Pagination;
 using DevInn.Application.Common.Tenancy.Abstractions;
 
 using FluentResults;
 
+using Mediator;
+
 namespace DevInn.Application.Features.Inventory.Rooms.GetRooms;
 
-public interface IGetRoomsUseCase : IUseCase<GetRoomsInput, Result<PaginatedResult<RoomResponse>>>;
-
-internal sealed class GetRoomsUseCase(IDbConnectionFactory dbConnectionFactory, ITenantContext tenantContext)
-    : IGetRoomsUseCase
+internal sealed class GetRoomsHandler(IDbConnectionFactory dbConnectionFactory, ITenantContext tenantContext)
+    : IQueryHandler<GetRoomsQuery, Result<PaginatedResult<RoomResponse>>>
 {
-    public async ValueTask<Result<PaginatedResult<RoomResponse>>> ExecuteAsync(
-        GetRoomsInput input,
-        CancellationToken cancellationToken = default)
+    public async ValueTask<Result<PaginatedResult<RoomResponse>>> Handle(GetRoomsQuery query,
+        CancellationToken cancellationToken)
     {
         const string countSql = """
                                 SELECT count(1)
@@ -45,14 +43,14 @@ internal sealed class GetRoomsUseCase(IDbConnectionFactory dbConnectionFactory, 
 
         var rooms = await connection.QueryAsync<RoomResponse>(
             sql,
-            new { TenantId = tenantContext.Tenant.Id, input.PageSize, input.Offset }
+            new { TenantId = tenantContext.Tenant.Id, query.PageSize, query.Offset }
         );
 
         var paginatedResult = new PaginatedResult<RoomResponse>(
             rooms.ToArray(),
             count,
-            input.PageNumber,
-            input.PageSize
+            query.PageNumber,
+            query.PageSize
         );
         return Result.Ok(paginatedResult);
     }

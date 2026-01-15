@@ -1,22 +1,26 @@
 ﻿using DevInn.Application.Common.Validation;
 
+using FluentResults;
+
 using FluentValidation;
+
+using Mediator;
 
 namespace DevInn.Application.Features.Inns.CreateInn;
 
-public sealed record CreateInnInput(
+public sealed record CreateInnCommand(
     string Name,
     string Address,
     string City,
     string Country,
     string State,
     string Phone,
-    string Email)
+    string Email) : ICommand<Result<Guid>>
 {
     public Validation Validate() => new CreateInnInputValidation().Validate(this).ToFailure();
 }
 
-public class CreateInnInputValidation : AbstractValidator<CreateInnInput>
+public class CreateInnInputValidation : AbstractValidator<CreateInnCommand>
 {
     public CreateInnInputValidation()
     {

@@ -1,21 +1,25 @@
 using DevInn.Application.Common.Validation;
 
+using FluentResults;
+
 using FluentValidation;
+
+using Mediator;
 
 namespace DevInn.Application.Features.Inventory.RoomCategories.UpdateRoomCategory;
 
-public sealed record UpdateRoomCategoryInput(
+public sealed record UpdateRoomCategoryCommand(
     Guid Id,
     string Name,
     int Capacity,
     string Description,
     decimal BasePrice,
-    decimal ExtraPersonPrice)
+    decimal ExtraPersonPrice) : ICommand<Result>
 {
     public Validation Validate() => new UpdateRoomCategoryValidator().Validate(this).ToFailure();
 };
 
-public sealed class UpdateRoomCategoryValidator : AbstractValidator<UpdateRoomCategoryInput>
+public sealed class UpdateRoomCategoryValidator : AbstractValidator<UpdateRoomCategoryCommand>
 {
     public UpdateRoomCategoryValidator()
     {

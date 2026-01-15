@@ -1,6 +1,8 @@
 using DevInn.Application.Features.Inventory.Rooms.DeleteRoom;
 using DevInn.WebApi.Common;
 
+using Mediator;
+
 namespace DevInn.WebApi.Endpoints.Inventory.Rooms;
 
 public sealed class DeleteRoomEndpoint : IEndpoint
@@ -9,9 +11,9 @@ public sealed class DeleteRoomEndpoint : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapDelete(Route, async (Guid id, IDeleteRoomUseCase uc, CancellationToken ct) =>
+        app.MapDelete(Route, async (Guid id, ISender sender, CancellationToken ct) =>
             {
-                var result = await uc.ExecuteAsync(new DeleteRoomInput(id), ct);
+                var result = await sender.Send(new DeleteRoomCommand(id), ct);
                 return result.ToNoContent();
             })
             .WithTags(Tags.Rooms)

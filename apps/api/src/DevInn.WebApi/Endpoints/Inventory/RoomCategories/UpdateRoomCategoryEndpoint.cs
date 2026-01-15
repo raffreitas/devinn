@@ -1,6 +1,8 @@
 using DevInn.Application.Features.Inventory.RoomCategories.UpdateRoomCategory;
 using DevInn.WebApi.Common;
 
+using Mediator;
+
 namespace DevInn.WebApi.Endpoints.Inventory.RoomCategories;
 
 public sealed class UpdateRoomCategoryEndpoint : IEndpoint
@@ -10,10 +12,10 @@ public sealed class UpdateRoomCategoryEndpoint : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPut(Route,
-                async (Guid id, UpdateRoomCategoryInput input, IUpdateRoomCategoryUseCase uc, CancellationToken ct) =>
+                async (Guid id, UpdateRoomCategoryCommand command, ISender sender, CancellationToken ct) =>
                 {
-                    var inputWithId = input with { Id = id };
-                    var result = await uc.ExecuteAsync(inputWithId, ct);
+                    var inputWithId = command with { Id = id };
+                    var result = await sender.Send(inputWithId, ct);
                     return result.ToNoContent();
                 })
             .WithTags(Tags.RoomCategories)

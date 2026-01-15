@@ -1,15 +1,19 @@
 ﻿using DevInn.Application.Common.Validation;
 
+using FluentResults;
+
 using FluentValidation;
+
+using Mediator;
 
 namespace DevInn.Application.Features.Auth.Login;
 
-public record LoginInput(string Email, string Password)
+public record LoginCommand(string Email, string Password) : ICommand<Result<LoginResult>>
 {
     public Validation Validate() => new LoginInputValidator().Validate(this).ToFailure();
 };
 
-public sealed class LoginInputValidator : AbstractValidator<LoginInput>
+public sealed class LoginInputValidator : AbstractValidator<LoginCommand>
 {
     public LoginInputValidator()
     {
