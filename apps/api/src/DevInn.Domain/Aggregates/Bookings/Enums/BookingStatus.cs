@@ -5,5 +5,5 @@ public enum BookingStatus
     Scheduled = 1,
     CheckedIn,
     Completed,
-    Cancelled
+    Canceled
 }

@@ -2,11 +2,15 @@
 
 namespace DevInn.Domain.Aggregates.Bookings.ValueObjects;
 
-public readonly record struct Occupancy : IValueObject
+public sealed record Occupancy : IValueObject
 {
     public int Adults { get; private init; }
     public int Children { get; private init; }
     public IReadOnlyCollection<int> ChildrenAges { get; private init; }
+
+    private Occupancy()
+    {
+    }
 
     public Occupancy(int adults, int children, IEnumerable<int>? childrenAges = null)
     {

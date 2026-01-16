@@ -7,9 +7,10 @@ namespace DevInn.Domain.Aggregates.Bookings;
 
 public sealed class Booking : Entity
 {
-    public Guest Guest { get; private set; }
+    public Guid RoomId { get; private set; }
+    public Guest Guest { get; private set; } = null!;
     public StayPeriod StayPeriod { get; private set; }
-    public Occupancy Occupancy { get; private set; }
+    public Occupancy Occupancy { get; private set; } = null!;
     public string? Notes { get; private set; }
     public Money TotalValue { get; private set; }
     public Money PaidValue { get; private set; }
@@ -24,6 +25,7 @@ public sealed class Booking : Entity
     }
 
     public Booking(
+        Guid roomId,
         Guest guest,
         StayPeriod stayPeriod,
         Occupancy occupancy,
@@ -39,6 +41,7 @@ public sealed class Booking : Entity
         TotalValue = totalValue;
         PaidValue = paidValue;
         Source = source;
+        RoomId = roomId;
         Status = BookingStatus.Scheduled;
     }
 

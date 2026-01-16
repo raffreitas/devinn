@@ -1,5 +1,6 @@
 ﻿using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Tenancy.Abstractions;
+using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Inns.Abstractions;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 using DevInn.Infrastructure.Common.Extensions;
@@ -40,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IInnRepository, InnRepository>();
         services.AddScoped<IRoomCategoryRepository, RoomCategoryRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
 
         return services;
     }

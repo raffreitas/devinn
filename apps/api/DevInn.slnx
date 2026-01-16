@@ -3,6 +3,9 @@
         <File Path="compose.yaml" />
         <File Path="Makefile" />
     </Folder>
+    <Folder Name="/Tests/">
+        <Project Path="tests/DevInn.UnitTests/DevInn.UnitTests.csproj" />
+    </Folder>
     <Project Path="src/DevInn.Application/DevInn.Application.csproj" />
     <Project Path="src/DevInn.Domain/DevInn.Domain.csproj" />
     <Project Path="src/DevInn.Infrastructure/DevInn.Infrastructure.csproj" />
