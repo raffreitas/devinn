@@ -10,5 +10,11 @@
     volumes:
       - devinn_pgdata:/var/lib/postgresql
 
+  aspire:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    ports:
+      - "18888:18888"
+      - "4317:18889"
+
 volumes:
   devinn_pgdata:

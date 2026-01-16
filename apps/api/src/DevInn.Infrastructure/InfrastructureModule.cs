@@ -1,4 +1,5 @@
 ﻿using DevInn.Infrastructure.Identity;
+using DevInn.Infrastructure.Observability;
 using DevInn.Infrastructure.Persistence;
 using DevInn.Infrastructure.Tokens;
 
@@ -16,6 +17,7 @@ public static class InfrastructureModule
         services.ConfigurePersistence(configuration);
         services.ConfigureIdentityService(configuration);
         services.ConfigureTokenService(configuration);
+        services.ConfigureObservability(configuration);
 
         return services;
     }
