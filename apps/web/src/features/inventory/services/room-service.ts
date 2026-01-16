@@ -5,6 +5,7 @@ import type {
   UpdateRoomRequest,
   PaginatedResponse,
 } from "../types";
+import type { ApiResponse } from "@/shared/types";
 
 interface GetRoomsParams {
   page?: number;
@@ -15,10 +16,23 @@ interface GetRoomsParams {
 
 export const roomService = {
   getAll: async (params?: GetRoomsParams): Promise<PaginatedResponse<Room>> => {
-    const response = await api.get<PaginatedResponse<Room>>("/api/v1/rooms", {
+    const response = await api.get<ApiResponse<Room[]>>("/api/v1/rooms", {
       params,
     });
-    return response.data;
+
+    const items = response.data.data;
+    const totalCount = response.data.meta?.totalCount ?? 0;
+    const page = response.data.meta?.page ?? 1;
+    const pageSize = response.data.meta?.pageSize ?? 10;
+    const totalPages = response.data.meta?.totalPages ?? 1;
+
+    return {
+      items,
+      totalCount,
+      page,
+      pageSize,
+      totalPages,
+    };
   },
 
   getById: async (id: string): Promise<Room> => {

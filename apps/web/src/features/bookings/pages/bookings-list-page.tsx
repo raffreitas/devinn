@@ -106,7 +106,7 @@ export function BookingsListPage() {
 
       return bookingService.create(innId, data, {
         id: room.id,
-        roomNumber: room.roomNumber,
+        number: room.number,
         categoryName: room.categoryName || "",
         capacity: room.capacity,
         basePrice: room.basePrice,
@@ -256,7 +256,7 @@ export function BookingsListPage() {
                     {bookings.map((booking) => (
                       <TableRow key={booking.id}>
                         <TableCell className="font-medium">
-                          {booking.roomNumber}
+                          {booking.number}
                         </TableCell>
                         <TableCell>{booking.guest.name}</TableCell>
                         <TableCell className="hidden md:table-cell">

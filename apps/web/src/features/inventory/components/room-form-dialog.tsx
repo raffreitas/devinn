@@ -33,7 +33,7 @@ import type { Room } from "../types";
 
 const roomSchema = z.object({
   categoryId: z.string().min(1, "Categoria é obrigatória"),
-  roomNumber: z
+  number: z
     .string()
     .min(1, "Número do quarto é obrigatório")
     .refine((val) => {
@@ -84,7 +84,7 @@ export function RoomFormDialog({
     resolver: zodResolver(roomSchema),
     defaultValues: {
       categoryId: room?.categoryId || "",
-      roomNumber: room?.roomNumber || "",
+      number: room?.number || "",
       capacity: room?.capacity || 2,
       basePrice: room?.basePrice || 0,
       extraGuestPrice: room?.extraGuestPrice || 0,
@@ -146,7 +146,7 @@ export function RoomFormDialog({
 
               <FormField
                 control={form.control}
-                name="roomNumber"
+                name="number"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Número do Quarto</FormLabel>

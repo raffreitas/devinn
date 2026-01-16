@@ -1,4 +1,5 @@
-﻿using DevInn.Application.Features.Inns.Commands.CreateInn;
+﻿using DevInn.Application.Common.Identity;
+using DevInn.Application.Features.Inns.Commands.CreateInn;
 using DevInn.WebApi.Common;
 
 using Mediator;
@@ -14,11 +15,12 @@ public sealed class CreateInnEndpoint : IEndpoint
         app.MapPost(Route, async (CreateInnCommand command, ISender sender, CancellationToken ct) =>
             {
                 var result = await sender.Send(command, ct);
-                return result.ToCreated($"{Route}/{result.Value}");
+                return result.ToCreated(innId => $"{Route}/{innId}");
             })
             .WithTags(Tags.Inns)
             .Produces<ApiResource<Guid>>(StatusCodes.Status201Created)
             .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
-            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity);
+            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)
+            .RequireAuthorization(Policies.SuperAdminOnly);
     }
 }

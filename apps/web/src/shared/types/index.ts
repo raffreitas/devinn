@@ -6,5 +6,13 @@ export type ApiProblem = {
 };
 
 export type ApiResponse<T> = {
-  data?: T;
+  data: T;
+  meta?: Metadata;
 };
+
+export interface Metadata {
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}

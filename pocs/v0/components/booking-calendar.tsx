@@ -7,7 +7,7 @@ import { getRoomCapacity } from "@/app/page"
 
 interface BookingCalendarProps {
   bookings: Booking[]
-  onSelectRoom: (roomNumber: number, date: string) => void
+  onSelectRoom: (number: number, date: string) => void
   onBookingClick: (booking: Booking) => void
 }
 
@@ -38,8 +38,8 @@ export function BookingCalendar({ bookings, onSelectRoom, onBookingClick }: Book
     })
   }, [currentDate, daysInMonth])
 
-  const getBookingBarStyle = (booking: Booking, roomNumber: number) => {
-    if (booking.roomNumber !== roomNumber) return null
+  const getBookingBarStyle = (booking: Booking, number: number) => {
+    if (booking.number !== number) return null
 
     const checkIn = new Date(booking.checkIn)
     const checkOut = new Date(booking.checkOut)
@@ -141,9 +141,8 @@ export function BookingCalendar({ bookings, onSelectRoom, onBookingClick }: Book
                 {days.map(({ day, dayOfWeek, isToday, isWeekend }) => (
                   <div
                     key={day}
-                    className={`w-[46px] shrink-0 py-2 text-center border-r border-border/50 last:border-r-0 ${
-                      isToday ? "bg-primary/20" : isWeekend ? "bg-muted/60" : ""
-                    }`}
+                    className={`w-[46px] shrink-0 py-2 text-center border-r border-border/50 last:border-r-0 ${isToday ? "bg-primary/20" : isWeekend ? "bg-muted/60" : ""
+                      }`}
                   >
                     <div className="text-[10px] uppercase font-medium text-muted-foreground">{dayOfWeek}</div>
                     <div className={`text-sm font-bold ${isToday ? "text-primary" : "text-foreground"}`}>{day}</div>
@@ -154,7 +153,7 @@ export function BookingCalendar({ bookings, onSelectRoom, onBookingClick }: Book
 
             {/* Linhas dos quartos com barras de reserva */}
             {rooms.map((room) => {
-              const roomBookings = bookings.filter((b) => b.roomNumber === room)
+              const roomBookings = bookings.filter((b) => b.number === room)
               const capacity = getRoomCapacity(room)
 
               return (
@@ -179,9 +178,8 @@ export function BookingCalendar({ bookings, onSelectRoom, onBookingClick }: Book
                       <div
                         key={date}
                         onClick={() => onSelectRoom(room, date)}
-                        className={`w-[46px] h-14 shrink-0 border-r border-border/30 last:border-r-0 cursor-pointer transition-colors hover:bg-primary/10 ${
-                          isToday ? "bg-primary/5" : isWeekend ? "bg-muted/30" : ""
-                        }`}
+                        className={`w-[46px] h-14 shrink-0 border-r border-border/30 last:border-r-0 cursor-pointer transition-colors hover:bg-primary/10 ${isToday ? "bg-primary/5" : isWeekend ? "bg-muted/30" : ""
+                          }`}
                         title={`Quarto ${room} - ${new Date(date).toLocaleDateString("pt-BR")} - Clique para nova reserva`}
                       />
                     ))}

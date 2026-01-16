@@ -31,7 +31,7 @@ export interface Booking {
   id: string;
   innId: string;
   roomId: string;
-  roomNumber: string;
+  number: string;
   categoryName: string;
   guest: Guest;
   checkIn: string;

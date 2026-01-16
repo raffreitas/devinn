@@ -2,9 +2,12 @@
 
 public sealed record RoomResponse(
     Guid Id,
+    int Number,
+    string? Name,
+    string Status,
     Guid CategoryId,
     string CategoryName,
-    int Number,
-    string Name,
-    string Status
+    int Capacity,
+    decimal BasePrice,
+    decimal ExtraGuestPrice
 );

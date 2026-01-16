@@ -123,6 +123,9 @@ export function RoomsPage() {
     setDialogOpen(true);
   };
 
+  console.log(roomsData);
+
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -209,7 +212,7 @@ export function RoomsPage() {
                     {roomsData.items.map((room) => (
                       <TableRow key={room.id}>
                         <TableCell className="font-medium">
-                          {room.roomNumber}
+                          {room.number}
                         </TableCell>
                         <TableCell>{room.categoryName}</TableCell>
                         <TableCell className="hidden sm:table-cell">

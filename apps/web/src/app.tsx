@@ -8,7 +8,7 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-      <Toaster richColors />
+      <Toaster richColors theme="light" />
     </QueryClientProvider>
   );
 }

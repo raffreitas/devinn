@@ -16,7 +16,7 @@ export interface Room {
   id: string;
   categoryId: string;
   categoryName?: string;
-  roomNumber: string;
+  number: string;
   capacity: number;
   basePrice: number;
   extraGuestPrice: number;
@@ -28,7 +28,7 @@ export interface Room {
 
 export interface CreateRoomRequest {
   categoryId: string;
-  roomNumber: string;
+  number: string;
   capacity: number;
   basePrice: number;
   extraGuestPrice: number;
@@ -38,7 +38,7 @@ export interface CreateRoomRequest {
 
 export interface UpdateRoomRequest {
   categoryId?: string;
-  roomNumber?: string;
+  number?: string;
   capacity?: number;
   basePrice?: number;
   extraGuestPrice?: number;

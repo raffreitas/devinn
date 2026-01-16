@@ -19,31 +19,46 @@ internal sealed class GetRoomsHandler(IDbConnectionFactory dbConnectionFactory, 
         const string countSql = """
                                 SELECT count(1)
                                 FROM rooms r
-                                WHERE r.inn_id = @TenantId;
+                                WHERE r.inn_id = @TenantId
+                                    AND (@CategoryId IS NULL OR r.category_id = @CategoryId)
+                                    AND (@Status IS NULL OR r.status = @Status);
                                 """;
 
-        const string sql = """
-                           SELECT r.id          AS "Id",
-                                  r.category_id AS "CategoryId",
-                                  rc.Name       AS "CategoryName",
-                                  r.Number      AS "Number",
-                                  r.Name        AS "Name",
-                                  r.Status      AS "Status"
-                           FROM rooms r
-                           JOIN room_categories rc ON r.category_id = rc.Id
+        const string sql = $"""
+                            SELECT r.id                      AS "{nameof(RoomResponse.Id)}",
+                                   r.number                  AS "{nameof(RoomResponse.Number)}",
+                                   r.name                    AS "{nameof(RoomResponse.Name)}",
+                                   r.status                  AS "{nameof(RoomResponse.Status)}",
+                                   r.category_id             AS "{nameof(RoomResponse.CategoryId)}",
+                                   rc.name                   AS "{nameof(RoomResponse.CategoryName)}",
+                                   rc.max_capacity           AS "{nameof(RoomResponse.Capacity)}",
+                                   rc.base_price             AS "{nameof(RoomResponse.BasePrice)}",
+                                   rc.extra_person_price     AS "{nameof(RoomResponse.ExtraGuestPrice)}"
+                            FROM rooms r
+                            JOIN room_categories rc ON r.category_id = rc.Id
                                 AND rc.inn_id = r.inn_id
-                           WHERE r.inn_id = @TenantId
-                           ORDER BY r.Number
-                           OFFSET @Offset
-                           LIMIT @PageSize;
-                           """;
+                            WHERE r.inn_id = @TenantId
+                                AND (@CategoryId IS NULL OR r.category_id = @CategoryId)
+                                AND (@Status IS NULL OR r.status = @Status)
+                            ORDER BY r.Number
+                            OFFSET @Offset
+                            LIMIT @PageSize;
+                            """;
 
         await using var connection = await dbConnectionFactory.OpenConnectionAsync(cancellationToken);
-        var count = await connection.ExecuteScalarAsync<int>(countSql, new { TenantId = tenantContext.Tenant.Id });
+        var count = await connection.ExecuteScalarAsync<int>(countSql,
+            new { TenantId = tenantContext.Tenant.Id, Status = query.Status?.ToString(), query.CategoryId });
 
         var rooms = await connection.QueryAsync<RoomResponse>(
             sql,
-            new { TenantId = tenantContext.Tenant.Id, query.PageSize, query.Offset }
+            new
+            {
+                TenantId = tenantContext.Tenant.Id,
+                Status = query.Status?.ToString(),
+                query.PageSize,
+                query.Offset,
+                query.CategoryId
+            }
         );
 
         var paginatedResult = new PaginatedResult<RoomResponse>(

@@ -26,9 +26,10 @@ public sealed class CreateRoomValidator : AbstractValidator<CreateRoomCommand>
         RuleFor(x => x.Number)
             .GreaterThan(0).WithMessage("Número do quarto deve ser maior que 0")
             .LessThanOrEqualTo(999).WithMessage("Número do quarto não pode exceder 999");
-
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Nome do quarto é obrigatório")
-            .MaximumLength(100).WithMessage("Nome não pode ter mais de 100 caracteres");
+        When(x => !string.IsNullOrWhiteSpace(x.Name), () =>
+        {
+            RuleFor(x => x.Name)
+                .MaximumLength(100).WithMessage("Nome não pode ter mais de 100 caracteres");
+        });
     }
 }

@@ -14,7 +14,7 @@ public sealed class CreateRoomCategoryEndpoint : IEndpoint
         app.MapPost(Route, async (CreateRoomCategoryCommand command, ISender sender, CancellationToken ct) =>
             {
                 var result = await sender.Send(command, ct);
-                return result.ToCreated($"{Route}/{result.Value}");
+                return result.ToCreated(roomCategoryId => $"{Route}/{roomCategoryId}");
             })
             .WithTags(Tags.RoomCategories)
             .WithName("Create Room Category")

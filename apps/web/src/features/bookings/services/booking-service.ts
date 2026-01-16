@@ -121,7 +121,7 @@ export const bookingService = {
     data: CreateBookingRequest,
     room: {
       id: string;
-      roomNumber: string;
+      number: string;
       categoryName: string;
       capacity: number;
       basePrice: number;
@@ -154,7 +154,7 @@ export const bookingService = {
       id: crypto.randomUUID(),
       innId,
       roomId: data.roomId,
-      roomNumber: room.roomNumber,
+      number: room.number,
       categoryName: room.categoryName,
       guest: data.guest,
       checkIn: data.checkIn,

@@ -193,7 +193,7 @@ export function BookingFormDialog({
                           .filter((room) => room.status === "Active")
                           .map((room) => (
                             <SelectItem key={room.id} value={room.id}>
-                              {room.roomNumber} - {room.categoryName} (R${" "}
+                              {room.number} - {room.categoryName} (R${" "}
                               {room.basePrice.toFixed(2)})
                             </SelectItem>
                           ))}

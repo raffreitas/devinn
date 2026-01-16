@@ -101,7 +101,7 @@ export function CalendarPage() {
     try {
       await bookingService.create(innId, data, {
         id: room.id,
-        roomNumber: room.roomNumber,
+        number: room.number,
         categoryName: room.categoryName || "",
         capacity: room.capacity,
         basePrice: room.basePrice,
@@ -218,7 +218,7 @@ export function CalendarPage() {
                     <div className="sticky left-0 bg-background border-b border-r p-2 flex items-center z-10">
                       <div>
                         <div className="font-medium text-sm">
-                          {room.roomNumber}
+                          {room.number}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {room.categoryName}

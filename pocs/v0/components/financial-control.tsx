@@ -274,17 +274,16 @@ export function FinancialControl({
                   {monthBookings.map((booking) => (
                     <tr key={booking.id} className="border-b border-border hover:bg-muted/30">
                       <td className="p-2">{booking.guestName}</td>
-                      <td className="p-2 text-center">{booking.roomNumber}</td>
+                      <td className="p-2 text-center">{booking.number}</td>
                       <td className="p-2 text-right font-medium">{formatCurrency(booking.totalValue)}</td>
                       <td className="p-2 text-right">
                         <span
-                          className={`font-medium ${
-                            booking.paidValue >= booking.totalValue
+                          className={`font-medium ${booking.paidValue >= booking.totalValue
                               ? "text-emerald-600"
                               : booking.paidValue > 0
                                 ? "text-amber-600"
                                 : "text-red-600"
-                          }`}
+                            }`}
                         >
                           {formatCurrency(booking.paidValue)}
                         </span>
