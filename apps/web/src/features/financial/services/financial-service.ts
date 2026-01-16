@@ -1,4 +1,4 @@
-import { startOfMonth, endOfMonth, parseISO } from "date-fns";
+import { startOfMonth, endOfMonth, parseISO, format } from "date-fns";
 import { bookingService } from "@/features/bookings/services/booking-service";
 import { expenseService } from "./expense-service";
 import type {
@@ -14,11 +14,11 @@ export const financialService = {
     month: number,
   ): Promise<MonthlyFinancialData> => {
     const date = new Date(year, month - 1, 1);
-    const startDate = startOfMonth(date).toISOString();
-    const endDate = endOfMonth(date).toISOString();
+    const startDate = format(startOfMonth(date), "yyyy-MM-dd");
+    const endDate = format(endOfMonth(date), "yyyy-MM-dd");
 
     // Get bookings for revenue calculation
-    const bookings = await bookingService.getAll(innId, {
+    const bookings = await bookingService.getAll({
       startDate,
       endDate,
     });

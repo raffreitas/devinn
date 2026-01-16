@@ -16,13 +16,19 @@ internal sealed class BookingRepository(ApplicationDbContext dbContext) : IBooki
         => await dbContext.Bookings.FindAsync([bookingId], cancellationToken);
 
     public async Task<bool> HasOverlappingAsync(Guid roomId, DateTimeOffset checkIn, DateTimeOffset checkOut,
+        Guid? excludeBookingId = null,
         CancellationToken cancellationToken = default)
     {
+        // PostgreSQL requires UTC for timestamp with time zone
+        var checkInUtc = checkIn.ToUniversalTime();
+        var checkOutUtc = checkOut.ToUniversalTime();
+        
         return await dbContext.Bookings.AnyAsync(b =>
                 b.RoomId == roomId &&
+                (excludeBookingId == null || b.Id != excludeBookingId) &&
                 b.Status != BookingStatus.Canceled &&
-                b.StayPeriod.CheckIn < checkOut &&
-                b.StayPeriod.CheckOut > checkIn,
+                b.StayPeriod.CheckIn < checkOutUtc &&
+                b.StayPeriod.CheckOut > checkInUtc,
             cancellationToken);
     }
 }

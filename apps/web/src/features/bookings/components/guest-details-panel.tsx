@@ -95,7 +95,7 @@ export function GuestDetailsPanel({ booking }: GuestDetailsPanelProps) {
             <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div>
               <p className="text-sm font-medium">
-                {booking.numberOfGuests} hóspedes
+                {booking.adults + booking.children} hóspedes
               </p>
               {pricing.numberOfExtraGuests > 0 && (
                 <p className="text-xs text-muted-foreground">

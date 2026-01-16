@@ -3,6 +3,7 @@ using DevInn.Domain.Aggregates.Bookings;
 using DevInn.Domain.Aggregates.Inns;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Infrastructure.Persistence.Configurations;
+using DevInn.Infrastructure.Persistence.Converters;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -28,5 +29,12 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         modelBuilder.Entity<Booking>().HasQueryFilter(b => b.InnId == tenantContext.Tenant.Id);
 
         base.OnModelCreating(modelBuilder);
+    }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        // PostgreSQL requires UTC for timestamp with time zone
+        configurationBuilder.Properties<DateTimeOffset>()
+            .HaveConversion<DateTimeOffsetToUtcConverter>();
     }
 }

@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
+import { roomService } from "@/features/inventory/services/room-service";
 import { Button } from "@/shared/components/ui/button";
 import { Calendar } from "@/shared/components/ui/calendar";
 import {
@@ -18,7 +20,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -37,9 +38,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { cn } from "@/shared/lib/utils";
-import { roomService } from "@/features/inventory/services/room-service";
 import { useTenant } from "@/shared/contexts/tenant-context";
+import { cn } from "@/shared/lib/utils";
 import { bookingService } from "../services/booking-service";
 import type { Booking, CreateBookingRequest } from "../types";
 
@@ -48,16 +48,18 @@ const bookingSchema = z
     roomId: z.string().min(1, "Quarto é obrigatório"),
     checkIn: z.date({ error: "Data de check-in é obrigatória" }),
     checkOut: z.date({ error: "Data de check-out é obrigatória" }),
-    numberOfGuests: z
-      .number()
-      .int()
-      .min(1, "Número de hóspedes deve ser no mínimo 1"),
+    adults: z.number().int().min(1, "Mínimo 1 adulto"),
+    children: z.number().int().min(0, "Mínimo 0"),
+    childrenAges: z
+      .array(z.object({ age: z.number().min(0, "Idade inválida") }))
+      .optional(),
     guestName: z.string().min(1, "Nome do hóspede é obrigatório"),
-    guestEmail: z.string().email("E-mail inválido"),
+    guestEmail: z
+      .email("E-mail inválido").optional()
+      .or(z.literal("")),
     guestPhone: z.string().min(10, "Telefone deve ter no mínimo 10 dígitos"),
-    guestDocument: z
-      .string()
-      .min(11, "Documento deve ter no mínimo 11 dígitos"),
+    guestDocument: z.string().optional(),
+    guestBirthDate: z.string().optional(), // YYYY-MM-DD
     notes: z.string().optional(),
   })
   .refine((data) => data.checkOut > data.checkIn, {
@@ -98,29 +100,54 @@ export function BookingFormDialog({
       checkIn:
         preselectedDate || (booking ? new Date(booking.checkIn) : undefined),
       checkOut: booking ? new Date(booking.checkOut) : undefined,
-      numberOfGuests: booking?.numberOfGuests || 2,
+      adults: booking?.adults || 2,
+      children: booking?.children || 0,
+      childrenAges: booking?.childrenAges?.map((age) => ({ age })) || [],
       guestName: booking?.guest.name || "",
       guestEmail: booking?.guest.email || "",
       guestPhone: booking?.guest.phone || "",
       guestDocument: booking?.guest.document || "",
+      guestBirthDate: booking?.guest.birthDate || "",
       notes: booking?.notes || "",
     },
   });
 
+  const { fields: childrenAgeFields, replace: replaceChildrenAges } =
+    useFieldArray({
+      control: form.control,
+      name: "childrenAges",
+    });
+
   const selectedRoomId = form.watch("roomId");
   const checkIn = form.watch("checkIn");
   const checkOut = form.watch("checkOut");
+  const childrenCount = form.watch("children");
 
   const selectedRoom = roomsData?.items.find((r) => r.id === selectedRoomId);
 
+  // Sync children ages fields with children count
+  useEffect(() => {
+    const currentAges = form.getValues("childrenAges") || [];
+    if (childrenCount > currentAges.length) {
+      const toAdd = childrenCount - currentAges.length;
+      const newAges = [...currentAges, ...Array(toAdd).fill({ age: 0 })];
+      replaceChildrenAges(newAges);
+    } else if (childrenCount < currentAges.length) {
+      const newAges = currentAges.slice(0, childrenCount);
+      replaceChildrenAges(newAges);
+    }
+  }, [childrenCount, replaceChildrenAges, form]);
+
   const handleSubmit = async (data: BookingFormData) => {
     // Validate conflict
+    const formattedCheckIn = format(data.checkIn, "yyyy-MM-dd");
+    const formattedCheckOut = format(data.checkOut, "yyyy-MM-dd");
+
     if (innId && checkIn && checkOut) {
-      const hasConflict = bookingService.checkConflict(
-        innId,
+      const hasConflict = await bookingService.checkConflict(
         data.roomId,
-        data.checkIn.toISOString(),
-        data.checkOut.toISOString(),
+        formattedCheckIn,
+        formattedCheckOut,
         booking?.id,
       );
 
@@ -136,13 +163,19 @@ export function BookingFormDialog({
       roomId: data.roomId,
       guest: {
         name: data.guestName,
-        email: data.guestEmail,
+        email: data.guestEmail || undefined,
         phone: data.guestPhone,
-        document: data.guestDocument,
+        document: data.guestDocument || undefined,
+        birthDate: data.guestBirthDate || undefined,
       },
-      checkIn: data.checkIn.toISOString(),
-      checkOut: data.checkOut.toISOString(),
-      numberOfGuests: data.numberOfGuests,
+      checkIn: formattedCheckIn,
+      checkOut: formattedCheckOut,
+      adults: data.adults,
+      children: data.children,
+      childrenAges:
+        data.children > 0 && data.childrenAges
+          ? data.childrenAges.map((x) => x.age)
+          : undefined,
       notes: data.notes,
     };
 
@@ -152,7 +185,7 @@ export function BookingFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {booking ? "Editar Reserva" : "Nova Reserva"}
@@ -285,33 +318,84 @@ export function BookingFormDialog({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="numberOfGuests"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nº de Hóspedes</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={selectedRoom?.capacity || 10}
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      {selectedRoom && (
-                        <FormDescription>
-                          Capacidade: {selectedRoom.capacity} pessoas
-                        </FormDescription>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="adults"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Adultos</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={selectedRoom?.capacity || 10}
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="children"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Crianças</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={10}
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
+
+              {childrenCount > 0 && (
+                <div className="space-y-2 p-4 border rounded-md bg-muted/20">
+                  <h4 className="text-sm font-medium">Idade das Crianças</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {childrenAgeFields.map((field, index) => (
+                      <FormField
+                        key={field.id}
+                        control={form.control}
+                        name={`childrenAges.${index}.age`}
+                        render={({ field: subField }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder={`Idade ${index + 1}`}
+                                min={0}
+                                max={17}
+                                {...subField}
+                                onChange={(e) =>
+                                  subField.onChange(Number(e.target.value))
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Guest Information Section */}
@@ -327,6 +411,20 @@ export function BookingFormDialog({
                       <FormLabel>Nome Completo</FormLabel>
                       <FormControl>
                         <Input placeholder="João Silva" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="guestBirthDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data de Nascimento</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

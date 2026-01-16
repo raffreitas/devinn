@@ -4,9 +4,10 @@ export type PaymentMethod = "pix" | "cash" | "credit_card" | "debit_card";
 
 export interface Guest {
   name: string;
-  email: string;
+  email?: string;
   phone: string;
-  document: string;
+  document?: string;
+  birthDate?: string;
 }
 
 export interface PricingBreakdown {
@@ -36,7 +37,9 @@ export interface Booking {
   guest: Guest;
   checkIn: string;
   checkOut: string;
-  numberOfGuests: number;
+  adults: number;
+  children: number;
+  childrenAges?: number[];
   pricing: PricingBreakdown;
   status: BookingStatus;
   paymentStatus: PaymentStatus;
@@ -52,7 +55,9 @@ export interface CreateBookingRequest {
   guest: Guest;
   checkIn: string;
   checkOut: string;
-  numberOfGuests: number;
+  adults: number;
+  children: number;
+  childrenAges?: number[];
   notes?: string;
 }
 
@@ -60,7 +65,9 @@ export interface UpdateBookingRequest {
   guest?: Guest;
   checkIn?: string;
   checkOut?: string;
-  numberOfGuests?: number;
+  adults?: number;
+  children?: number;
+  childrenAges?: number[];
   status?: BookingStatus;
   notes?: string;
 }

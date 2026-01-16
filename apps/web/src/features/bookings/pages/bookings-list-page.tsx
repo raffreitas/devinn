@@ -81,7 +81,7 @@ export function BookingsListPage() {
     queryKey: ["bookings", innId, filterStatus, filterPaymentStatus],
     queryFn: () => {
       if (!innId) return [];
-      return bookingService.getAll(innId, {
+      return bookingService.getAll({
         status:
           filterStatus !== "all" ? (filterStatus as BookingStatus) : undefined,
         paymentStatus:
@@ -104,14 +104,7 @@ export function BookingsListPage() {
       const room = roomsData?.items.find((r) => r.id === data.roomId);
       if (!room) throw new Error("Quarto não encontrado");
 
-      return bookingService.create(innId, data, {
-        id: room.id,
-        number: room.number,
-        categoryName: room.categoryName || "",
-        capacity: room.capacity,
-        basePrice: room.basePrice,
-        extraGuestPrice: room.extraGuestPrice,
-      });
+      return bookingService.create(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
@@ -125,8 +118,7 @@ export function BookingsListPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      if (!innId) throw new Error("Inn ID não encontrado");
-      return bookingService.delete(innId, id);
+      return bookingService.delete(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });

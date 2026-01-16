@@ -40,17 +40,18 @@ internal sealed class CreateBookingHandler(
 
         // Map value objects
         var guest = new Guest(
-            command.GuestName,
-            command.Phone,
-            command.Email,
-            command.Document,
-            command.BirthDate);
+            command.Guest.Name,
+            command.Guest.Phone,
+            command.Guest.Email,
+            command.Guest.Document,
+            command.Guest.BirthDate);
 
         var stay = new StayPeriod(command.CheckIn, command.CheckOut);
         var occupancy = new Occupancy(command.Adults, command.Children, command.ChildrenAges);
 
         // Availability check to prevent overbooking
-        var hasConflict = await bookingRepository.HasOverlappingAsync(room.Id, stay.CheckIn, stay.CheckOut, cancellationToken);
+        var hasConflict = await bookingRepository.HasOverlappingAsync(room.Id, stay.CheckIn, stay.CheckOut,
+            cancellationToken: cancellationToken);
         if (hasConflict)
             return Result.Fail(new ConflictError("O quarto não está disponível nas datas solicitadas."));
 

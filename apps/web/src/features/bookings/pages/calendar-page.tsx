@@ -50,9 +50,9 @@ export function CalendarPage() {
     queryKey: ["bookings", innId, currentMonth],
     queryFn: () => {
       if (!innId) return [];
-      return bookingService.getAll(innId, {
-        startDate: monthStart.toISOString(),
-        endDate: monthEnd.toISOString(),
+      return bookingService.getAll({
+        startDate: format(monthStart, "yyyy-MM-dd"),
+        endDate: format(monthEnd, "yyyy-MM-dd"),
       });
     },
     enabled: !!innId,
@@ -99,14 +99,7 @@ export function CalendarPage() {
     }
 
     try {
-      await bookingService.create(innId, data, {
-        id: room.id,
-        number: room.number,
-        categoryName: room.categoryName || "",
-        capacity: room.capacity,
-        basePrice: room.basePrice,
-        extraGuestPrice: room.extraGuestPrice,
-      });
+      await bookingService.create(data);
 
       toast.success("Reserva criada com sucesso");
       setFormDialogOpen(false);
