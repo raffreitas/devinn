@@ -1,46 +1,50 @@
 ﻿using DevInn.Domain.Aggregates.Bookings.Enums;
+using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.SeedWork;
+using DevInn.Domain.Shared.ValueObjects;
 
 namespace DevInn.Domain.Aggregates.Bookings;
 
 public sealed class Booking : Entity
 {
-    public string GuestName { get; private set; }
-    public string Phone { get; set; }
-    public string? Email { get; private set; }
-    public string? Document { get; private set; }
-    public DateOnly? BirthDate { get; private set; }
-    public DateOnly CheckIn { get; private set; }
-    public DateOnly CheckOut { get; private set; }
-    public int Adults { get; private set; }
-    public int Children { get; private set; }
-    public List<int>? ChildrenAges { get; private set; }
-    public string? AgesText { get; private set; }
+    public Guest Guest { get; private set; }
+    public StayPeriod StayPeriod { get; private set; }
+    public Occupancy Occupancy { get; private set; }
     public string? Notes { get; private set; }
-    public decimal TotalValue { get; private set; }
-    public decimal PaidValue { get; private set; }
+    public Money TotalValue { get; private set; }
+    public Money PaidValue { get; private set; }
     public BookingSource Source { get; private set; }
-    public bool CancellationStatus { get; private set; }
-    public int NumberOfNights => (CheckOut.AddDays(-CheckIn.Day)).Day;
+    public BookingStatus Status { get; private set; }
+    public int NumberOfNights => StayPeriod.TotalNights();
     public decimal BalanceDue => TotalValue - PaidValue;
-    public BookingStatus Status => CalculateBookingStatus();
+    public PaymentStatus PaymentStatus => CalculatePaymentStatus();
 
-    public PaymentStatus PaymentStatus => PaidValue == 0
-        ? PaymentStatus.Pending
-        : (PaidValue < TotalValue ? PaymentStatus.Partial : PaymentStatus.Paid);
-
-    private BookingStatus CalculateBookingStatus()
+    private Booking()
     {
-        if (CancellationStatus)
-            return BookingStatus.Cancelled;
+    }
 
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+    public Booking(
+        Guest guest,
+        StayPeriod stayPeriod,
+        Occupancy occupancy,
+        Money totalValue,
+        Money paidValue,
+        BookingSource source,
+        string? notes = null)
+    {
+        Guest = guest;
+        StayPeriod = stayPeriod;
+        Occupancy = occupancy;
+        Notes = notes;
+        TotalValue = totalValue;
+        PaidValue = paidValue;
+        Source = source;
+        Status = BookingStatus.Scheduled;
+    }
 
-        if (today < CheckIn)
-            return BookingStatus.Scheduled;
-        if (today >= CheckIn && today < CheckOut)
-            return BookingStatus.CheckedIn;
-
-        return BookingStatus.Completed;
+    private PaymentStatus CalculatePaymentStatus()
+    {
+        if (PaidValue == 0) return PaymentStatus.Pending;
+        return PaidValue < TotalValue ? PaymentStatus.Partial : PaymentStatus.Paid;
     }
 }

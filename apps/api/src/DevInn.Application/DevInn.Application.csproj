@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Features\Bookings\Commands\" />
       <Folder Include="Features\Inns\Commands\" />
       <Folder Include="Features\Inns\Queries\" />
     </ItemGroup>
