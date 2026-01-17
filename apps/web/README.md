@@ -141,8 +141,8 @@ xl: 1280px  /* Desktop grande */
   const extraTotal = extraGuestPrice * extraGuests * nights;
   const total = baseTotal + extraTotal;
   ```
-- ✅ **Status da reserva**: scheduled, hosting, completed, cancelled
-- ✅ **Status de pagamento**: pending, partial, paid
+- ✅ **Status da reserva**: scheduled, hosting, completed, Canceled
+- ✅ **Status de pagamento**: Pending, Partial, Paid
 - ✅ **Detalhes do hóspede**: Nome completo, email, telefone, CPF
 - ✅ **Registro de pagamentos**: Adicionar pagamentos parciais com método (PIX, Dinheiro, Cartão)
 - ✅ **Filtros**: Por status, payment status, busca por nome de hóspede
@@ -177,8 +177,8 @@ xl: 1280px  /* Desktop grande */
     method: 'pix' | 'cash' | 'credit_card' | 'debit_card';
     date: string;
   }>;
-  status: 'scheduled' | 'hosting' | 'completed' | 'cancelled';
-  paymentStatus: 'pending' | 'partial' | 'paid';
+  status: 'scheduled' | 'hosting' | 'completed' | 'Canceled';
+  paymentStatus: 'Pending' | 'Partial' | 'Paid';
 }
 ```
 
@@ -188,9 +188,9 @@ xl: 1280px  /* Desktop grande */
 - ✅ **Navegação mensal**: Botões anterior/próximo/hoje
 - ✅ **Indicador visual de "hoje"**: Coluna destacada
 - ✅ **Barras de reserva coloridas**:
-  - 🟢 Verde (`bg-green-500`): Pagamento completo (paid)
-  - 🟡 Amarelo (`bg-yellow-500`): Pagamento parcial (partial)
-  - 🔴 Vermelho (`bg-red-500`): Pagamento pendente (pending)
+  - 🟢 Verde (`bg-green-500`): Pagamento completo (Paid)
+  - 🟡 Amarelo (`bg-yellow-500`): Pagamento parcial (Partial)
+  - 🔴 Vermelho (`bg-red-500`): Pagamento pendente (Pending)
 - ✅ **Interações**:
   - Click em célula vazia → Abre dialog de criação com quarto/data pré-preenchidos
   - Click em barra → Abre painel de detalhes do hóspede (GuestDetailsPanel)
@@ -248,7 +248,7 @@ xl: 1280px  /* Desktop grande */
 // Key: expenses_<inn_id>
 {
   id: string;
-  category: 'water' | 'energy' | 'gas' | 'internet' | 'maintenance' | 
+  category: 'water' | 'energy' | 'gas' | 'internet' | 'maintenance' |
             'employees' | 'supplies' | 'marketing' | 'taxes' | 'others';
   description: string;
   amount: number;
@@ -261,9 +261,9 @@ xl: 1280px  /* Desktop grande */
 - ✅ Métodos suportados: PIX, Dinheiro, Cartão de Crédito, Cartão de Débito
 - ✅ Validação: Soma dos pagamentos não pode exceder total
 - ✅ Atualização automática de `paymentStatus`:
-  - `pending`: Nenhum pagamento
-  - `partial`: 0 < pagamentos < total
-  - `paid`: pagamentos >= total
+  - `Pending`: Nenhum pagamento
+  - `Partial`: 0 < pagamentos < total
+  - `Paid`: pagamentos >= total
 
 ## 🎯 Regras de Negócio Implementadas
 
@@ -283,16 +283,16 @@ const total = baseTotal + extraTotal;
 ```typescript
 // Serviço: bookingService.checkConflict()
 function checkConflict(roomId: string, checkIn: Date, checkOut: Date, excludeId?: string): boolean {
-  const bookings = getBookings(innId).filter(b => 
-    b.roomId === roomId && 
+  const bookings = getBookings(innId).filter(b =>
+    b.roomId === roomId &&
     b.id !== excludeId &&
-    b.status !== 'cancelled'
+    b.status !== 'Canceled'
   );
-  
+
   return bookings.some(booking => {
     const existingCheckIn = parseISO(booking.checkIn);
     const existingCheckOut = parseISO(booking.checkOut);
-    
+
     // Verifica sobreposição de intervalos
     return (
       (checkIn >= existingCheckIn && checkIn < existingCheckOut) ||
@@ -539,8 +539,8 @@ const schema = z.object({
 
 ---
 
-**Desenvolvido com React 19, TypeScript, Tailwind v4 e shadcn/ui** 🚀  
-**Arquitetura: Feature-folder pattern + Clean Architecture** 🏗️  
+**Desenvolvido com React 19, TypeScript, Tailwind v4 e shadcn/ui** 🚀
+**Arquitetura: Feature-folder pattern + Clean Architecture** 🏗️
 **Status: MVP Completo - 12/12 todos finalizados** ✅
 
 ### Autenticação

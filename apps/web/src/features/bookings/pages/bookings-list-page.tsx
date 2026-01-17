@@ -194,7 +194,7 @@ export function BookingsListPage() {
                   <SelectItem value="scheduled">Agendada</SelectItem>
                   <SelectItem value="hosting">Hospedando</SelectItem>
                   <SelectItem value="completed">Concluída</SelectItem>
-                  <SelectItem value="cancelled">Cancelada</SelectItem>
+                  <SelectItem value="Canceled">Cancelada</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -208,9 +208,9 @@ export function BookingsListPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos Pagamentos</SelectItem>
-                  <SelectItem value="paid">Pago</SelectItem>
-                  <SelectItem value="partial">Parcial</SelectItem>
-                  <SelectItem value="pending">Pendente</SelectItem>
+                  <SelectItem value="Paid">Pago</SelectItem>
+                  <SelectItem value="Partial">Parcial</SelectItem>
+                  <SelectItem value="Pending">Pendente</SelectItem>
                 </SelectContent>
               </Select>
             </div>

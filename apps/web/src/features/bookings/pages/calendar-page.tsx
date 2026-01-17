@@ -117,7 +117,7 @@ export function CalendarPage() {
 
     return bookings.find((booking) => {
       if (booking.roomId !== roomId) return false;
-      if (booking.status === "cancelled") return false;
+      if (booking.status === "Canceled") return false;
 
       const checkIn = parseISO(booking.checkIn);
       const checkOut = parseISO(booking.checkOut);

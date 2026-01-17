@@ -16,9 +16,9 @@ const paymentStatusConfig: Record<
   PaymentStatus,
   { label: string; variant: "default" | "secondary" | "destructive" }
 > = {
-  paid: { label: "Pago", variant: "default" },
-  partial: { label: "Parcial", variant: "secondary" },
-  pending: { label: "Pendente", variant: "destructive" },
+  Paid: { label: "Pago", variant: "default" },
+  Partial: { label: "Parcial", variant: "secondary" },
+  Pending: { label: "Pendente", variant: "destructive" },
 };
 
 interface GuestDetailsPanelProps {

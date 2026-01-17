@@ -3,9 +3,9 @@ import { cn } from "@/shared/lib/utils";
 import type { Booking, PaymentStatus } from "../types";
 
 const paymentStatusColors: Record<PaymentStatus, string> = {
-  paid: "bg-green-500 hover:bg-green-600",
-  partial: "bg-yellow-500 hover:bg-yellow-600",
-  pending: "bg-red-500 hover:bg-red-600",
+  Paid: "bg-green-500 hover:bg-green-600",
+  Partial: "bg-yellow-500 hover:bg-yellow-600",
+  Pending: "bg-red-500 hover:bg-red-600",
 };
 
 interface ReservationBarProps {
