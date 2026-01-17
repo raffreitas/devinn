@@ -74,6 +74,7 @@ export interface UpdateBookingRequest {
   childrenAges?: number[];
   status?: BookingStatus;
   notes?: string;
+  roomId?: string;
 }
 
 export interface BookingFilters {

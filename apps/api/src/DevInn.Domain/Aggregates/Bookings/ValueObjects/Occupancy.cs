@@ -6,7 +6,7 @@ public sealed record Occupancy : IValueObject
 {
     public int Adults { get; private init; }
     public int Children { get; private init; }
-    public IReadOnlyCollection<int> ChildrenAges { get; private init; }
+    public IReadOnlyCollection<int> ChildrenAges { get; private init; } = [];
 
     private Occupancy()
     {

@@ -171,7 +171,7 @@ export function GuestDetailsPanel({ booking }: GuestDetailsPanelProps) {
             </div>
           </div>
 
-          {payments.length > 0 && (
+          {payments?.length > 0 && (
             <>
               <Separator />
               <div className="space-y-2">

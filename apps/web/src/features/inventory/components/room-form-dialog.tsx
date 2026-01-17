@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/shared/components/ui/button";
@@ -14,7 +15,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -93,6 +93,19 @@ export function RoomFormDialog({
     },
   });
 
+  // Reset form when editing a room or when room prop changes (handles async arrival)
+  useEffect(() => {
+    form.reset({
+      categoryId: room?.categoryId || "",
+      number: room?.number || "",
+      capacity: room?.capacity || 2,
+      basePrice: room?.basePrice ?? 0,
+      extraGuestPrice: room?.extraGuestPrice ?? 0,
+      status: room?.status || "Active",
+      description: room?.description || "",
+    });
+  }, [room, form]);
+
   const handleSubmit = async (data: RoomFormData) => {
     await onSubmit(data);
     form.reset();
@@ -127,7 +140,7 @@ export function RoomFormDialog({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full h-9" data-size="default">
                           <SelectValue placeholder="Selecione uma categoria" />
                         </SelectTrigger>
                       </FormControl>
@@ -153,7 +166,6 @@ export function RoomFormDialog({
                     <FormControl>
                       <Input placeholder="Ex: 101" {...field} />
                     </FormControl>
-                    <FormDescription>Entre 1 e 999</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -176,7 +188,6 @@ export function RoomFormDialog({
                         onChange={(e) => field.onChange(Number(e.target.value))}
                       />
                     </FormControl>
-                    <FormDescription>Número de pessoas (1-10)</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -193,7 +204,7 @@ export function RoomFormDialog({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full h-9" data-size="default">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>

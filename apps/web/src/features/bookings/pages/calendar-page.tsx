@@ -7,7 +7,6 @@ import {
   addMonths,
   subMonths,
   isToday,
-  isSameDay,
   parseISO,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -26,7 +25,7 @@ import { roomService } from "@/features/inventory/services/room-service";
 import { bookingService } from "../services/booking-service";
 import { ReservationBar } from "../components/reservation-bar";
 import { BookingFormDialog } from "../components/booking-form-dialog";
-import type { Booking, CreateBookingRequest } from "../types";
+import type { Booking, CreateBookingRequest, UpdateBookingRequest } from "../types";
 import { cn } from "@/shared/lib/utils";
 import { toast } from "sonner";
 
@@ -36,10 +35,13 @@ export function CalendarPage() {
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [preselectedRoom, setPreselectedRoom] = useState<string | undefined>();
   const [preselectedDate, setPreselectedDate] = useState<Date | undefined>();
+  const [editingBooking, setEditingBooking] = useState<Booking | undefined>();
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const dayWidth = 46; // fixed day cell width (px) used to position booking bars
+
 
   const { data: roomsData } = useQuery({
     queryKey: ["rooms"],
@@ -85,11 +87,14 @@ export function CalendarPage() {
   };
 
   const handleBookingClick = (booking: Booking) => {
-    // Open details dialog (to be implemented)
-    console.log("Booking clicked:", booking);
+    // Open booking in edit mode
+    setEditingBooking(booking);
+    setPreselectedRoom(booking.roomId);
+    setPreselectedDate(new Date(booking.checkIn));
+    setFormDialogOpen(true);
   };
 
-  const handleSubmit = async (data: CreateBookingRequest) => {
+  const handleCreate = async (data: CreateBookingRequest) => {
     if (!innId) return;
 
     const room = roomsData?.items.find((r) => r.id === data.roomId);
@@ -106,6 +111,19 @@ export function CalendarPage() {
       refetch();
     } catch (error) {
       toast.error((error as Error).message || "Erro ao criar reserva");
+    }
+  };
+
+  const handleUpdate = async (id: string, data: UpdateBookingRequest) => {
+    try {
+      await bookingService.update(id, data);
+
+      toast.success("Reserva atualizada com sucesso");
+      setFormDialogOpen(false);
+      setEditingBooking(undefined);
+      refetch();
+    } catch (error) {
+      toast.error((error as Error).message || "Erro ao atualizar reserva");
     }
   };
 
@@ -126,10 +144,7 @@ export function CalendarPage() {
     });
   };
 
-  const isBookingStart = (booking: Booking, date: Date): boolean => {
-    const checkIn = parseISO(booking.checkIn);
-    return isSameDay(checkIn, date);
-  };
+
 
   if (!innId) {
     return (
@@ -182,73 +197,107 @@ export function CalendarPage() {
               <div
                 className="grid"
                 style={{
-                  gridTemplateColumns:
-                    "120px repeat(auto-fit, minmax(40px, 1fr))",
+                  gridTemplateColumns: "120px 1fr",
                 }}
               >
                 {/* Header Row - Days */}
                 <div className="sticky left-0 bg-background border-b border-r p-2 font-medium text-sm z-10">
                   Quarto
                 </div>
-                {daysInMonth.map((day) => (
+                <div className="border-b" style={{ minWidth: `${daysInMonth.length * dayWidth}px` }}>
                   <div
-                    key={day.toISOString()}
-                    className={cn(
-                      "border-b border-r p-2 text-center text-xs font-medium",
-                      isToday(day) && "bg-primary/10",
-                    )}
+                    className="grid"
+                    style={{
+                      gridTemplateColumns: `repeat(${daysInMonth.length}, ${dayWidth}px)`,
+                    }}
                   >
-                    <div>{format(day, "d")}</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {format(day, "EEE", { locale: ptBR })}
-                    </div>
-                  </div>
-                ))}
-
-                {/* Room Rows */}
-                {activeRooms.map((room) => (
-                  <div key={room.id} className="contents">
-                    <div className="sticky left-0 bg-background border-b border-r p-2 flex items-center z-10">
-                      <div>
-                        <div className="font-medium text-sm">{room.number}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {room.categoryName}
+                    {daysInMonth.map((day) => (
+                      <div
+                        key={day.toISOString()}
+                        className={cn(
+                          "border-b border-r p-2 text-center text-xs font-medium w-11.5",
+                          isToday(day) && "bg-primary/10",
+                        )}
+                      >
+                        <div>{format(day, "d")}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {format(day, "EEE", { locale: ptBR })}
                         </div>
                       </div>
-                    </div>
-                    {daysInMonth.map((day) => {
-                      const booking = getBookingsForRoomAndDate(room.id, day);
-                      const isStart = booking
-                        ? isBookingStart(booking, day)
-                        : false;
+                    ))}
+                  </div>
+                </div>
 
-                      return (
-                        <div
-                          key={`${room.id}-${day.toISOString()}`}
-                          className={cn(
-                            "border-b border-r p-1 relative min-h-15 cursor-pointer hover:bg-accent/50",
-                            isToday(day) && "bg-primary/5",
-                          )}
-                          onClick={() =>
-                            !booking && handleCellClick(room.id, day)
-                          }
-                        >
-                          {booking && isStart && (
+                {/* Room Rows */}
+                {activeRooms.map((room) => {
+                  const roomBookings = bookings
+                    ? bookings.filter((b) => b.roomId === room.id && b.status !== "Canceled")
+                    : [];
+
+                  return (
+                    <div key={room.id} className="contents">
+                      <div className="sticky left-0 bg-background border-b border-r p-2 flex items-center z-10">
+                        <div>
+                          <div className="font-medium text-sm">{room.number}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {room.categoryName}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="border-b relative" style={{ minWidth: `${daysInMonth.length * dayWidth}px` }}>
+                        <div className="grid" style={{ gridTemplateColumns: `repeat(${daysInMonth.length}, ${dayWidth}px)` }}>
+                          {daysInMonth.map((day) => {
+                            const booking = getBookingsForRoomAndDate(room.id, day);
+
+                            return (
+                              <div
+                                key={`${room.id}-${day.toISOString()}`}
+                                className={cn(
+                                  "border-r p-1 relative min-h-15 cursor-pointer hover:bg-accent/50 w-11.5 h-14",
+                                  isToday(day) && "bg-primary/5",
+                                )}
+                                onClick={() => !booking && handleCellClick(room.id, day)}
+                                title={`Quarto ${room.number} - ${format(day, "dd/MM/yyyy")}`}
+                              >
+                                {!booking && (
+                                  <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                    <Plus className="h-4 w-4 text-muted-foreground" />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Booking bars overlay */}
+                        {roomBookings.map((booking) => {
+                          const checkIn = parseISO(booking.checkIn);
+                          const checkOut = parseISO(booking.checkOut);
+
+                          // Skip bookings fully outside the month
+                          if (checkOut < monthStart || checkIn > monthEnd) return null;
+
+                          const startDay = checkIn < monthStart ? 1 : checkIn.getDate();
+                          const endDay = checkOut > monthEnd ? daysInMonth.length : checkOut.getDate() - 1;
+
+                          const left = (startDay - 1) * dayWidth + 4;
+                          const width = (endDay - startDay + 1) * dayWidth - 8;
+
+                          return (
                             <ReservationBar
+                              key={booking.id}
                               booking={booking}
                               onClick={() => handleBookingClick(booking)}
+                              left={left}
+                              width={width}
                             />
-                          )}
-                          {!booking && (
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                              <Plus className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -266,8 +315,17 @@ export function CalendarPage() {
 
       <BookingFormDialog
         open={formDialogOpen}
-        onOpenChange={setFormDialogOpen}
-        onSubmit={handleSubmit}
+        onOpenChange={(open) => {
+          setFormDialogOpen(open);
+          if (!open) {
+            setEditingBooking(undefined);
+            setPreselectedRoom(undefined);
+            setPreselectedDate(undefined);
+          }
+        }}
+        onSubmit={handleCreate}
+        onUpdate={handleUpdate}
+        booking={editingBooking}
         preselectedRoom={preselectedRoom}
         preselectedDate={preselectedDate}
       />

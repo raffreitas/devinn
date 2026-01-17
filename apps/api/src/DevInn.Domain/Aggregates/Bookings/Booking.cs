@@ -45,6 +45,27 @@ public sealed class Booking : Entity
         Status = BookingStatus.Scheduled;
     }
 
+    public void Update(
+        Guid roomId,
+        Guest guest,
+        StayPeriod stayPeriod,
+        Occupancy occupancy,
+        Money totalValue,
+        BookingSource source,
+        string? notes = null)
+    {
+        if (Status == BookingStatus.Canceled || Status == BookingStatus.CheckedIn || Status == BookingStatus.Completed)
+            throw new DomainException("Não é possível alterar uma reserva que não está em estado agendado.");
+
+        RoomId = roomId;
+        Guest = guest;
+        StayPeriod = stayPeriod;
+        Occupancy = occupancy;
+        Notes = notes;
+        TotalValue = totalValue;
+        Source = source;
+    }
+
     private PaymentStatus CalculatePaymentStatus()
     {
         if (PaidValue == 0) return PaymentStatus.Pending;

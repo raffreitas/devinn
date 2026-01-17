@@ -1,44 +1,43 @@
-import { differenceInDays, parseISO, startOfDay } from "date-fns";
+import { Check, AlertCircle, Pencil } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { Booking, PaymentStatus } from "../types";
 
 const paymentStatusColors: Record<PaymentStatus, string> = {
-  Paid: "bg-green-500 hover:bg-green-600",
-  Partial: "bg-yellow-500 hover:bg-yellow-600",
-  Pending: "bg-red-500 hover:bg-red-600",
+  Paid: "bg-emerald-500 hover:bg-emerald-600",
+  Partial: "bg-amber-500 hover:bg-amber-600",
+  Pending: "bg-rose-500 hover:bg-rose-600",
 };
 
 interface ReservationBarProps {
   booking: Booking;
   onClick?: () => void;
+  left?: number;
+  width?: number;
 }
 
-export function ReservationBar({ booking, onClick }: ReservationBarProps) {
-  const checkIn = parseISO(booking.checkIn);
-  const checkOut = parseISO(booking.checkOut);
-  const nights = differenceInDays(startOfDay(checkOut), startOfDay(checkIn));
-
-  // Width calculation: each day cell is 1fr in the grid
-  // We need to span across multiple cells
-  const gridColumnSpan = nights;
+export function ReservationBar({ booking, onClick, left, width }: ReservationBarProps) {
+  const remaining = booking.pricing.total - booking.totalPaid;
 
   return (
     <div
       className={cn(
-        "absolute inset-1 rounded px-2 py-1 text-white text-xs font-medium cursor-pointer transition-colors z-10 flex flex-col justify-center",
+        "absolute top-2 h-10 text-white rounded-md cursor-pointer transition-all flex items-center justify-between px-2 overflow-hidden shadow-sm group",
         paymentStatusColors[booking.paymentStatus],
       )}
       style={{
-        gridColumn: `span ${gridColumnSpan}`,
+        left: left !== undefined ? `${left}px` : undefined,
+        width: width !== undefined ? `${width}px` : undefined,
       }}
       onClick={(e) => {
         e.stopPropagation();
         onClick?.();
       }}
+      title={`${booking.guest.name} - ${remaining > 0 ? `Falta: ${remaining.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : "Pago"}`}
     >
-      <div className="truncate">{booking.guest.name}</div>
-      <div className="text-[10px] opacity-90">
-        R$ {booking.pricing.total.toFixed(2)}
+      <span className="text-xs font-medium truncate flex-1">{booking.guest.name}</span>
+      <div className="flex items-center gap-0.5 ml-1">
+        <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+        {remaining <= 0 ? <Check className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
       </div>
     </div>
   );

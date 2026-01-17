@@ -41,7 +41,7 @@ import {
 import { useTenant } from "@/shared/contexts/tenant-context";
 import { cn } from "@/shared/lib/utils";
 import { bookingService } from "../services/booking-service";
-import type { Booking, CreateBookingRequest } from "../types";
+import type { Booking, CreateBookingRequest, UpdateBookingRequest } from "../types";
 
 const bookingSchema = z
   .object({
@@ -71,6 +71,7 @@ interface BookingFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: CreateBookingRequest) => Promise<void>;
+  onUpdate?: (id: string, data: UpdateBookingRequest) => Promise<void>;
   booking?: Booking;
   preselectedRoom?: string;
   preselectedDate?: Date;
@@ -80,6 +81,7 @@ export function BookingFormDialog({
   open,
   onOpenChange,
   onSubmit,
+  onUpdate,
   booking,
   preselectedRoom,
   preselectedDate,
@@ -90,6 +92,9 @@ export function BookingFormDialog({
     queryKey: ["rooms"],
     queryFn: () => roomService.getAll(),
   });
+
+  console.log(booking);
+
 
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -136,6 +141,24 @@ export function BookingFormDialog({
     }
   }, [childrenCount, replaceChildrenAges, form]);
 
+  // When opening the dialog in edit mode or with preselected values, reset the form
+  useEffect(() => {
+    form.reset({
+      roomId: booking?.roomId || preselectedRoom || "",
+      checkIn: booking ? new Date(booking.checkIn) : preselectedDate || undefined,
+      checkOut: booking ? new Date(booking.checkOut) : undefined,
+      adults: booking?.adults || 2,
+      children: booking?.children || 0,
+      childrenAges: booking?.childrenAges?.map((age) => ({ age })) || [],
+      guestName: booking?.guest.name || "",
+      guestEmail: booking?.guest.email || "",
+      guestPhone: booking?.guest.phone || "",
+      guestDocument: booking?.guest.document || "",
+      guestBirthDate: booking?.guest.birthDate || "",
+      notes: booking?.notes || "",
+    });
+  }, [booking, preselectedRoom, preselectedDate, form]);
+
   const handleSubmit = async (data: BookingFormData) => {
     // Validate conflict
     const formattedCheckIn = format(data.checkIn, "yyyy-MM-dd");
@@ -177,8 +200,21 @@ export function BookingFormDialog({
       notes: data.notes,
     };
 
-    await onSubmit(request);
-    form.reset();
+    if (booking && onUpdate) {
+      await onUpdate(booking.id, {
+        checkIn: request.checkIn,
+        checkOut: request.checkOut,
+        guest: request.guest,
+        adults: request.adults,
+        children: request.children,
+        childrenAges: request.childrenAges,
+        notes: request.notes,
+        roomId: request.roomId,
+      });
+    } else {
+      await onSubmit(request);
+      form.reset();
+    }
   };
 
   return (

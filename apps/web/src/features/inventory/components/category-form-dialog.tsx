@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/shared/components/ui/button";
@@ -56,7 +57,7 @@ export function CategoryFormDialog({
   category,
 }: CategoryFormDialogProps) {
   const form = useForm<CategoryFormData>({
-    resolver: zodResolver(categorySchema),
+    resolver: zodResolver(categorySchema) as any,
     defaultValues: {
       name: category?.name || "",
       description: category?.description || "",
@@ -66,6 +67,17 @@ export function CategoryFormDialog({
     },
   });
 
+  // Reset form when editing a category or when category prop changes
+  useEffect(() => {
+    form.reset({
+      name: category?.name || "",
+      description: category?.description || "",
+      capacity: category?.capacity ?? 2,
+      basePrice: category?.basePrice ?? 0,
+      extraPersonPrice: category?.extraPersonPrice ?? 0,
+    });
+  }, [category, form]);
+
   const handleSubmit = async (data: CategoryFormData) => {
     await onSubmit(data);
     form.reset();
@@ -73,7 +85,7 @@ export function CategoryFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {category ? "Editar Categoria" : "Nova Categoria"}
@@ -124,8 +136,6 @@ export function CategoryFormDialog({
                   </FormItem>
                 )}
               />
-              <div className="hidden md:block"></div>{" "}
-              {/* Spacer if needed, or remove */}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
