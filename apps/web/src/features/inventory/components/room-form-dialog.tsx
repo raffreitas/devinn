@@ -140,7 +140,10 @@ export function RoomFormDialog({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full h-9" data-size="default">
+                        <SelectTrigger
+                          className="w-full h-9"
+                          data-size="default"
+                        >
                           <SelectValue placeholder="Selecione uma categoria" />
                         </SelectTrigger>
                       </FormControl>
@@ -204,7 +207,10 @@ export function RoomFormDialog({
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full h-9" data-size="default">
+                        <SelectTrigger
+                          className="w-full h-9"
+                          data-size="default"
+                        >
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>

@@ -54,8 +54,8 @@ export function SignInPage() {
   }
 
   return (
-    <div className="lg:p-8">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-87.5">
+    <div className="p-4 lg:p-8">
+      <div className="mx-auto flex w-full max-w-md flex-col justify-center space-y-6 px-2 sm:px-0">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Acessar</h1>
         </div>

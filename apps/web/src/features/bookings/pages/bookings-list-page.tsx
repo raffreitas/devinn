@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Plus, Eye, Trash2, Filter } from "lucide-react";
+import { Eye, Filter, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { roomService } from "@/features/inventory/services/room-service";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -35,15 +36,14 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { useTenant } from "@/shared/contexts/tenant-context";
-import { roomService } from "@/features/inventory/services/room-service";
-import { bookingService } from "../services/booking-service";
 import { BookingFormDialog } from "../components/booking-form-dialog";
 import { GuestDetailsPanel } from "../components/guest-details-panel";
+import { bookingService } from "../services/booking-service";
 import type {
   Booking,
   BookingStatus,
-  PaymentStatus,
   CreateBookingRequest,
+  PaymentStatus,
 } from "../types";
 
 const statusConfig: Record<

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format, startOfMonth, endOfMonth } from "date-fns";
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { endOfMonth, format, startOfMonth } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { ChevronLeft, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/shared/components/ui/badge";
@@ -22,10 +23,9 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { useTenant } from "@/shared/contexts/tenant-context";
-import { expenseService } from "../services/expense-service";
 import { ExpenseFormDialog } from "../components/expense-form-dialog";
-import type { Expense, CreateExpenseRequest } from "../types";
-import { ptBR } from "date-fns/locale";
+import { expenseService } from "../services/expense-service";
+import type { CreateExpenseRequest, Expense } from "../types";
 
 const categoryLabels: Record<string, string> = {
   water: "Água",

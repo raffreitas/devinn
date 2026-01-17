@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, Filter } from "lucide-react";
+import { Filter, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/shared/components/ui/badge";
@@ -27,10 +27,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { RoomFormDialog } from "../components/room-form-dialog";
 import { categoryService } from "../services/category-service";
 import { roomService } from "../services/room-service";
-import { RoomFormDialog } from "../components/room-form-dialog";
-import type { Room, CreateRoomRequest, RoomStatus } from "../types";
+import type { CreateRoomRequest, Room, RoomStatus } from "../types";
 
 const statusConfig: Record<
   RoomStatus,

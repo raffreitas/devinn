@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Mail, Phone, FileText, Calendar, Users } from "lucide-react";
+import { Calendar, FileText, Mail, Phone, Users } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
 import {
   Card,

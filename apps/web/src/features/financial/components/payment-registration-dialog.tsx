@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import type { Booking, PaymentMethod } from "@/features/bookings/types";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -27,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import type { Booking, PaymentMethod } from "@/features/bookings/types";
 
 const paymentSchema = z.object({
   amount: z

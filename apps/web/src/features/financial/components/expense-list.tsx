@@ -1,14 +1,14 @@
 import {
   Droplet,
-  Zap,
+  FileText,
   Flame,
+  Megaphone,
+  MoreHorizontal,
+  Package,
+  Users,
   Wifi,
   Wrench,
-  Users,
-  Package,
-  Megaphone,
-  FileText,
-  MoreHorizontal,
+  Zap,
 } from "lucide-react";
 import type { ExpenseCategory } from "../types";
 

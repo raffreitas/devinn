@@ -1,6 +1,6 @@
 import type {
-  Expense,
   CreateExpenseRequest,
+  Expense,
   UpdateExpenseRequest,
 } from "../types";
 

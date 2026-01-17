@@ -5,8 +5,8 @@ import {
   ChevronLeft,
   ChevronRight,
   DollarSign,
-  TrendingUp,
   TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
@@ -19,9 +19,9 @@ import {
 } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useTenant } from "@/shared/contexts/tenant-context";
-import { financialService } from "../services/financial-service";
-import { ExpenseList } from "../components/expense-list";
 import { cn } from "@/shared/lib/utils";
+import { ExpenseList } from "../components/expense-list";
+import { financialService } from "../services/financial-service";
 
 export function FinancialDashboardPage() {
   const { innId } = useTenant();

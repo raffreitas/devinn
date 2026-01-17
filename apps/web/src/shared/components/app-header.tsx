@@ -32,7 +32,7 @@ export function AppHeader() {
   const showLoading = isTenantContextLoading || (innId ? isInnLoading : false);
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <header className="sticky top-0 z-10 flex h-12 sm:h-14 items-center gap-3 border-b bg-background/80 px-3 sm:px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
       <SidebarTrigger />
 
       <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -43,7 +43,7 @@ export function AppHeader() {
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">
             {showLoading ? (
-              <Skeleton className="h-4 w-52" />
+              <Skeleton className="h-4 w-32 sm:w-52" />
             ) : inn?.name ? (
               <>{inn.name}</>
             ) : innId ? (
@@ -57,7 +57,7 @@ export function AppHeader() {
 
           <div className="truncate text-xs text-muted-foreground">
             {showLoading ? (
-              <Skeleton className="mt-1 h-3 w-40" />
+              <Skeleton className="mt-1 h-3 w-24 sm:w-40" />
             ) : innId ? (
               <>
                 ID: {innId}
@@ -72,7 +72,7 @@ export function AppHeader() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="hidden sm:flex items-center gap-2">
         {roleLabel && <Badge variant="secondary">{roleLabel}</Badge>}
         {innId ? (
           <Badge variant="outline">X-Inn-Id: {innId}</Badge>

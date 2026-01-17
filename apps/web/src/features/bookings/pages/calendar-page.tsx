@@ -1,17 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  format,
   addMonths,
-  subMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
   isToday,
   parseISO,
+  startOfMonth,
+  subMonths,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { roomService } from "@/features/inventory/services/room-service";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -21,13 +23,15 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { useTenant } from "@/shared/contexts/tenant-context";
-import { roomService } from "@/features/inventory/services/room-service";
-import { bookingService } from "../services/booking-service";
-import { ReservationBar } from "../components/reservation-bar";
-import { BookingFormDialog } from "../components/booking-form-dialog";
-import type { Booking, CreateBookingRequest, UpdateBookingRequest } from "../types";
 import { cn } from "@/shared/lib/utils";
-import { toast } from "sonner";
+import { BookingFormDialog } from "../components/booking-form-dialog";
+import { ReservationBar } from "../components/reservation-bar";
+import { bookingService } from "../services/booking-service";
+import type {
+  Booking,
+  CreateBookingRequest,
+  UpdateBookingRequest,
+} from "../types";
 
 export function CalendarPage() {
   const { innId } = useTenant();
@@ -41,7 +45,6 @@ export function CalendarPage() {
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const dayWidth = 46; // fixed day cell width (px) used to position booking bars
-
 
   const { data: roomsData } = useQuery({
     queryKey: ["rooms"],
@@ -144,8 +147,6 @@ export function CalendarPage() {
     });
   };
 
-
-
   if (!innId) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -204,7 +205,10 @@ export function CalendarPage() {
                 <div className="sticky left-0 bg-background border-b border-r p-2 font-medium text-sm z-10">
                   Quarto
                 </div>
-                <div className="border-b" style={{ minWidth: `${daysInMonth.length * dayWidth}px` }}>
+                <div
+                  className="border-b"
+                  style={{ minWidth: `${daysInMonth.length * dayWidth}px` }}
+                >
                   <div
                     className="grid"
                     style={{
@@ -231,24 +235,41 @@ export function CalendarPage() {
                 {/* Room Rows */}
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
-                    ? bookings.filter((b) => b.roomId === room.id && b.status !== "Canceled")
+                    ? bookings.filter(
+                        (b) => b.roomId === room.id && b.status !== "Canceled",
+                      )
                     : [];
 
                   return (
                     <div key={room.id} className="contents">
                       <div className="sticky left-0 bg-background border-b border-r p-2 flex items-center z-10">
                         <div>
-                          <div className="font-medium text-sm">{room.number}</div>
+                          <div className="font-medium text-sm">
+                            {room.number}
+                          </div>
                           <div className="text-xs text-muted-foreground">
                             {room.categoryName}
                           </div>
                         </div>
                       </div>
 
-                      <div className="border-b relative" style={{ minWidth: `${daysInMonth.length * dayWidth}px` }}>
-                        <div className="grid" style={{ gridTemplateColumns: `repeat(${daysInMonth.length}, ${dayWidth}px)` }}>
+                      <div
+                        className="border-b relative"
+                        style={{
+                          minWidth: `${daysInMonth.length * dayWidth}px`,
+                        }}
+                      >
+                        <div
+                          className="grid"
+                          style={{
+                            gridTemplateColumns: `repeat(${daysInMonth.length}, ${dayWidth}px)`,
+                          }}
+                        >
                           {daysInMonth.map((day) => {
-                            const booking = getBookingsForRoomAndDate(room.id, day);
+                            const booking = getBookingsForRoomAndDate(
+                              room.id,
+                              day,
+                            );
 
                             return (
                               <div
@@ -257,7 +278,9 @@ export function CalendarPage() {
                                   "border-r p-1 relative min-h-15 cursor-pointer hover:bg-accent/50 w-11.5 h-14",
                                   isToday(day) && "bg-primary/5",
                                 )}
-                                onClick={() => !booking && handleCellClick(room.id, day)}
+                                onClick={() =>
+                                  !booking && handleCellClick(room.id, day)
+                                }
                                 title={`Quarto ${room.number} - ${format(day, "dd/MM/yyyy")}`}
                               >
                                 {!booking && (
@@ -276,10 +299,15 @@ export function CalendarPage() {
                           const checkOut = parseISO(booking.checkOut);
 
                           // Skip bookings fully outside the month
-                          if (checkOut < monthStart || checkIn > monthEnd) return null;
+                          if (checkOut < monthStart || checkIn > monthEnd)
+                            return null;
 
-                          const startDay = checkIn < monthStart ? 1 : checkIn.getDate();
-                          const endDay = checkOut > monthEnd ? daysInMonth.length : checkOut.getDate() - 1;
+                          const startDay =
+                            checkIn < monthStart ? 1 : checkIn.getDate();
+                          const endDay =
+                            checkOut > monthEnd
+                              ? daysInMonth.length
+                              : checkOut.getDate() - 1;
 
                           const left = (startDay - 1) * dayWidth + 4;
                           const width = (endDay - startDay + 1) * dayWidth - 8;

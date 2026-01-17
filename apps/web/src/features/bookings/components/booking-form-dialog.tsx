@@ -41,7 +41,11 @@ import {
 import { useTenant } from "@/shared/contexts/tenant-context";
 import { cn } from "@/shared/lib/utils";
 import { bookingService } from "../services/booking-service";
-import type { Booking, CreateBookingRequest, UpdateBookingRequest } from "../types";
+import type {
+  Booking,
+  CreateBookingRequest,
+  UpdateBookingRequest,
+} from "../types";
 
 const bookingSchema = z
   .object({
@@ -95,7 +99,6 @@ export function BookingFormDialog({
 
   console.log(booking);
 
-
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
@@ -145,7 +148,9 @@ export function BookingFormDialog({
   useEffect(() => {
     form.reset({
       roomId: booking?.roomId || preselectedRoom || "",
-      checkIn: booking ? new Date(booking.checkIn) : preselectedDate || undefined,
+      checkIn: booking
+        ? new Date(booking.checkIn)
+        : preselectedDate || undefined,
       checkOut: booking ? new Date(booking.checkOut) : undefined,
       adults: booking?.adults || 2,
       children: booking?.children || 0,

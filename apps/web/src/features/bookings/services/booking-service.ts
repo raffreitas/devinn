@@ -2,10 +2,10 @@ import { api } from "@/shared/lib/http-client";
 import type { ApiResponse } from "@/shared/types";
 import type {
   Booking,
-  CreateBookingRequest,
-  UpdateBookingRequest,
   BookingFilters,
+  CreateBookingRequest,
   PaymentMethod,
+  UpdateBookingRequest,
 } from "../types";
 
 export const bookingService = {
@@ -25,22 +25,10 @@ export const bookingService = {
   },
 
   getById: async (id: string): Promise<Booking | null> => {
-    try {
-      const response = await api.get<ApiResponse<Booking>>(
-        `/api/v1/bookings/${id}`,
-      );
-      return response.data.data;
-    } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "status" in error &&
-        (error as any).status === 404
-      ) {
-        return null;
-      }
-      throw error;
-    }
+    const response = await api.get<ApiResponse<Booking>>(
+      `/api/v1/bookings/${id}`,
+    );
+    return response.data.data;
   },
 
   create: async (data: CreateBookingRequest): Promise<Booking> => {

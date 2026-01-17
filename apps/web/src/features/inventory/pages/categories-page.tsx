@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/shared/components/ui/button";
@@ -19,8 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { categoryService } from "../services/category-service";
 import { CategoryFormDialog } from "../components/category-form-dialog";
+import { categoryService } from "../services/category-service";
 import type { Category, CreateCategoryRequest } from "../types";
 
 export function CategoriesPage() {

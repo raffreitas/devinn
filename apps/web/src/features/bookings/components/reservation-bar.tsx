@@ -1,4 +1,4 @@
-import { Check, AlertCircle, Pencil } from "lucide-react";
+import { AlertCircle, Check, Pencil } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { Booking, PaymentStatus } from "../types";
 
@@ -15,7 +15,12 @@ interface ReservationBarProps {
   width?: number;
 }
 
-export function ReservationBar({ booking, onClick, left, width }: ReservationBarProps) {
+export function ReservationBar({
+  booking,
+  onClick,
+  left,
+  width,
+}: ReservationBarProps) {
   const remaining = booking.pricing.total - booking.totalPaid;
 
   return (
@@ -34,10 +39,16 @@ export function ReservationBar({ booking, onClick, left, width }: ReservationBar
       }}
       title={`${booking.guest.name} - ${remaining > 0 ? `Falta: ${remaining.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : "Pago"}`}
     >
-      <span className="text-xs font-medium truncate flex-1">{booking.guest.name}</span>
+      <span className="text-xs font-medium truncate flex-1">
+        {booking.guest.name}
+      </span>
       <div className="flex items-center gap-0.5 ml-1">
         <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-        {remaining <= 0 ? <Check className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+        {remaining <= 0 ? (
+          <Check className="w-3 h-3" />
+        ) : (
+          <AlertCircle className="w-3 h-3" />
+        )}
       </div>
     </div>
   );
