@@ -11,8 +11,8 @@ const paymentStatusColors: Record<PaymentStatus, string> = {
 interface ReservationBarProps {
   booking: Booking;
   onClick?: () => void;
-  left?: number;
-  width?: number;
+  left?: number | string;
+  width?: number | string;
 }
 
 export function ReservationBar({
@@ -30,8 +30,18 @@ export function ReservationBar({
         paymentStatusColors[booking.paymentStatus],
       )}
       style={{
-        left: left !== undefined ? `${left}px` : undefined,
-        width: width !== undefined ? `${width}px` : undefined,
+        left:
+          left !== undefined
+            ? typeof left === "number"
+              ? `${left}px`
+              : left
+            : undefined,
+        width:
+          width !== undefined
+            ? typeof width === "number"
+              ? `${width}px`
+              : width
+            : undefined,
       }}
       onClick={(e) => {
         e.stopPropagation();

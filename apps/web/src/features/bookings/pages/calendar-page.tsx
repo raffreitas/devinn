@@ -44,7 +44,7 @@ export function CalendarPage() {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-  const dayWidth = 46; // fixed day cell width (px) used to position booking bars
+  // use flexible columns for days so the month fills the available space
 
   const { data: roomsData } = useQuery({
     queryKey: ["rooms"],
@@ -162,57 +162,61 @@ export function CalendarPage() {
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+            Reservas
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Visualize e gerencie as reservas da sua pousada em um calendário
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handlePreviousMonth}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleToday}
+            className="min-w-30"
+          >
+            {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
+          </Button>
+          <Button variant="outline" size="icon" onClick={handleNextMonth}>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle>Calendário de Reservas</CardTitle>
               <CardDescription>
-                Visualização mensal das reservas por quarto
+                Visualize as reservas por quarto e data
               </CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handlePreviousMonth}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleToday}
-                className="min-w-30"
-              >
-                {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
-              </Button>
-              <Button variant="outline" size="icon" onClick={handleNextMonth}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
             </div>
           </div>
         </CardHeader>
+
         <CardContent>
-          <div className="overflow-x-auto -mx-6 sm:mx-0">
+          <div className="overflow-x-auto -mx-6 sm:mx-0 max-w-full">
             <div className="inline-block min-w-full align-middle">
-              <div
-                className="grid"
-                style={{
-                  gridTemplateColumns: "120px 1fr",
-                }}
-              >
+              <div className="grid" style={{ gridTemplateColumns: "minmax(180px, 260px) 1fr" }}>
                 {/* Header Row - Days */}
                 <div className="sticky left-0 bg-background border-b border-r p-2 font-medium text-sm z-10">
                   Quarto
                 </div>
-                <div
-                  className="border-b"
-                  style={{ minWidth: `${daysInMonth.length * dayWidth}px` }}
-                >
+                <div className="border-b">
                   <div
                     className="grid"
                     style={{
-                      gridTemplateColumns: `repeat(${daysInMonth.length}, ${dayWidth}px)`,
+                      gridTemplateColumns: `repeat(${daysInMonth.length}, minmax(0, 1fr))`,
                     }}
                   >
                     {daysInMonth.map((day) => (
@@ -236,8 +240,8 @@ export function CalendarPage() {
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
                     ? bookings.filter(
-                        (b) => b.roomId === room.id && b.status !== "Canceled",
-                      )
+                      (b) => b.roomId === room.id && b.status !== "Canceled",
+                    )
                     : [];
 
                   return (
@@ -253,16 +257,11 @@ export function CalendarPage() {
                         </div>
                       </div>
 
-                      <div
-                        className="border-b relative"
-                        style={{
-                          minWidth: `${daysInMonth.length * dayWidth}px`,
-                        }}
-                      >
+                      <div className="border-b relative">
                         <div
                           className="grid"
                           style={{
-                            gridTemplateColumns: `repeat(${daysInMonth.length}, ${dayWidth}px)`,
+                            gridTemplateColumns: `repeat(${daysInMonth.length}, minmax(0, 1fr))`,
                           }}
                         >
                           {daysInMonth.map((day) => {
@@ -302,23 +301,20 @@ export function CalendarPage() {
                           if (checkOut < monthStart || checkIn > monthEnd)
                             return null;
 
-                          const startDay =
-                            checkIn < monthStart ? 1 : checkIn.getDate();
-                          const endDay =
-                            checkOut > monthEnd
-                              ? daysInMonth.length
-                              : checkOut.getDate() - 1;
+                          const startDay = checkIn < monthStart ? 1 : checkIn.getDate();
+                          const endDay = checkOut > monthEnd ? daysInMonth.length : checkOut.getDate() - 1;
 
-                          const left = (startDay - 1) * dayWidth + 4;
-                          const width = (endDay - startDay + 1) * dayWidth - 8;
+                          const totalDays = daysInMonth.length;
+                          const leftPercent = ((startDay - 1) / totalDays) * 100;
+                          const widthPercent = ((endDay - startDay + 1) / totalDays) * 100;
 
                           return (
                             <ReservationBar
                               key={booking.id}
                               booking={booking}
                               onClick={() => handleBookingClick(booking)}
-                              left={left}
-                              width={width}
+                              left={`${leftPercent}%`}
+                              width={`${widthPercent}%`}
                             />
                           );
                         })}
@@ -357,6 +353,6 @@ export function CalendarPage() {
         preselectedRoom={preselectedRoom}
         preselectedDate={preselectedDate}
       />
-    </div>
+    </div >
   );
 }

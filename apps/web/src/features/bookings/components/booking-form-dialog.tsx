@@ -97,8 +97,6 @@ export function BookingFormDialog({
     queryFn: () => roomService.getAll(),
   });
 
-  console.log(booking);
-
   const form = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
