@@ -1,4 +1,5 @@
 using DevInn.Application.Common.Validation;
+using DevInn.Application.Features.Bookings.Shared;
 using DevInn.Domain.Aggregates.Bookings.Enums;
 
 using FluentResults;
@@ -10,7 +11,7 @@ using Mediator;
 namespace DevInn.Application.Features.Bookings.Commands.CreateBooking;
 
 public sealed record CreateBookingCommand(
-    GuestInfo Guest,
+    GuestDto Guest,
     Guid RoomId,
     DateTimeOffset CheckIn,
     DateTimeOffset CheckOut,
@@ -24,20 +25,12 @@ public sealed record CreateBookingCommand(
     public Validation Validate() => new CreateBookingInputValidation().Validate(this).ToFailure();
 }
 
-public sealed record GuestInfo(
-    string Name,
-    string Phone,
-    string? Email = null,
-    string? Document = null,
-    DateOnly? BirthDate = null
-);
-
-public sealed class CreateBookingInputValidation : AbstractValidator<CreateBookingCommand>
+internal sealed class CreateBookingInputValidation : AbstractValidator<CreateBookingCommand>
 {
     public CreateBookingInputValidation()
     {
         RuleFor(command => command.Guest).NotNull().WithMessage("Informações do hóspede são obrigatórias.");
-        RuleFor(command => command.Guest).SetValidator(new GuestInfoValidation());
+        RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation());
 
         RuleFor(x => x.RoomId)
             .NotEmpty().WithMessage("Quarto é obrigatório.");
@@ -71,9 +64,9 @@ public sealed class CreateBookingInputValidation : AbstractValidator<CreateBooki
     }
 }
 
-public sealed class GuestInfoValidation : AbstractValidator<GuestInfo>
+internal sealed class GuestDtoValidation : AbstractValidator<GuestDto>
 {
-    public GuestInfoValidation()
+    public GuestDtoValidation()
     {
         RuleFor(guest => guest.Name)
             .NotEmpty().WithMessage("Nome do hóspede é obrigatório.")

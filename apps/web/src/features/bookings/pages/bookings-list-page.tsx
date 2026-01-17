@@ -53,19 +53,19 @@ const statusConfig: Record<
     variant: "default" | "secondary" | "outline" | "destructive";
   }
 > = {
-  scheduled: { label: "Agendada", variant: "default" },
-  hosting: { label: "Hospedando", variant: "secondary" },
-  completed: { label: "Concluída", variant: "outline" },
-  cancelled: { label: "Cancelada", variant: "destructive" },
+  Scheduled: { label: "Agendada", variant: "default" },
+  CheckedIn: { label: "Hospedando", variant: "secondary" },
+  Completed: { label: "Concluída", variant: "outline" },
+  Canceled: { label: "Cancelada", variant: "destructive" },
 };
 
 const paymentStatusConfig: Record<
   PaymentStatus,
   { label: string; variant: "default" | "secondary" | "destructive" }
 > = {
-  paid: { label: "Pago", variant: "default" },
-  partial: { label: "Parcial", variant: "secondary" },
-  pending: { label: "Pendente", variant: "destructive" },
+  Paid: { label: "Pago", variant: "default" },
+  Partial: { label: "Parcial", variant: "secondary" },
+  Pending: { label: "Pendente", variant: "destructive" },
 };
 
 export function BookingsListPage() {

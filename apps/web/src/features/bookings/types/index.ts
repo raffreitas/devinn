@@ -1,5 +1,5 @@
-export type BookingStatus = "scheduled" | "hosting" | "completed" | "cancelled";
-export type PaymentStatus = "pending" | "partial" | "paid";
+export type BookingStatus = "Scheduled" | "CheckedIn" | "Completed" | "Canceled";
+export type PaymentStatus = "Pending" | "Partial" | "Paid";
 export type PaymentMethod = "pix" | "cash" | "credit_card" | "debit_card";
 
 export interface Guest {
