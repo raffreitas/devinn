@@ -12,21 +12,31 @@ export const bookingService = {
   getAll: async (filters?: BookingFilters): Promise<Booking[]> => {
     const params = new URLSearchParams();
 
-    if (filters?.startDate) params.append('startDate', filters.startDate);
-    if (filters?.endDate) params.append('endDate', filters.endDate);
-    if (filters?.status) params.append('status', filters.status);
-    if (filters?.paymentStatus) params.append('paymentStatus', filters.paymentStatus);
+    if (filters?.startDate) params.append("startDate", filters.startDate);
+    if (filters?.endDate) params.append("endDate", filters.endDate);
+    if (filters?.status) params.append("status", filters.status);
+    if (filters?.paymentStatus)
+      params.append("paymentStatus", filters.paymentStatus);
 
-    const response = await api.get<ApiResponse<Booking[]>>("/api/v1/bookings", { params });
+    const response = await api.get<ApiResponse<Booking[]>>("/api/v1/bookings", {
+      params,
+    });
     return response.data.data;
   },
 
   getById: async (id: string): Promise<Booking | null> => {
     try {
-      const response = await api.get<ApiResponse<Booking>>(`/api/v1/bookings/${id}`);
+      const response = await api.get<ApiResponse<Booking>>(
+        `/api/v1/bookings/${id}`,
+      );
       return response.data.data;
     } catch (error) {
-      if (typeof error === 'object' && error !== null && 'status' in error && (error as any).status === 404) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "status" in error &&
+        (error as any).status === 404
+      ) {
         return null;
       }
       throw error;
@@ -34,15 +44,18 @@ export const bookingService = {
   },
 
   create: async (data: CreateBookingRequest): Promise<Booking> => {
-    const response = await api.post<ApiResponse<Booking>>("/api/v1/bookings", data);
+    const response = await api.post<ApiResponse<Booking>>(
+      "/api/v1/bookings",
+      data,
+    );
     return response.data.data;
   },
 
-  update: async (
-    id: string,
-    data: UpdateBookingRequest,
-  ): Promise<Booking> => {
-    const response = await api.put<ApiResponse<Booking>>(`/api/v1/bookings/${id}`, data);
+  update: async (id: string, data: UpdateBookingRequest): Promise<Booking> => {
+    const response = await api.put<ApiResponse<Booking>>(
+      `/api/v1/bookings/${id}`,
+      data,
+    );
     return response.data.data;
   },
 
@@ -56,11 +69,14 @@ export const bookingService = {
     method: PaymentMethod,
     notes?: string,
   ): Promise<Booking> => {
-    const response = await api.post<ApiResponse<Booking>>(`/api/v1/bookings/${bookingId}/payments`, {
-      amount,
-      method,
-      notes,
-    });
+    const response = await api.post<ApiResponse<Booking>>(
+      `/api/v1/bookings/${bookingId}/payments`,
+      {
+        amount,
+        method,
+        notes,
+      },
+    );
     return response.data.data;
   },
 
@@ -77,10 +93,13 @@ export const bookingService = {
     });
 
     if (excludeBookingId) {
-      params.append('excludeBookingId', excludeBookingId);
+      params.append("excludeBookingId", excludeBookingId);
     }
 
-    const response = await api.get<ApiResponse<{ available: boolean }>>("/api/v1/bookings/availability", { params });
+    const response = await api.get<ApiResponse<{ available: boolean }>>(
+      "/api/v1/bookings/availability",
+      { params },
+    );
     return !response.data.data.available;
   },
 };

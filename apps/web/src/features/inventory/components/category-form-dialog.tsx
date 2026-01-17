@@ -124,8 +124,8 @@ export function CategoryFormDialog({
                   </FormItem>
                 )}
               />
-
-              <div className="hidden md:block"></div> {/* Spacer if needed, or remove */}
+              <div className="hidden md:block"></div>{" "}
+              {/* Spacer if needed, or remove */}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

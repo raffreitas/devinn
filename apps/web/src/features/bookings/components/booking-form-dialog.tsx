@@ -54,9 +54,7 @@ const bookingSchema = z
       .array(z.object({ age: z.number().min(0, "Idade inválida") }))
       .optional(),
     guestName: z.string().min(1, "Nome do hóspede é obrigatório"),
-    guestEmail: z
-      .email("E-mail inválido").optional()
-      .or(z.literal("")),
+    guestEmail: z.email("E-mail inválido").optional().or(z.literal("")),
     guestPhone: z.string().min(10, "Telefone deve ter no mínimo 10 dígitos"),
     guestDocument: z.string().optional(),
     guestBirthDate: z.string().optional(), // YYYY-MM-DD

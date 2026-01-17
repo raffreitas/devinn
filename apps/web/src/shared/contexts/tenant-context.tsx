@@ -45,7 +45,7 @@ export function TenantProvider({ children }: TenantProviderProps) {
       try {
         const decoded = jwtDecode<JWTPayload>(token);
         setUserRole(decoded.role);
-        console.log(decoded)
+        console.log(decoded);
 
         // Se for InnAdmin, o inn_id vem do JWT
         if (decoded.role === "InnAdmin" && decoded.inn_id) {

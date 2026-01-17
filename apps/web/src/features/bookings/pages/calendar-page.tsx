@@ -210,9 +210,7 @@ export function CalendarPage() {
                   <div key={room.id} className="contents">
                     <div className="sticky left-0 bg-background border-b border-r p-2 flex items-center z-10">
                       <div>
-                        <div className="font-medium text-sm">
-                          {room.number}
-                        </div>
+                        <div className="font-medium text-sm">{room.number}</div>
                         <div className="text-xs text-muted-foreground">
                           {room.categoryName}
                         </div>

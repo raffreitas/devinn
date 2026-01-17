@@ -1,4 +1,8 @@
-export type BookingStatus = "Scheduled" | "CheckedIn" | "Completed" | "Canceled";
+export type BookingStatus =
+  | "Scheduled"
+  | "CheckedIn"
+  | "Completed"
+  | "Canceled";
 export type PaymentStatus = "Pending" | "Partial" | "Paid";
 export type PaymentMethod = "pix" | "cash" | "credit_card" | "debit_card";
 
