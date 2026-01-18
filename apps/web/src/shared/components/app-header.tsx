@@ -10,10 +10,7 @@ import { useTenant } from "@/shared/contexts/tenant-context";
 export function AppHeader() {
   const { innId, userRole, isLoading: isTenantContextLoading } = useTenant();
 
-  const {
-    data: inn,
-    isLoading: isInnLoading,
-  } = useQuery({
+  const { data: inn, isLoading: isInnLoading } = useQuery({
     queryKey: ["inn", innId],
     enabled: !!innId,
     queryFn: () => {
@@ -67,7 +64,6 @@ export function AppHeader() {
           )}
         </div>
       )}
-
     </header>
   );
 }

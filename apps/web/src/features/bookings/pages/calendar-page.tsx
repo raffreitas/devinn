@@ -200,7 +200,7 @@ export function CalendarPage() {
             <div className="overflow-x-auto">
               <div className="max-w-xs">
                 <div className="flex">
-                  <div className="w-28 shrink-0 p-3 font-semibold text-sm text-foreground border-r border-border border-b bg-muted/30">
+                  <div className="w-28 shrink-0 p-3 font-semibold text-sm text-foreground border-r border-border border-b bg-muted/30 sticky top-0 z-10">
                     Quartos
                   </div>
                   <div className="flex">
@@ -240,7 +240,7 @@ export function CalendarPage() {
                         </div>
                       </div>
 
-                      <div className="flex relative flex-1 ">
+                      <div className="flex relative flex-1">
                         {daysInMonth.map((day) => {
                           const booking = getBookingsForRoomAndDate(
                             room.id,
