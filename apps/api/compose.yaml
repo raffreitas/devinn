@@ -1,4 +1,6 @@
-﻿services:
+﻿name: devinn
+
+services:
   postgres:
     image: postgres:17
     environment:

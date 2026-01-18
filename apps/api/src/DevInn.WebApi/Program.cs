@@ -28,6 +28,8 @@ builder.Services.AddScoped<TenantMiddleware>();
 
 var app = builder.Build();
 
+app.UseInfrastructureModule();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseScalarOpenApi();

@@ -32,4 +32,6 @@ public sealed class Room : Entity
         Name = name;
         Status = status;
     }
+
+    public void Activate() => Status = RoomStatus.Active;
 }
