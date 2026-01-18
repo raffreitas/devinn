@@ -16,7 +16,7 @@ export interface Room {
   id: string;
   categoryId: string;
   categoryName?: string;
-  number: string;
+  number: number;
   capacity: number;
   basePrice: number;
   extraGuestPrice: number;

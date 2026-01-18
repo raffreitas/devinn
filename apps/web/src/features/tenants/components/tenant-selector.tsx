@@ -84,13 +84,6 @@ export function TenantSelector() {
                   <span className="truncate font-semibold">
                     {selectedInn?.name || "Selecione uma pousada"}
                   </span>
-                  <span className="truncate text-xs">
-                    {selectedInn
-                      ? `${selectedInn.city}, ${selectedInn.state}`
-                      : innId
-                        ? `ID: ${innId}`
-                        : "Nenhuma selecionada"}
-                  </span>
                 </div>
                 <ChevronsUpDown className="ml-auto" />
               </SidebarMenuButton>
@@ -113,9 +106,9 @@ export function TenantSelector() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium">{inn.name}</div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {inn.city}, {inn.state} • ID: {inn.id}
-                      </div>
+                      {/* <div className="truncate text-xs text-muted-foreground">
+                        ID: {inn.id}
+                      </div> */}
                     </div>
                     {inn.id === innId && <Check className="size-4" />}
                   </DropdownMenuItem>

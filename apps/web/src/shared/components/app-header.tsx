@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
+import { env } from "@/env";
 import { tenantService } from "@/features/tenants/services/tenant-service";
 import { Badge } from "@/shared/components/ui/badge";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
@@ -12,7 +13,6 @@ export function AppHeader() {
   const {
     data: inn,
     isLoading: isInnLoading,
-    isError: isInnError,
   } = useQuery({
     queryKey: ["inn", innId],
     enabled: !!innId,
@@ -54,32 +54,20 @@ export function AppHeader() {
               "Pousada não identificada"
             )}
           </div>
-
-          <div className="truncate text-xs text-muted-foreground">
-            {showLoading ? (
-              <Skeleton className="mt-1 h-3 w-24 sm:w-40" />
-            ) : innId ? (
-              <>
-                ID: {innId}
-                {isInnError ? " • não foi possível carregar o nome" : null}
-              </>
-            ) : userRole === "SuperAdmin" ? (
-              "Nenhum tenant selecionado"
-            ) : (
-              ""
-            )}
-          </div>
         </div>
       </div>
 
-      <div className="hidden sm:flex items-center gap-2">
-        {roleLabel && <Badge variant="secondary">{roleLabel}</Badge>}
-        {innId ? (
-          <Badge variant="outline">X-Inn-Id: {innId}</Badge>
-        ) : userRole === "SuperAdmin" ? (
-          <Badge variant="destructive">Sem pousada</Badge>
-        ) : null}
-      </div>
+      {env.MODE === "development" && (
+        <div className="hidden sm:flex items-center gap-2">
+          {roleLabel && <Badge variant="secondary">{roleLabel}</Badge>}
+          {innId ? (
+            <Badge variant="outline">Tenant ID: {innId}</Badge>
+          ) : (
+            <Badge variant="destructive">Nenhuma pousada selecionada</Badge>
+          )}
+        </div>
+      )}
+
     </header>
   );
 }

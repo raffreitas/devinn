@@ -34,11 +34,11 @@ import type { Room } from "../types";
 const roomSchema = z.object({
   categoryId: z.string().min(1, "Categoria é obrigatória"),
   number: z
-    .string()
+    .number({ error: "Número do quarto é obrigatório" })
     .min(1, "Número do quarto é obrigatório")
     .refine((val) => {
-      const num = Number.parseInt(val);
-      return !isNaN(num) && num >= 1 && num <= 999;
+      const num = val;
+      return !Number.isNaN(num) && num >= 1 && num <= 999;
     }, "Número deve estar entre 1 e 999"),
   capacity: z
     .number({ error: "Capacidade é obrigatória" })
@@ -84,7 +84,7 @@ export function RoomFormDialog({
     resolver: zodResolver(roomSchema),
     defaultValues: {
       categoryId: room?.categoryId || "",
-      number: room?.number || "",
+      number: room?.number || 1,
       capacity: room?.capacity || 2,
       basePrice: room?.basePrice || 0,
       extraGuestPrice: room?.extraGuestPrice || 0,
@@ -97,7 +97,7 @@ export function RoomFormDialog({
   useEffect(() => {
     form.reset({
       categoryId: room?.categoryId || "",
-      number: room?.number || "",
+      number: room?.number || 1,
       capacity: room?.capacity || 2,
       basePrice: room?.basePrice ?? 0,
       extraGuestPrice: room?.extraGuestPrice ?? 0,
@@ -108,7 +108,6 @@ export function RoomFormDialog({
 
   const handleSubmit = async (data: RoomFormData) => {
     await onSubmit(data);
-    form.reset();
   };
 
   return (
