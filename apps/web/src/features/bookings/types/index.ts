@@ -4,7 +4,12 @@ export type BookingStatus =
   | "Completed"
   | "Canceled";
 export type PaymentStatus = "Pending" | "Partial" | "Paid";
-export type PaymentMethod = "pix" | "cash" | "credit_card" | "debit_card";
+export type PaymentMethod =
+  | "Cash"
+  | "Pix"
+  | "DebitCard"
+  | "CreditCard"
+  | "BankTransfer";
 
 export interface Guest {
   name: string;
@@ -49,6 +54,7 @@ export interface Booking {
   paymentStatus: PaymentStatus;
   payments: Payment[];
   totalPaid: number;
+  balanceDue: number;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -63,6 +69,9 @@ export interface CreateBookingRequest {
   children: number;
   childrenAges?: number[];
   notes?: string;
+  paidAmount?: number;
+  paymentMethod?: PaymentMethod;
+  paymentNotes?: string;
 }
 
 export interface UpdateBookingRequest {

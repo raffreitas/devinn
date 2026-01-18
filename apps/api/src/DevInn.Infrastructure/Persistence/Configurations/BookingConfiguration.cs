@@ -27,7 +27,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         // Money conversions
         var moneyConverter = new ValueConverter<Money, decimal>(m => m.Value, d => new Money(d));
         builder.Property(b => b.TotalValue).HasConversion(moneyConverter).HasPrecision(18, 2).IsRequired();
-        builder.Property(b => b.PaidValue).HasConversion(moneyConverter).HasPrecision(18, 2).IsRequired();
+        builder.Ignore(b => b.PaidValue); // Calculated from Payments collection
         // Timestamps
         builder.Property(b => b.CreatedAt).IsRequired();
         builder.Property(b => b.UpdatedAt).IsRequired();
@@ -75,9 +75,14 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
             childrenProp.Metadata.SetValueComparer(childrenComparer);
         });
 
+        // Payments collection (owned entities)
+
+
         // Foreign key to Room
         builder.HasOne<Room>().WithMany().HasForeignKey(b => b.RoomId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Inn>().WithMany().HasForeignKey(b => b.InnId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasMany(b => b.Payments).WithOne().HasForeignKey(b => b.BookingId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Indexes are created at DB migration level using raw SQL to allow INCLUDE and precise control.
         // See migration scripts for index creation to avoid EF translating owned property expressions.

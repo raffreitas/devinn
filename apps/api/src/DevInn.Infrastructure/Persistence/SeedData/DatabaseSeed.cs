@@ -106,9 +106,9 @@ internal sealed class DatabaseSeed(
                 new StayPeriod(DateTimeOffset.UtcNow.AddDays(7), DateTimeOffset.UtcNow.AddDays(10)),
                 new Occupancy(2, 0, []),
                 new Money(600m),
-                new Money(200m),
                 BookingSource.Manual
             );
+            booking1.AddPayment(new Money(200m), PaymentMethod.Pix, DateTimeOffset.UtcNow, "Pagamento inicial");
 
             var booking2 = new Booking(
                 room.Id,
@@ -116,7 +116,6 @@ internal sealed class DatabaseSeed(
                 new StayPeriod(DateTimeOffset.UtcNow.AddDays(15), DateTimeOffset.UtcNow.AddDays(17)),
                 new Occupancy(1, 0, []),
                 new Money(400m),
-                new Money(0m),
                 BookingSource.Manual
             );
 

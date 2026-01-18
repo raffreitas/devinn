@@ -37,7 +37,6 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
                                   b.children                AS "Children",
                                   b.children_ages           AS "ChildrenAges",
                                   b.total_value             AS "TotalValue",
-                                  b.paid_value              AS "PaidValue",
                                   b.status                  AS "Status",
                                   b.notes                   AS "Notes"
                            FROM bookings b
@@ -48,6 +47,17 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
                            LIMIT 1;
                            """;
 
+        const string paymentsSql = """
+                                   SELECT id AS "Id",
+                                          amount AS "Amount",
+                                          method AS "Method",
+                                          payment_date AS "PaymentDate",
+                                          notes AS "Notes"
+                                   FROM payments
+                                   WHERE booking_id = @BookingId
+                                   ORDER BY payment_date DESC;
+                                   """;
+
         await using var connection = await dbConnectionFactory.OpenConnectionAsync(cancellationToken);
         var r = await connection.QueryFirstOrDefaultAsync<BookingProjection>(sql,
             new { TenantId = tenantContext.Tenant.Id, query.Id });
@@ -55,14 +65,20 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
         if (r is null)
             return Result.Fail(new NotFoundError("Reserva não encontrada."));
 
+        var payments = await connection.QueryAsync<PaymentProjection>(paymentsSql, new { BookingId = r.Id });
+        var paymentsList = payments.Select(p => new PaymentDto(p.Id, p.Amount,
+            Enum.Parse<PaymentMethod>(p.Method), p.PaymentDate, p.Notes)).ToList();
+
+        decimal paidValue = paymentsList.Sum(p => p.Amount);
+
         int[]? childrenAges = null;
         if (!string.IsNullOrWhiteSpace(r.ChildrenAges))
         {
             childrenAges = JsonSerializer.Deserialize<int[]>(r.ChildrenAges!);
         }
 
-        var paymentStatus = r.PaidValue == 0m ? PaymentStatus.Pending :
-            r.PaidValue < r.TotalValue ? PaymentStatus.Partial : PaymentStatus.Paid;
+        var paymentStatus = paidValue == 0m ? PaymentStatus.Pending :
+            paidValue < r.TotalValue ? PaymentStatus.Partial : PaymentStatus.Paid;
 
         var nights = (int)(r.CheckOut - r.CheckIn).TotalDays;
 
@@ -87,7 +103,9 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
             pricing,
             Enum.Parse<BookingStatus>(r.Status),
             paymentStatus,
-            r.PaidValue,
+            paidValue,
+            r.TotalValue - paidValue,
+            paymentsList,
             r.Notes
         );
 

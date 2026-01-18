@@ -2,6 +2,14 @@
 
 namespace DevInn.Application.Features.Bookings.Shared;
 
+public sealed record PaymentDto(
+    Guid Id,
+    decimal Amount,
+    PaymentMethod Method,
+    DateTimeOffset PaymentDate,
+    string? Notes
+);
+
 public sealed record PricingBreakdown(
     decimal BasePrice,
     decimal ExtraGuestPrice,
@@ -27,6 +35,8 @@ public sealed record BookingDto(
     BookingStatus Status,
     PaymentStatus PaymentStatus,
     decimal TotalPaid,
+    decimal BalanceDue,
+    IReadOnlyCollection<PaymentDto> Payments,
     string? Notes
 );
 
@@ -50,5 +60,13 @@ internal sealed record BookingProjection(
     decimal TotalValue,
     decimal PaidValue,
     string Status,
+    string? Notes
+);
+
+internal sealed record PaymentProjection(
+    Guid Id,
+    decimal Amount,
+    string Method,
+    DateTimeOffset PaymentDate,
     string? Notes
 );

@@ -21,7 +21,10 @@ public sealed record UpdateBookingCommand(
     int Children,
     int[]? ChildrenAges = null,
     string? Notes = null,
-    BookingSource Source = BookingSource.Manual
+    BookingSource Source = BookingSource.Manual,
+    decimal? PaidAmount = null,
+    PaymentMethod? PaymentMethod = null,
+    string? PaymentNotes = null
 ) : ICommand<Result>
 {
     public Validation Validate() => new UpdateBookingCommandValidator().Validate(this).ToFailure();
@@ -65,5 +68,17 @@ internal sealed class UpdateBookingCommandValidator : AbstractValidator<UpdateBo
 
         RuleFor(x => x.Notes)
             .MaximumLength(1000).WithMessage("Observações não podem exceder 1000 caracteres.");
+
+        When(x => x.PaidAmount.HasValue, () =>
+        {
+            RuleFor(x => x.PaidAmount!.Value)
+                .GreaterThan(0).WithMessage("Valor do pagamento deve ser maior que zero.");
+
+            RuleFor(x => x.PaymentMethod)
+                .NotNull().WithMessage("Método de pagamento é obrigatório quando há valor pago.");
+        });
+
+        RuleFor(x => x.PaymentNotes)
+            .MaximumLength(500).WithMessage("Observações do pagamento não podem exceder 500 caracteres.");
     }
 }

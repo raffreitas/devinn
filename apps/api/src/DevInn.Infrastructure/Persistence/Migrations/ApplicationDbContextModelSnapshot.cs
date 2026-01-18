@@ -42,11 +42,6 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("notes");
 
-                    b.Property<decimal>("PaidValue")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("paid_value");
-
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uuid")
                         .HasColumnName("room_id");
@@ -95,6 +90,60 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_bookings_room_id");
 
                     b.ToTable("bookings", (string)null);
+                });
+
+            modelBuilder.Entity("DevInn.Domain.Aggregates.Bookings.Entities.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("InnId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("inn_id");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("method");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("notes");
+
+                    b.Property<DateTimeOffset>("PaymentDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("payment_date");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_payments");
+
+                    b.HasIndex("BookingId")
+                        .HasDatabaseName("ix_payments_booking_id");
+
+                    b.HasIndex("InnId")
+                        .HasDatabaseName("ix_payments_inn_id");
+
+                    b.ToTable("payments", (string)null);
                 });
 
             modelBuilder.Entity("DevInn.Domain.Aggregates.Inns.Inn", b =>
@@ -366,6 +415,16 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DevInn.Domain.Aggregates.Bookings.Entities.Payment", b =>
+                {
+                    b.HasOne("DevInn.Domain.Aggregates.Bookings.Booking", null)
+                        .WithMany("Payments")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_payments_bookings_booking_id");
+                });
+
             modelBuilder.Entity("DevInn.Domain.Aggregates.Inventory.Room", b =>
                 {
                     b.HasOne("DevInn.Domain.Aggregates.Inventory.RoomCategory", null)
@@ -391,6 +450,11 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_room_categories_inns_inn_id");
+                });
+
+            modelBuilder.Entity("DevInn.Domain.Aggregates.Bookings.Booking", b =>
+                {
+                    b.Navigation("Payments");
                 });
 #pragma warning restore 612, 618
         }

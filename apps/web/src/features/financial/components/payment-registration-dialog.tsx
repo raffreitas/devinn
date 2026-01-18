@@ -33,7 +33,7 @@ const paymentSchema = z.object({
   amount: z
     .number({ error: "Valor é obrigatório" })
     .positive("Valor deve ser maior que 0"),
-  method: z.enum(["pix", "cash", "credit_card", "debit_card"], {
+  method: z.enum(["Cash", "Pix", "CreditCard", "DebitCard", "BankTransfer"], {
     error: "Método de pagamento é obrigatório",
   }),
   notes: z.string().optional(),
@@ -64,7 +64,7 @@ export function PaymentRegistrationDialog({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       amount: remainingAmount,
-      method: "pix",
+      method: "Pix",
       notes: "",
     },
   });
@@ -152,13 +152,16 @@ export function PaymentRegistrationDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="pix">PIX</SelectItem>
-                      <SelectItem value="cash">Dinheiro</SelectItem>
-                      <SelectItem value="credit_card">
+                      <SelectItem value="Pix">PIX</SelectItem>
+                      <SelectItem value="Cash">Dinheiro</SelectItem>
+                      <SelectItem value="CreditCard">
                         Cartão de Crédito
                       </SelectItem>
-                      <SelectItem value="debit_card">
+                      <SelectItem value="DebitCard">
                         Cartão de Débito
+                      </SelectItem>
+                      <SelectItem value="BankTransfer">
+                        Transferência
                       </SelectItem>
                     </SelectContent>
                   </Select>

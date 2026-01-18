@@ -94,6 +94,16 @@ internal sealed class UpdateBookingCommandHandler(
             command.Source,
             command.Notes);
 
+        // Add payment if provided
+        if (command is { PaidAmount: not null, PaymentMethod: not null })
+        {
+            booking.AddPayment(
+                new Money(command.PaidAmount.Value),
+                command.PaymentMethod.Value,
+                DateTimeOffset.UtcNow,
+                command.PaymentNotes);
+        }
+
         await uow.CommitAsync(cancellationToken);
 
         return Result.Ok();

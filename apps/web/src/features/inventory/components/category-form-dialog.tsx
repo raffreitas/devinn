@@ -21,6 +21,7 @@ import {
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 import type { Category } from "../types";
+import { InputMoney } from "@/shared/components/input-money";
 
 const categorySchema = z.object({
   name: z
@@ -144,9 +145,9 @@ export function CategoryFormDialog({
                 name="basePrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preço Base (R$)</FormLabel>
+                    <FormLabel>Preço Base</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="0.00" {...field} />
+                      <InputMoney {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -160,7 +161,7 @@ export function CategoryFormDialog({
                   <FormItem>
                     <FormLabel>Preço Pessoa Extra (R$)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="0.00" {...field} />
+                      <InputMoney {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

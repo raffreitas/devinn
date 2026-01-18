@@ -25,14 +25,14 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                                 FROM bookings b
                                 WHERE b.inn_id = @TenantId
                                     AND (@Status IS NULL OR b.status = @Status)
-                                    AND (
-                                        @PaymentStatus IS NULL
-                                        OR (@PaymentStatus = 'Pending' AND b.paid_value = 0)
-                                        OR (@PaymentStatus = 'Partial' AND b.paid_value > 0 AND b.paid_value < b.total_value)
-                                        OR (@PaymentStatus = 'Paid' AND b.paid_value >= b.total_value)
-                                    )
                                     AND (@StartDate IS NULL OR b.check_out > @StartDate)
                                     AND (@EndDate IS NULL OR b.check_in < @EndDate)
+                                    AND (
+                                        @PaymentStatus IS NULL
+                                        OR (@PaymentStatus = 'Pending' AND COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) = 0)
+                                        OR (@PaymentStatus = 'Partial' AND COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) > 0 AND COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) < b.total_value)
+                                        OR (@PaymentStatus = 'Paid' AND COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) >= b.total_value)
+                                    )
                                 """;
 
         const string sql = """
@@ -53,7 +53,7 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                                   b.children                AS "Children",
                                   b.children_ages           AS "ChildrenAges",
                                   b.total_value             AS "TotalValue",
-                                  b.paid_value              AS "PaidValue",
+                                  COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) AS "PaidValue",
                                   b.status                  AS "Status",
                                   b.notes                   AS "Notes"
                            FROM bookings b
@@ -65,9 +65,9 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                                AND (@EndDate IS NULL OR b.check_in < @EndDate)
                                AND (
                                    @PaymentStatus IS NULL
-                                   OR (@PaymentStatus = 'Pending' AND b.paid_value = 0)
-                                   OR (@PaymentStatus = 'Partial' AND b.paid_value > 0 AND b.paid_value < b.total_value)
-                                   OR (@PaymentStatus = 'Paid' AND b.paid_value >= b.total_value)
+                                   OR (@PaymentStatus = 'Pending' AND COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) = 0)
+                                   OR (@PaymentStatus = 'Partial' AND COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) > 0 AND COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) < b.total_value)
+                                   OR (@PaymentStatus = 'Paid' AND COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) >= b.total_value)
                                )
                            ORDER BY b.check_in
                            OFFSET @Offset
@@ -131,6 +131,8 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                 Enum.Parse<BookingStatus>(r.Status),
                 paymentStatus,
                 r.PaidValue,
+                r.TotalValue - r.PaidValue,
+                [],
                 r.Notes
             );
         }).ToArray();

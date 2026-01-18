@@ -88,9 +88,18 @@ internal sealed class CreateBookingHandler(
             stay,
             occupancy,
             new Money(decimal.Round(total, 2)),
-            new Money(0m),
             command.Source,
             command.Notes);
+
+        // Add initial payment if provided
+        if (command is { PaidAmount: not null, PaymentMethod: not null })
+        {
+            booking.AddPayment(
+                new Money(command.PaidAmount.Value),
+                command.PaymentMethod.Value,
+                DateTimeOffset.UtcNow,
+                command.PaymentNotes);
+        }
 
         // Note: Availability/conflict checks across reservations should be performed at application layer using repository queries.
         await bookingRepository.AddAsync(booking, cancellationToken);

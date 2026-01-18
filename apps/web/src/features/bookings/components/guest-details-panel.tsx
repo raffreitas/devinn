@@ -11,6 +11,7 @@ import {
 } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import type { Booking, PaymentStatus } from "../types";
+import { getPaymentMethodLabel } from "../utils/payment-method-labels";
 
 const paymentStatusConfig: Record<
   PaymentStatus,
@@ -26,7 +27,7 @@ interface GuestDetailsPanelProps {
 }
 
 export function GuestDetailsPanel({ booking }: GuestDetailsPanelProps) {
-  const { guest, pricing, paymentStatus, totalPaid, payments } = booking;
+  const { guest, pricing, paymentStatus, totalPaid, balanceDue, payments } = booking;
 
   return (
     <div className="space-y-4">
@@ -166,7 +167,7 @@ export function GuestDetailsPanel({ booking }: GuestDetailsPanelProps) {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Restante</span>
               <span className="text-destructive font-medium">
-                R$ {(pricing.total - totalPaid).toFixed(2)}
+                R$ {balanceDue.toFixed(2)}
               </span>
             </div>
           </div>
@@ -183,7 +184,7 @@ export function GuestDetailsPanel({ booking }: GuestDetailsPanelProps) {
                   >
                     <span>
                       {format(new Date(payment.date), "dd/MM/yyyy")} -{" "}
-                      {payment.method}
+                      {getPaymentMethodLabel(payment.method)}
                     </span>
                     <span>R$ {payment.amount.toFixed(2)}</span>
                   </div>

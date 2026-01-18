@@ -2,8 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
-import { useEffect } from "react";
+import { CalendarIcon, Calculator, Info, Users } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { roomService } from "@/features/inventory/services/room-service";
@@ -46,6 +46,7 @@ import type {
   CreateBookingRequest,
   UpdateBookingRequest,
 } from "../types";
+import { InputMoney } from "@/shared/components/input-money";
 
 const bookingSchema = z
   .object({
@@ -63,11 +64,27 @@ const bookingSchema = z
     guestDocument: z.string().optional(),
     guestBirthDate: z.string().optional(), // YYYY-MM-DD
     notes: z.string().optional(),
+    paidAmount: z.number().min(0, "Valor deve ser maior ou igual a 0").optional(),
+    paymentMethod: z.enum(["Cash", "Pix", "DebitCard", "CreditCard", "BankTransfer"]).optional(),
+    paymentNotes: z.string().optional(),
   })
   .refine((data) => data.checkOut > data.checkIn, {
     message: "Data de check-out deve ser posterior ao check-in",
     path: ["checkOut"],
-  });
+  })
+  .refine(
+    (data) => {
+      // Se paidAmount foi preenchido, paymentMethod é obrigatório
+      if (data.paidAmount && data.paidAmount > 0 && !data.paymentMethod) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Método de pagamento é obrigatório quando há valor pago",
+      path: ["paymentMethod"],
+    }
+  );
 
 type BookingFormData = z.infer<typeof bookingSchema>;
 
@@ -113,6 +130,9 @@ export function BookingFormDialog({
       guestDocument: booking?.guest.document || "",
       guestBirthDate: booking?.guest.birthDate || "",
       notes: booking?.notes || "",
+      paidAmount: undefined,
+      paymentMethod: undefined,
+      paymentNotes: "",
     },
   });
 
@@ -126,8 +146,70 @@ export function BookingFormDialog({
   const checkIn = form.watch("checkIn");
   const checkOut = form.watch("checkOut");
   const childrenCount = form.watch("children");
+  const adults = form.watch("adults");
+  const childrenAges = form.watch("childrenAges");
 
   const selectedRoom = roomsData?.items.find((r) => r.id === selectedRoomId);
+
+  // Calculate nights
+  const nights = useMemo(() => {
+    if (!checkIn || !checkOut) return 0;
+    const diff = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
+  }, [checkIn, checkOut]);
+
+  // Calculate total
+  const priceBreakdown = useMemo(() => {
+    if (!selectedRoom || nights <= 0) return null;
+
+    const basePrice = selectedRoom.basePrice;
+    const extraPrice = selectedRoom.extraPersonPrice;
+    
+    const extraAdults = Math.max(0, adults - 2);
+    const adultsExtraCost = extraAdults * extraPrice;
+
+    let childrenCost = 0;
+    const childrenDetails: string[] = [];
+
+    if (childrenAges) {
+      for (let i = 0; i < childrenAges.length; i++) {
+        const age = childrenAges[i]?.age || 0;
+        let cost = 0;
+        let label = "";
+
+        if (age < 5) {
+          cost = 0;
+          label = "Grátis";
+        } else if (age <= 10) {
+          cost = extraPrice * 0.5;
+          label = `R$ ${cost.toFixed(2)}`;
+        } else {
+          cost = extraPrice;
+          label = `R$ ${cost.toFixed(2)}`;
+        }
+
+        childrenCost += cost;
+        childrenDetails.push(`Criança ${i + 1} (${age} anos): ${label}`);
+      }
+    }
+
+    const dailyTotal = basePrice + adultsExtraCost + childrenCost;
+    const total = dailyTotal * nights;
+
+    return {
+      basePrice,
+      extraAdults,
+      adultsExtraCost,
+      childrenCost,
+      childrenDetails,
+      dailyTotal,
+      nights,
+      total,
+    };
+  }, [selectedRoom, adults, childrenAges, nights]);
+
+  const totalPeople = adults + childrenCount;
+  const maxCapacity = selectedRoom?.capacity || 10;
 
   // Sync children ages fields with children count
   useEffect(() => {
@@ -201,6 +283,9 @@ export function BookingFormDialog({
           ? data.childrenAges.map((x) => x.age)
           : undefined,
       notes: data.notes,
+      paidAmount: data.paidAmount && data.paidAmount > 0 ? data.paidAmount : undefined,
+      paymentMethod: data.paidAmount && data.paidAmount > 0 ? data.paymentMethod : undefined,
+      paymentNotes: data.paymentNotes || undefined,
     };
 
     if (booking && onUpdate) {
@@ -529,6 +614,89 @@ export function BookingFormDialog({
                 </FormItem>
               )}
             />
+
+            {/* Payment Section */}
+            {!booking && (
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-sm font-medium">
+                  Pagamento Inicial (opcional)
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Registre o valor pago no momento da reserva, se houver.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="paidAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Valor Pago</FormLabel>
+                        <FormControl>
+                          <InputMoney
+                            min={0}
+                            placeholder="R$ 0,00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="paymentMethod"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Método de Pagamento</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o método" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Pix">PIX</SelectItem>
+                            <SelectItem value="Cash">Dinheiro</SelectItem>
+                            <SelectItem value="CreditCard">
+                              Cartão de Crédito
+                            </SelectItem>
+                            <SelectItem value="DebitCard">
+                              Cartão de Débito
+                            </SelectItem>
+                            <SelectItem value="BankTransfer">
+                              Transferência
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="paymentNotes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Observações do Pagamento (opcional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: Entrada de 50%"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
             <DialogFooter className="flex-col sm:flex-row gap-2">
               <Button
