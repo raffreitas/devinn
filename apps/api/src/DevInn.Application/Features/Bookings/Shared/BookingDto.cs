@@ -1,4 +1,5 @@
 ﻿using DevInn.Domain.Aggregates.Bookings.Enums;
+using DevInn.Domain.Shared.Enums;
 
 namespace DevInn.Application.Features.Bookings.Shared;
 

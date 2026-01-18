@@ -62,7 +62,7 @@ const bookingSchema = z
     guestEmail: z.email("E-mail inválido").optional().or(z.literal("")),
     guestPhone: z.string().min(10, "Telefone deve ter no mínimo 10 dígitos"),
     guestDocument: z.string().optional(),
-    guestBirthDate: z.string().optional(), // YYYY-MM-DD
+    guestBirthDate: z.string().optional(),
     notes: z.string().optional(),
     paidAmount: z.number().min(0, "Valor deve ser maior ou igual a 0").optional(),
     paymentMethod: z.enum(["Cash", "Pix", "DebitCard", "CreditCard", "BankTransfer"]).optional(),
@@ -74,7 +74,6 @@ const bookingSchema = z
   })
   .refine(
     (data) => {
-      // Se paidAmount foi preenchido, paymentMethod é obrigatório
       if (data.paidAmount && data.paidAmount > 0 && !data.paymentMethod) {
         return false;
       }
@@ -154,7 +153,9 @@ export function BookingFormDialog({
   // Calculate nights
   const nights = useMemo(() => {
     if (!checkIn || !checkOut) return 0;
-    const diff = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    const diff = Math.ceil(
+      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
+    );
     return diff > 0 ? diff : 0;
   }, [checkIn, checkOut]);
 
@@ -163,8 +164,8 @@ export function BookingFormDialog({
     if (!selectedRoom || nights <= 0) return null;
 
     const basePrice = selectedRoom.basePrice;
-    const extraPrice = selectedRoom.extraPersonPrice;
-    
+    const extraPrice = selectedRoom.extraGuestPrice;
+
     const extraAdults = Math.max(0, adults - 2);
     const adultsExtraCost = extraAdults * extraPrice;
 
@@ -241,6 +242,9 @@ export function BookingFormDialog({
       guestDocument: booking?.guest.document || "",
       guestBirthDate: booking?.guest.birthDate || "",
       notes: booking?.notes || "",
+      paidAmount: undefined,
+      paymentMethod: undefined,
+      paymentNotes: "",
     });
   }, [booking, preselectedRoom, preselectedDate, form]);
 
@@ -254,7 +258,7 @@ export function BookingFormDialog({
         data.roomId,
         formattedCheckIn,
         formattedCheckOut,
-        booking?.id,
+        booking?.id
       );
 
       if (hasConflict) {
@@ -283,8 +287,10 @@ export function BookingFormDialog({
           ? data.childrenAges.map((x) => x.age)
           : undefined,
       notes: data.notes,
-      paidAmount: data.paidAmount && data.paidAmount > 0 ? data.paidAmount : undefined,
-      paymentMethod: data.paidAmount && data.paidAmount > 0 ? data.paymentMethod : undefined,
+      paidAmount:
+        data.paidAmount && data.paidAmount > 0 ? data.paidAmount : undefined,
+      paymentMethod:
+        data.paidAmount && data.paidAmount > 0 ? data.paymentMethod : undefined,
       paymentNotes: data.paymentNotes || undefined,
     };
 
@@ -324,42 +330,52 @@ export function BookingFormDialog({
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-6"
           >
-            {/* Room and Dates Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Informações da Reserva</h3>
-
-              <FormField
-                control={form.control}
-                name="roomId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quarto</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um quarto" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {roomsData?.items
-                          .filter((room) => room.status === "Active")
-                          .map((room) => (
-                            <SelectItem key={room.id} value={room.id}>
-                              {room.number} - {room.categoryName} (R${" "}
-                              {room.basePrice.toFixed(2)})
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Quarto e Datas */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium border-b pb-2">Informações da Reserva</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="roomId"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-3">
+                      <FormLabel>Quarto</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione um quarto" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {roomsData?.items
+                            .filter((room) => room.status === "Active")
+                            .map((room) => (
+                              <SelectItem key={room.id} value={room.id}>
+                                Quarto {room.number} - {room.categoryName} ({room.capacity}p) - R${" "}
+                                {room.basePrice.toFixed(2)}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedRoom && (
+                        <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            Máx: {selectedRoom.capacity} pessoas | Base: R${" "}
+                            {selectedRoom.basePrice}/dia | Extra: R${" "}
+                            {selectedRoom.extraGuestPrice}/pessoa
+                          </span>
+                        </div>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="checkIn"
@@ -373,7 +389,7 @@ export function BookingFormDialog({
                               variant="outline"
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
+                                !field.value && "text-muted-foreground"
                               )}
                             >
                               {field.value ? (
@@ -413,7 +429,7 @@ export function BookingFormDialog({
                               variant="outline"
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground",
+                                !field.value && "text-muted-foreground"
                               )}
                             >
                               {field.value ? (
@@ -435,61 +451,91 @@ export function BookingFormDialog({
                           />
                         </PopoverContent>
                       </Popover>
+                      {nights > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          {nights} noite(s)
+                        </p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="adults"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Adultos</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={1}
-                            max={selectedRoom?.capacity || 10}
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="grid grid-cols-1">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="adults"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Adultos</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={maxCapacity}
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="children"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Crianças</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min={0}
-                            max={10}
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value))
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="children"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Crianças</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={0}
+                              max={Math.max(0, maxCapacity - adults)}
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(Number(e.target.value))
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {totalPeople > 0 && (
+                    <div
+                      className={cn(
+                        "mt-2 p-2 rounded-lg text-sm",
+                        totalPeople > maxCapacity
+                          ? "bg-destructive/10 text-destructive"
+                          : "bg-muted/50 text-muted-foreground"
+                      )}
+                    >
+                      <Users className="w-4 h-4 inline mr-1" />
+                      Total: <span className="font-semibold">{totalPeople}</span>{" "}
+                      de {maxCapacity} pessoas
+                      {totalPeople > maxCapacity && " - Excede a capacidade!"}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {childrenCount > 0 && (
-                <div className="space-y-2 p-4 border rounded-md bg-muted/20">
-                  <h4 className="text-sm font-medium">Idade das Crianças</h4>
+                <div className="space-y-2 p-3 border rounded-lg bg-muted/20">
+                  <h4 className="text-sm font-medium flex items-center gap-2">
+                    <Info className="w-4 h-4" />
+                    Idade das Crianças
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Regras:</strong> Até 4 anos grátis | 5-10 anos pagam
+                    metade | Acima de 10 pagam valor inteiro
+                  </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {childrenAgeFields.map((field, index) => (
                       <FormField
@@ -499,16 +545,28 @@ export function BookingFormDialog({
                         render={({ field: subField }) => (
                           <FormItem>
                             <FormControl>
-                              <Input
-                                type="number"
-                                placeholder={`Idade ${index + 1}`}
-                                min={0}
-                                max={17}
-                                {...subField}
-                                onChange={(e) =>
-                                  subField.onChange(Number(e.target.value))
+                              <Select
+                                value={String(subField.value)}
+                                onValueChange={(value) =>
+                                  subField.onChange(Number(value))
                                 }
-                              />
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder={`Criança ${index + 1}`} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: 18 }, (_, age) => (
+                                    <SelectItem key={age} value={String(age)}>
+                                      {age} {age === 1 ? "ano" : "anos"}
+                                      {age < 5
+                                        ? " (grátis)"
+                                        : age <= 10
+                                          ? " (metade)"
+                                          : ""}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -520,16 +578,86 @@ export function BookingFormDialog({
               )}
             </div>
 
-            {/* Guest Information Section */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium">Dados do Hóspede</h3>
+            {/* Cálculo Automático */}
+            {priceBreakdown && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium border-b pb-2 flex items-center gap-2">
+                  <Calculator className="w-4 h-4 text-primary" />
+                  Cálculo Automático
+                </h3>
+
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Diária base (quarto {selectedRoom?.number}):
+                    </span>
+                    <span className="font-medium">
+                      R$ {priceBreakdown.basePrice.toFixed(2)}
+                    </span>
+                  </div>
+
+                  {priceBreakdown.extraAdults > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        {priceBreakdown.extraAdults} adulto(s) adicional(is) × R${" "}
+                        {selectedRoom?.extraGuestPrice}:
+                      </span>
+                      <span className="font-medium">
+                        R$ {priceBreakdown.adultsExtraCost.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  {priceBreakdown.childrenDetails.map((detail, i) => (
+                    <div key={i} className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        {detail.split(":")[0]}:
+                      </span>
+                      <span className="font-medium">{detail.split(":")[1]}</span>
+                    </div>
+                  ))}
+
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Total por diária:
+                      </span>
+                      <span className="font-medium">
+                        R$ {priceBreakdown.dailyTotal.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        Número de noites:
+                      </span>
+                      <span className="font-medium">{priceBreakdown.nights}</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="flex justify-between text-lg">
+                      <span className="font-semibold">VALOR TOTAL:</span>
+                      <span className="font-bold text-primary">
+                        R$ {priceBreakdown.total.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Dados do Hóspede */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium border-b pb-2">
+                Dados do Hóspede
+              </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="guestName"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="md:col-span-2">
                       <FormLabel>Nome Completo</FormLabel>
                       <FormControl>
                         <Input placeholder="João Silva" {...field} />
@@ -541,12 +669,12 @@ export function BookingFormDialog({
 
                 <FormField
                   control={form.control}
-                  name="guestBirthDate"
+                  name="guestPhone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Data de Nascimento</FormLabel>
+                      <FormLabel>Telefone</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input placeholder="(11) 98765-4321" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -573,12 +701,12 @@ export function BookingFormDialog({
 
                 <FormField
                   control={form.control}
-                  name="guestPhone"
+                  name="guestBirthDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefone</FormLabel>
+                      <FormLabel>Data de Nascimento</FormLabel>
                       <FormControl>
-                        <Input placeholder="(11) 98765-4321" {...field} />
+                        <Input type="date" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -616,9 +744,9 @@ export function BookingFormDialog({
             />
 
             {/* Payment Section */}
-            {!booking && (
-              <div className="space-y-4 pt-4 border-t">
-                <h3 className="text-sm font-medium">
+            {!booking && priceBreakdown && (
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium border-b pb-2">
                   Pagamento Inicial (opcional)
                 </h3>
                 <p className="text-sm text-muted-foreground">
@@ -635,6 +763,7 @@ export function BookingFormDialog({
                         <FormControl>
                           <InputMoney
                             min={0}
+                            max={priceBreakdown.total}
                             placeholder="R$ 0,00"
                             {...field}
                           />
@@ -686,10 +815,7 @@ export function BookingFormDialog({
                     <FormItem>
                       <FormLabel>Observações do Pagamento (opcional)</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Ex: Entrada de 50%"
-                          {...field}
-                        />
+                        <Input placeholder="Ex: Entrada de 50%" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -707,7 +833,11 @@ export function BookingFormDialog({
                 Cancelar
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Salvando..." : "Salvar Reserva"}
+                {form.formState.isSubmitting
+                  ? "Salvando..."
+                  : booking
+                    ? "Salvar Alterações"
+                    : "Confirmar Reserva"}
               </Button>
             </DialogFooter>
           </form>

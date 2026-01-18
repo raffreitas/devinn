@@ -12,6 +12,8 @@ using Mediator;
 
 using System.Text.Json;
 
+using DevInn.Domain.Shared.Enums;
+
 namespace DevInn.Application.Features.Bookings.Queries.GetBookingById;
 
 internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFactory, ITenantContext tenantContext)
@@ -48,11 +50,11 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
                            """;
 
         const string paymentsSql = """
-                                   SELECT id AS "Id",
-                                          amount AS "Amount",
-                                          method AS "Method",
-                                          payment_date AS "PaymentDate",
-                                          notes AS "Notes"
+                                   SELECT id            AS "Id",
+                                          amount        AS "Amount",
+                                          method        AS "Method",
+                                          payment_date  AS "PaymentDate",
+                                          notes         AS "Notes"
                                    FROM payments
                                    WHERE booking_id = @BookingId
                                    ORDER BY payment_date DESC;

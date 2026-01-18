@@ -6,6 +6,7 @@ using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.Aggregates.Inns;
 using DevInn.Domain.Aggregates.Inventory;
+using DevInn.Domain.Shared.Enums;
 using DevInn.Domain.Shared.ValueObjects;
 using DevInn.Infrastructure.Identity.Models;
 using DevInn.Infrastructure.Persistence.Context;

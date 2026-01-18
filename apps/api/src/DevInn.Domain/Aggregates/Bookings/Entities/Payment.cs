@@ -1,5 +1,6 @@
 using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.SeedWork;
+using DevInn.Domain.Shared.Enums;
 using DevInn.Domain.Shared.ValueObjects;
 
 namespace DevInn.Domain.Aggregates.Bookings.Entities;

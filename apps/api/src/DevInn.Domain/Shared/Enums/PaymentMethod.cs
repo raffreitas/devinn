@@ -1,4 +1,4 @@
-namespace DevInn.Domain.Aggregates.Bookings.Enums;
+namespace DevInn.Domain.Shared.Enums;
 
 public enum PaymentMethod
 {

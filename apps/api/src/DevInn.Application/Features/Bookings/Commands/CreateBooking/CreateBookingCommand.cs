@@ -1,6 +1,7 @@
 using DevInn.Application.Common.Validation;
 using DevInn.Application.Features.Bookings.Shared;
 using DevInn.Domain.Aggregates.Bookings.Enums;
+using DevInn.Domain.Shared.Enums;
 
 using FluentResults;
 
