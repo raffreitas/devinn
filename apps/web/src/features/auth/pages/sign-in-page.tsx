@@ -16,6 +16,7 @@ import {
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 import { authService } from "../services/auth-service";
+import { useNavigate } from "react-router-dom";
 
 const signInSchema = z.object({
   email: z
@@ -29,6 +30,7 @@ const signInSchema = z.object({
 type SignInSchema = z.infer<typeof signInSchema>;
 
 export function SignInPage() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<SignInSchema>({
@@ -48,6 +50,7 @@ export function SignInPage() {
   async function handleAuthenticate({ email, password }: SignInSchema) {
     try {
       await authenticate({ email, password });
+      navigate("/", { replace: true });
     } catch {
       toast.error("Credenciais inválidas");
     }

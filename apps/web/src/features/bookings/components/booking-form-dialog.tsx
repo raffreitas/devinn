@@ -47,6 +47,7 @@ import type {
   UpdateBookingRequest,
 } from "../types";
 import { InputMoney } from "@/shared/components/input-money";
+import { toast } from "sonner";
 
 const bookingSchema = z
   .object({
@@ -265,6 +266,7 @@ export function BookingFormDialog({
         form.setError("checkIn", {
           message: "Já existe reserva neste período",
         });
+        toast.error("Conflito de reserva: já existe uma reserva neste período.");
         return;
       }
     }
