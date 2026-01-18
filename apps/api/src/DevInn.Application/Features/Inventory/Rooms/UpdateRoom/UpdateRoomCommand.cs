@@ -33,9 +33,11 @@ public sealed class UpdateRoomValidator : AbstractValidator<UpdateRoomCommand>
             .GreaterThan(0).WithMessage("Número do quarto deve ser maior que 0")
             .LessThanOrEqualTo(999).WithMessage("Número do quarto não pode exceder 999");
 
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Nome do quarto é obrigatório")
-            .MaximumLength(100).WithMessage("Nome não pode ter mais de 100 caracteres");
+        When(x => !string.IsNullOrWhiteSpace(x.Name), () =>
+        {
+            RuleFor(x => x.Name)
+                .MaximumLength(100).WithMessage("Nome não pode ter mais de 100 caracteres");
+        });
 
         RuleFor(x => x.Status)
             .IsInEnum().WithMessage("Status inválido");

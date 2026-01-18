@@ -3,6 +3,7 @@ using System.Text;
 
 using DevInn.Application.Common.Tokens;
 using DevInn.Application.Common.Tokens.Abstractions;
+using DevInn.Infrastructure.Common.Constants;
 using DevInn.Infrastructure.Tokens.Options;
 
 using Microsoft.Extensions.Options;
@@ -30,7 +31,7 @@ internal sealed class JwtTokenService(IOptions<JwtTokenOptions> options) : IToke
         ];
 
         if (request.TenantId is not null)
-            claims.Add(new Claim("tenant_id", request.TenantId.Value.ToString()));
+            claims.Add(new Claim(TenantKeys.InnClaim, request.TenantId.Value.ToString()));
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
