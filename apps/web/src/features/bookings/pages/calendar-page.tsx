@@ -173,18 +173,10 @@ export function CalendarPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handlePreviousMonth}
-          >
+          <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleToday}
-            className="min-w-30"
-          >
+          <Button variant="outline" onClick={handleToday} className="min-w-30">
             {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
           </Button>
           <Button variant="outline" size="icon" onClick={handleNextMonth}>
@@ -203,32 +195,25 @@ export function CalendarPage() {
             </div>
           </div>
         </CardHeader>
-
         <CardContent>
-          <div className="overflow-x-auto -mx-6 sm:mx-0 max-w-full">
-            <div className="inline-block min-w-full align-middle">
-              <div className="grid" style={{ gridTemplateColumns: "minmax(180px, 260px) 1fr" }}>
-                {/* Header Row - Days */}
-                <div className="sticky left-0 bg-background border-b border-r p-2 font-medium text-sm z-10">
-                  Quarto
-                </div>
-                <div className="border-b">
-                  <div
-                    className="grid"
-                    style={{
-                      gridTemplateColumns: `repeat(${daysInMonth.length}, minmax(0, 1fr))`,
-                    }}
-                  >
+          <div className="overflow-hidden">
+            <div className="overflow-x-auto">
+              <div className="max-w-xs">
+                <div className="flex">
+                  <div className="w-28 shrink-0 p-3 font-semibold text-sm text-foreground border-r border-border border-b bg-muted/30">
+                    Quartos
+                  </div>
+                  <div className="flex">
                     {daysInMonth.map((day) => (
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "border-b border-r p-2 text-center text-xs font-medium w-11.5",
+                          "border-r p-2 text-center text-xs font-medium w-15 border-b border-border bg-muted/30",
                           isToday(day) && "bg-primary/10",
                         )}
                       >
-                        <div>{format(day, "d")}</div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="font-semibold">{format(day, "d")}</div>
+                        <div className="text-[10px] text-muted-foreground uppercase">
                           {format(day, "EEE", { locale: ptBR })}
                         </div>
                       </div>
@@ -236,17 +221,15 @@ export function CalendarPage() {
                   </div>
                 </div>
 
-                {/* Room Rows */}
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
                     ? bookings.filter(
-                      (b) => b.roomId === room.id && b.status !== "Canceled",
-                    )
+                        (b) => b.roomId === room.id && b.status !== "Canceled",
+                      )
                     : [];
-
                   return (
-                    <div key={room.id} className="contents">
-                      <div className="sticky left-0 bg-background border-b border-r p-2 flex items-center z-10">
+                    <div key={room.id} className="flex border-b border-border">
+                      <div className="w-28 shrink-0 p-3 flex items-center border-r border-border">
                         <div>
                           <div className="font-medium text-sm">
                             {room.number}
@@ -257,56 +240,52 @@ export function CalendarPage() {
                         </div>
                       </div>
 
-                      <div className="border-b relative">
-                        <div
-                          className="grid"
-                          style={{
-                            gridTemplateColumns: `repeat(${daysInMonth.length}, minmax(0, 1fr))`,
-                          }}
-                        >
-                          {daysInMonth.map((day) => {
-                            const booking = getBookingsForRoomAndDate(
-                              room.id,
-                              day,
-                            );
+                      <div className="flex relative flex-1 ">
+                        {daysInMonth.map((day) => {
+                          const booking = getBookingsForRoomAndDate(
+                            room.id,
+                            day,
+                          );
+                          return (
+                            <div
+                              key={`${room.id}-${day.toISOString()}`}
+                              className={cn(
+                                "border-r p-1 relative h-15 w-15 cursor-pointer hover:bg-accent/50 transition-colors",
+                                isToday(day) && "bg-primary/5",
+                              )}
+                              onClick={() =>
+                                !booking && handleCellClick(room.id, day)
+                              }
+                              title={`Quarto ${room.number} - ${format(day, "dd/MM/yyyy")}`}
+                            >
+                              {!booking && (
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                  <Plus className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
 
-                            return (
-                              <div
-                                key={`${room.id}-${day.toISOString()}`}
-                                className={cn(
-                                  "border-r p-1 relative min-h-15 cursor-pointer hover:bg-accent/50 w-11.5 h-14",
-                                  isToday(day) && "bg-primary/5",
-                                )}
-                                onClick={() =>
-                                  !booking && handleCellClick(room.id, day)
-                                }
-                                title={`Quarto ${room.number} - ${format(day, "dd/MM/yyyy")}`}
-                              >
-                                {!booking && (
-                                  <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                                    <Plus className="h-4 w-4 text-muted-foreground" />
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Booking bars overlay */}
                         {roomBookings.map((booking) => {
                           const checkIn = parseISO(booking.checkIn);
                           const checkOut = parseISO(booking.checkOut);
 
-                          // Skip bookings fully outside the month
                           if (checkOut < monthStart || checkIn > monthEnd)
                             return null;
 
-                          const startDay = checkIn < monthStart ? 1 : checkIn.getDate();
-                          const endDay = checkOut > monthEnd ? daysInMonth.length : checkOut.getDate() - 1;
+                          const startDay =
+                            checkIn < monthStart ? 1 : checkIn.getDate();
+                          const endDay =
+                            checkOut > monthEnd
+                              ? daysInMonth.length
+                              : checkOut.getDate() - 1;
 
                           const totalDays = daysInMonth.length;
-                          const leftPercent = ((startDay - 1) / totalDays) * 100;
-                          const widthPercent = ((endDay - startDay + 1) / totalDays) * 100;
+                          const leftPercent =
+                            ((startDay - 1) / totalDays) * 100;
+                          const widthPercent =
+                            ((endDay - startDay + 1) / totalDays) * 100;
 
                           return (
                             <ReservationBar
@@ -353,6 +332,6 @@ export function CalendarPage() {
         preselectedRoom={preselectedRoom}
         preselectedDate={preselectedDate}
       />
-    </div >
+    </div>
   );
 }
