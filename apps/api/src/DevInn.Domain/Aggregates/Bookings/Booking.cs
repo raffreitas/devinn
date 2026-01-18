@@ -78,6 +78,11 @@ public sealed class Booking : Entity
         _payments.Add(payment);
     }
 
+    public void ClearPayments()
+    {
+        _payments.Clear();
+    }
+
     private PaymentStatus CalculatePaymentStatus()
     {
         if (PaidValue == 0) return PaymentStatus.Pending;

@@ -61,6 +61,7 @@ internal sealed record BookingProjection(
     decimal TotalValue,
     decimal PaidValue,
     string Status,
+    string? Payments,
     string? Notes
 );
 

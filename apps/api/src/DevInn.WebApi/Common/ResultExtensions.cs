@@ -28,6 +28,13 @@ public static class ResultExtensions
             : TypedResults.Ok(new ApiResource<T>(result.Value));
     }
 
+    public static IResult ToCreated(this Result result)
+    {
+        return result.IsFailed
+            ? result.ToError()
+            : TypedResults.Created();
+    }
+
     public static IResult ToCreated<T>(this Result<T> result, Func<T, string>? locationFactory = null)
         where T : notnull
     {
@@ -59,7 +66,8 @@ public static class ResultExtensions
             ValidationError => (HttpStatusCode.UnprocessableEntity, "Requisição inválida"),
             UnauthorizedError => (HttpStatusCode.Unauthorized, "Acesso não autorizado"),
             ForbiddenError => (HttpStatusCode.Forbidden, "Acesso proibido"),
-            _ => (HttpStatusCode.InternalServerError, "Erro interno do servidor")
+            ConflictError => (HttpStatusCode.Conflict, "Conflito de recurso"),
+            _ => (HttpStatusCode.BadRequest, "Requisição inválida")
         };
 
         var problemDetails = new ApiProblemDetails
@@ -68,7 +76,8 @@ public static class ResultExtensions
             Detail = error.Message,
             Status = (int)statusCode,
             Errors = error is ValidationError err && err.Errors.Length != 0
-                ? err.Errors.ToDictionary(e => e.Field.ToLowerInvariant(), e => e.Message)
+                ? err.Errors.DistinctBy(e => e.Field)
+                    .ToDictionary(e => e.Field.ToLowerInvariant(), e => e.Message)
                 : null
         };
         return TypedResults.Problem(problemDetails);

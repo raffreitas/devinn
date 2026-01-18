@@ -6,12 +6,14 @@ using DevInn.Infrastructure.Identity.Models;
 using FluentResults;
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace DevInn.Infrastructure.Identity.Services;
 
 internal sealed class IdentityService(
     UserManager<ApplicationUser> userManager,
-    RoleManager<IdentityRole<Guid>> roleManager)
+    RoleManager<IdentityRole<Guid>> roleManager,
+    ILogger<IdentityService> logger)
     : IIdentityService
 {
     public async Task<Result<User>> LoginAsync(string email, string password,
@@ -19,7 +21,7 @@ internal sealed class IdentityService(
     {
         var user = await userManager.FindByEmailAsync(email);
         if (user is null || !await userManager.CheckPasswordAsync(user, password))
-            return Result.Fail("Invalid credentials");
+            return Result.Fail(new UnauthorizedError("Invalid credentials"));
 
         var roles = await userManager.GetRolesAsync(user);
         var userRoles = roles.Select(Enum.Parse<UserRole>).ToArray();
@@ -39,19 +41,31 @@ internal sealed class IdentityService(
 
         var createUserResult = await userManager.CreateAsync(newUser, request.Password);
         if (!createUserResult.Succeeded)
+        {
+            logger.LogError("Erro ao criar usuário: {Errors}",
+                string.Join(", ", createUserResult.Errors.Select(e => e.Description)));
             return Result.Fail("Falha ao criar usuário");
+        }
 
         var roleExists = await roleManager.RoleExistsAsync(request.Role.ToString());
         if (!roleExists)
         {
             var roleResult = await roleManager.CreateAsync(new IdentityRole<Guid>(request.Role.ToString()));
             if (!roleResult.Succeeded)
+            {
+                logger.LogError("Erro ao criar função de usuário: {Errors}",
+                    string.Join(", ", roleResult.Errors.Select(e => e.Description)));
                 return Result.Fail("Falha ao criar função de usuário");
+            }
         }
 
         var assignRoleResult = await userManager.AddToRoleAsync(newUser, request.Role.ToString());
         if (!assignRoleResult.Succeeded)
+        {
+            logger.LogError("Erro ao atribuir função ao usuário: {Errors}",
+                string.Join(", ", assignRoleResult.Errors.Select(e => e.Description)));
             return Result.Fail("Falha ao atribuir função ao usuário");
+        }
 
         var resultUser = new User(newUser.Id, newUser.InnId, newUser.UserName!, newUser.Email!, [request.Role]);
 

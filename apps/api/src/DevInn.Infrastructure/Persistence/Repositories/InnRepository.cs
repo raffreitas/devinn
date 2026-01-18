@@ -12,5 +12,8 @@ internal sealed class InnRepository(ApplicationDbContext dbContext) : IInnReposi
         => await dbContext.Inns.AddAsync(inn, cancellationToken);
 
     public async Task<IReadOnlyCollection<Inn>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await dbContext.Inns.ToListAsync(cancellationToken);
+        => await dbContext.Inns.AsNoTracking().ToListAsync(cancellationToken);
+
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+        => await dbContext.Inns.AsNoTracking().AnyAsync(i => i.Id == id, cancellationToken);
 }

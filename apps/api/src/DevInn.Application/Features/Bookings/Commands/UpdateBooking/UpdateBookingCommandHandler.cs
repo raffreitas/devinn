@@ -94,9 +94,10 @@ internal sealed class UpdateBookingCommandHandler(
             command.Source,
             command.Notes);
 
-        // Add payment if provided
+        // Replace existing payment if provided
         if (command is { PaidAmount: not null, PaymentMethod: not null })
         {
+            booking.ClearPayments();
             booking.AddPayment(
                 new Money(command.PaidAmount.Value),
                 command.PaymentMethod.Value,

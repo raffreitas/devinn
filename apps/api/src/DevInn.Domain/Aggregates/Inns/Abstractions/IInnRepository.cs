@@ -4,4 +4,5 @@ public interface IInnRepository
 {
     Task AddAsync(Inn inn, CancellationToken cancellationToken = default);
     Task<IReadOnlyCollection<Inn>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
 }
