@@ -84,6 +84,9 @@ export interface UpdateBookingRequest {
   status?: BookingStatus;
   notes?: string;
   roomId?: string;
+  paidAmount?: number;
+  paymentMethod?: PaymentMethod;
+  paymentNotes?: string;
 }
 
 export interface BookingFilters {

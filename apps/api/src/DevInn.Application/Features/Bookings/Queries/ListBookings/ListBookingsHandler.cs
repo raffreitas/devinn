@@ -11,6 +11,7 @@ using FluentResults;
 using Mediator;
 
 using System.Text.Json;
+using DevInn.Domain.Shared.Enums;
 
 namespace DevInn.Application.Features.Bookings.Queries.ListBookings;
 
@@ -97,7 +98,19 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                 query.Offset
             });
 
-        var items = rows.Select(r =>
+        const string paymentsSql = """
+                                   SELECT id            AS "Id",
+                                          amount        AS "Amount",
+                                          method        AS "Method",
+                                          payment_date  AS "PaymentDate",
+                                          notes         AS "Notes"
+                                   FROM payments
+                                   WHERE booking_id = @BookingId
+                                   ORDER BY payment_date DESC;
+                                   """;
+
+        var itemsList = new List<BookingDto>();
+        foreach (var r in rows)
         {
             int[]? childrenAges = null;
             if (!string.IsNullOrWhiteSpace(r.ChildrenAges))
@@ -105,8 +118,11 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                 childrenAges = JsonSerializer.Deserialize<int[]>(r.ChildrenAges!);
             }
 
-            var paymentStatus = r.PaidValue == 0m ? PaymentStatus.Pending
-                : r.PaidValue < r.TotalValue ? PaymentStatus.Partial : PaymentStatus.Paid;
+            var payments = await connection.QueryAsync<PaymentProjection>(paymentsSql, new { BookingId = r.Id });
+            var paymentsList = payments.Select(p => new PaymentDto(p.Id, p.Amount, Enum.Parse<PaymentMethod>(p.Method), p.PaymentDate, p.Notes)).ToArray();
+
+            var paymentStatus = paymentsList.Length == 0 ? PaymentStatus.Pending
+                : paymentsList.Sum(p => p.Amount) < r.TotalValue ? PaymentStatus.Partial : PaymentStatus.Paid;
 
             var nights = (int)(r.CheckOut - r.CheckIn).TotalDays;
             var numberOfExtraGuests = Math.Max(0, r.Adults - 2);
@@ -116,7 +132,7 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
 
             var guest = new GuestDto(r.GuestName, r.GuestPhone, r.GuestEmail, r.GuestDocument, r.GuestBirthDate);
 
-            return new BookingDto(
+            itemsList.Add(new BookingDto(
                 r.Id,
                 r.RoomId,
                 r.Number.ToString(),
@@ -132,10 +148,12 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                 paymentStatus,
                 r.PaidValue,
                 r.TotalValue - r.PaidValue,
-                [],
+                paymentsList,
                 r.Notes
-            );
-        }).ToArray();
+            ));
+        }
+
+        var items = itemsList.ToArray();
 
         return new PaginatedResult<BookingDto>(items, count, query.PageNumber, query.PageSize);
     }

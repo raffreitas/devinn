@@ -69,7 +69,7 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
 
         var payments = await connection.QueryAsync<PaymentProjection>(paymentsSql, new { BookingId = r.Id });
         var paymentsList = payments.Select(p => new PaymentDto(p.Id, p.Amount,
-            Enum.Parse<PaymentMethod>(p.Method), p.PaymentDate, p.Notes)).ToList();
+            Enum.Parse<PaymentMethod>(p.Method), p.PaymentDate, p.Notes)).ToArray();
 
         decimal paidValue = paymentsList.Sum(p => p.Amount);
 

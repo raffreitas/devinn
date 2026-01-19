@@ -41,34 +41,37 @@ public sealed record BookingDto(
     string? Notes
 );
 
-internal sealed record BookingProjection(
-    Guid Id,
-    Guid RoomId,
-    int Number,
-    string CategoryName,
-    decimal BasePrice,
-    decimal ExtraPersonPrice,
-    string GuestName,
-    string GuestPhone,
-    string? GuestEmail,
-    string? GuestDocument,
-    DateOnly? GuestBirthDate,
-    DateTime CheckIn,
-    DateTime CheckOut,
-    int Adults,
-    int Children,
-    string? ChildrenAges,
-    decimal TotalValue,
-    decimal PaidValue,
-    string Status,
-    string? Payments,
-    string? Notes
-);
+internal sealed record BookingProjection
+{
+    public Guid Id { get; init; }
+    public Guid RoomId { get; init; }
+    public int Number { get; init; }
+    public string CategoryName { get; init; } = null!;
+    public decimal BasePrice { get; init; }
+    public decimal ExtraPersonPrice { get; init; }
+    public string GuestName { get; init; } = null!;
+    public string GuestPhone { get; init; } = null!;
+    public string? GuestEmail { get; init; }
+    public string? GuestDocument { get; init; }
+    public DateOnly? GuestBirthDate { get; init; }
+    public DateTime CheckIn { get; init; }
+    public DateTime CheckOut { get; init; }
+    public int Adults { get; init; }
+    public int Children { get; init; }
+    public string? ChildrenAges { get; init; }
+    public decimal TotalValue { get; init; }
+    public decimal PaidValue { get; init; }
+    public string Status { get; init; } = null!;
+    public string? Payments { get; init; }
+    public string? Notes { get; init; }
+}
 
-internal sealed record PaymentProjection(
-    Guid Id,
-    decimal Amount,
-    string Method,
-    DateTimeOffset PaymentDate,
-    string? Notes
-);
+
+internal sealed record PaymentProjection
+{
+    public Guid Id { get; init; }
+    public decimal Amount { get; init; }
+    public string Method { get; init; } = null!;
+    public DateTimeOffset PaymentDate { get; init; }
+    public string? Notes { get; init; }
+}

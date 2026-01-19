@@ -130,9 +130,9 @@ export function BookingFormDialog({
       guestDocument: booking?.guest.document || "",
       guestBirthDate: booking?.guest.birthDate || "",
       notes: booking?.notes || "",
-      paidAmount: undefined,
-      paymentMethod: undefined,
-      paymentNotes: "",
+      paidAmount: booking?.payments && booking.payments.length > 0 ? booking.payments[0].amount : undefined,
+      paymentMethod: booking?.payments && booking.payments.length > 0 ? booking.payments[0].method : undefined,
+      paymentNotes: booking?.payments && booking.payments.length > 0 ? booking.payments[0].notes || "" : "",
     },
   });
 
@@ -243,9 +243,9 @@ export function BookingFormDialog({
       guestDocument: booking?.guest.document || "",
       guestBirthDate: booking?.guest.birthDate || "",
       notes: booking?.notes || "",
-      paidAmount: undefined,
-      paymentMethod: undefined,
-      paymentNotes: "",
+      paidAmount: booking?.payments && booking.payments.length > 0 ? booking.payments[0].amount : undefined,
+      paymentMethod: booking?.payments && booking.payments.length > 0 ? booking.payments[0].method : undefined,
+      paymentNotes: booking?.payments && booking.payments.length > 0 ? booking.payments[0].notes || "" : "",
     });
   }, [booking, preselectedRoom, preselectedDate, form]);
 
@@ -306,6 +306,9 @@ export function BookingFormDialog({
         childrenAges: request.childrenAges,
         notes: request.notes,
         roomId: request.roomId,
+        paidAmount: request.paidAmount,
+        paymentMethod: request.paymentMethod,
+        paymentNotes: request.paymentNotes,
       });
     } else {
       await onSubmit(request);
@@ -409,7 +412,7 @@ export function BookingFormDialog({
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date) => date < new Date()}
-                            initialFocus
+                            autoFocus
                           />
                         </PopoverContent>
                       </Popover>
@@ -449,7 +452,7 @@ export function BookingFormDialog({
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date) => !checkIn || date <= checkIn}
-                            initialFocus
+                            autoFocus
                           />
                         </PopoverContent>
                       </Popover>
@@ -746,7 +749,7 @@ export function BookingFormDialog({
             />
 
             {/* Payment Section */}
-            {!booking && priceBreakdown && (
+            {priceBreakdown && (
               <div className="space-y-3">
                 <h3 className="text-sm font-medium border-b pb-2">
                   Pagamento Inicial (opcional)

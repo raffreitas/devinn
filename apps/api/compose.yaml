@@ -11,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - devinn_pgdata:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   aspire:
     image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
