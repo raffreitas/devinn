@@ -75,6 +75,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dotnet tools & dependencies (Makefile)
+        working-directory: apps/api
+        run: make setup
+
+      - name: Run EF migrations (Apply DB migrations)
+        working-directory: apps/api
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.PROD_CONNECTION_STRING }}
+          ASPNETCORE_ENVIRONMENT: Production
+        run: make migrate-all
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
