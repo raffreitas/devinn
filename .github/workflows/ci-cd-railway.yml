@@ -29,14 +29,14 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-          cache-dependency-path: "**/pnpm-lock.yaml"
+          # cache: "pnpm"
+          # cache-dependency-path: "**/pnpm-lock.yaml"
 
       - name: Install JS dependencies (workspace)
-        run: pnpm -w install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build JS workspaces
-        run: pnpm -w build:web --if-present
+        run: pnpm build:web
 
       - name: Cache NuGet packages
         uses: actions/cache@v5
