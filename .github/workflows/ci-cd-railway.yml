@@ -54,12 +54,15 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore .NET packages
+        working-directory: apps/api
         run: dotnet restore
 
       - name: Build .NET projects
+        working-directory: apps/api
         run: dotnet build --no-restore --configuration Release --verbosity minimal
 
       - name: Run .NET tests
+        working-directory: apps/api
         run: dotnet test --no-build --verbosity normal
 
   deploy:
