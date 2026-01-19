@@ -2,7 +2,7 @@ export interface Category {
   id: string;
   name: string;
   capacity: number;
-  description: string;
+  description?: string;
   basePrice: number;
   extraPersonPrice: number;
 }
@@ -28,7 +28,7 @@ export interface Room {
 
 export interface CreateRoomRequest {
   categoryId: string;
-  number: string;
+  number: number;
   capacity: number;
   basePrice: number;
   extraGuestPrice: number;
@@ -38,7 +38,7 @@ export interface CreateRoomRequest {
 
 export interface UpdateRoomRequest {
   categoryId?: string;
-  number?: string;
+  number?: number;
   capacity?: number;
   basePrice?: number;
   extraGuestPrice?: number;
