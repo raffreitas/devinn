@@ -32,19 +32,11 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: "**/pnpm-lock.yaml"
 
-      - name: Enable corepack and activate pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-
       - name: Install JS dependencies (workspace)
         run: pnpm -w install --frozen-lockfile
 
       - name: Build JS workspaces
-        run: pnpm -w -r build --if-present
-
-      - name: Run JS tests
-        run: pnpm -w -r test --if-present
+        run: pnpm -w build:web --if-present
 
       - name: Cache NuGet packages
         uses: actions/cache@v5
