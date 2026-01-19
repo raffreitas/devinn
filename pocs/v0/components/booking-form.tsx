@@ -32,7 +32,7 @@ export function BookingForm({
   editingBooking,
 }: BookingFormProps) {
   const [formData, setFormData] = useState({
-    roomNumber: editingBooking?.roomNumber || selectedRoom || 1,
+    number: editingBooking?.number || selectedRoom || 1,
     guestName: editingBooking?.guestName || "",
     phone: editingBooking?.phone || "",
     email: editingBooking?.email || "",
@@ -50,10 +50,10 @@ export function BookingForm({
   })
   const [error, setError] = useState("")
 
-  const maxCapacity = getRoomCapacity(formData.roomNumber)
+  const maxCapacity = getRoomCapacity(formData.number)
   const totalPeople = formData.adults + formData.children
-  const basePrice = getRoomBasePrice(formData.roomNumber)
-  const extraPrice = getRoomExtraPersonPrice(formData.roomNumber)
+  const basePrice = getRoomBasePrice(formData.number)
+  const extraPrice = getRoomExtraPersonPrice(formData.number)
 
   const nights = useMemo(() => {
     if (!formData.checkIn || !formData.checkOut) return 0
@@ -65,8 +65,8 @@ export function BookingForm({
 
   const calculatedTotal = useMemo(() => {
     if (nights <= 0) return 0
-    return calculateBookingTotal(formData.roomNumber, formData.adults, formData.childrenAgesList, nights)
-  }, [formData.roomNumber, formData.adults, formData.childrenAgesList, nights])
+    return calculateBookingTotal(formData.number, formData.adults, formData.childrenAgesList, nights)
+  }, [formData.number, formData.adults, formData.childrenAgesList, nights])
 
   useEffect(() => {
     if (calculatedTotal > 0 && !editingBooking) {
@@ -78,7 +78,7 @@ export function BookingForm({
     if (!editingBooking) {
       setFormData((prev) => ({
         ...prev,
-        roomNumber: selectedRoom || prev.roomNumber,
+        number: selectedRoom || prev.number,
         checkIn: selectedDate || prev.checkIn,
       }))
     }
@@ -133,12 +133,12 @@ export function BookingForm({
     }
 
     if (totalPeople > maxCapacity) {
-      setError(`O quarto ${formData.roomNumber} comporta no máximo ${maxCapacity} pessoas`)
+      setError(`O quarto ${formData.number} comporta no máximo ${maxCapacity} pessoas`)
       return
     }
 
     const hasConflict = existingBookings.some((booking) => {
-      if (booking.roomNumber !== formData.roomNumber) return false
+      if (booking.number !== formData.number) return false
       if (editingBooking && booking.id === editingBooking.id) return false
 
       const existingStart = new Date(booking.checkIn)
@@ -218,8 +218,8 @@ export function BookingForm({
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Quarto *</label>
               <select
-                value={formData.roomNumber}
-                onChange={(e) => setFormData({ ...formData, roomNumber: Number(e.target.value) })}
+                value={formData.number}
+                onChange={(e) => setFormData({ ...formData, number: Number(e.target.value) })}
                 className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 {rooms.map((room) => (
@@ -409,7 +409,7 @@ export function BookingForm({
 
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Diária base (quarto {formData.roomNumber}):</span>
+                  <span className="text-muted-foreground">Diária base (quarto {formData.number}):</span>
                   <span className="font-medium">R$ {basePrice.toFixed(2)}</span>
                 </div>
 

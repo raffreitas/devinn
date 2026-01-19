@@ -89,8 +89,8 @@ export function GuestDetails({
 
   const getPriceBreakdown = (booking: Booking) => {
     const nights = calculateNights(booking.checkIn, booking.checkOut)
-    const basePrice = getRoomBasePrice(booking.roomNumber)
-    const extraPrice = getRoomExtraPersonPrice(booking.roomNumber)
+    const basePrice = getRoomBasePrice(booking.number)
+    const extraPrice = getRoomExtraPersonPrice(booking.number)
 
     const extraAdults = Math.max(0, booking.adults - 2)
     const adultsExtraCost = extraAdults * extraPrice
@@ -145,9 +145,8 @@ export function GuestDetails({
                     <div
                       key={booking.id}
                       onClick={() => onSelectBooking(booking)}
-                      className={`p-3 cursor-pointer transition-colors ${
-                        isSelected ? "bg-primary/10" : "hover:bg-muted/50"
-                      }`}
+                      className={`p-3 cursor-pointer transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-muted/50"
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-medium text-foreground truncate">{booking.guestName}</span>
@@ -159,7 +158,7 @@ export function GuestDetails({
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <Bed className="w-3 h-3" />Q{booking.roomNumber}
+                          <Bed className="w-3 h-3" />Q{booking.number}
                         </span>
                         <span className="flex items-center gap-1">
                           <Users className="w-3 h-3" />
@@ -256,7 +255,7 @@ export function GuestDetails({
 
               {(() => {
                 const breakdown = getPriceBreakdown(selectedBooking)
-                const extraPrice = getRoomExtraPersonPrice(selectedBooking.roomNumber)
+                const extraPrice = getRoomExtraPersonPrice(selectedBooking.number)
                 return (
                   <div className="bg-background rounded-lg p-3 text-xs space-y-1">
                     <div className="flex items-center gap-1 text-muted-foreground mb-2">
@@ -264,7 +263,7 @@ export function GuestDetails({
                       <span className="font-medium">Detalhamento do cálculo:</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Diária base (Q{selectedBooking.roomNumber}):</span>
+                      <span className="text-muted-foreground">Diária base (Q{selectedBooking.number}):</span>
                       <span>{formatCurrency(breakdown.basePrice)}</span>
                     </div>
                     {breakdown.extraAdults > 0 && (
@@ -309,14 +308,14 @@ export function GuestDetails({
                   <div>
                     <p className="text-xs text-muted-foreground">Quarto</p>
                     <p className="font-medium text-foreground">
-                      Quarto {selectedBooking.roomNumber}
+                      Quarto {selectedBooking.number}
                       <span className="text-muted-foreground font-normal ml-2">
-                        (capacidade: {getRoomCapacity(selectedBooking.roomNumber)} pessoas)
+                        (capacidade: {getRoomCapacity(selectedBooking.number)} pessoas)
                       </span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      R$ {getRoomBasePrice(selectedBooking.roomNumber)}/dia + R${" "}
-                      {getRoomExtraPersonPrice(selectedBooking.roomNumber)}/pessoa extra
+                      R$ {getRoomBasePrice(selectedBooking.number)}/dia + R${" "}
+                      {getRoomExtraPersonPrice(selectedBooking.number)}/pessoa extra
                     </p>
                   </div>
                 </div>

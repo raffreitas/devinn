@@ -9,7 +9,7 @@ import { MapPin, Phone, Calendar, Wallet } from "lucide-react"
 
 export interface Booking {
   id: string
-  roomNumber: number
+  number: number
   guestName: string
   phone: string
   email?: string
@@ -26,16 +26,16 @@ export interface Booking {
   paidValue: number
 }
 
-export function getRoomCapacity(roomNumber: number): number {
-  return roomNumber <= 4 ? 5 : 4
+export function getRoomCapacity(number: number): number {
+  return number <= 4 ? 5 : 4
 }
 
-export function getRoomBasePrice(roomNumber: number): number {
-  return roomNumber <= 4 ? 280 : 300
+export function getRoomBasePrice(number: number): number {
+  return number <= 4 ? 280 : 300
 }
 
-export function getRoomExtraPersonPrice(roomNumber: number): number {
-  return roomNumber <= 4 ? 130 : 120
+export function getRoomExtraPersonPrice(number: number): number {
+  return number <= 4 ? 130 : 120
 }
 
 export function getChildPrice(age: number, extraPersonPrice: number): number {
@@ -45,13 +45,13 @@ export function getChildPrice(age: number, extraPersonPrice: number): number {
 }
 
 export function calculateBookingTotal(
-  roomNumber: number,
+  number: number,
   adults: number,
   childrenAges: number[],
   nights: number,
 ): number {
-  const basePrice = getRoomBasePrice(roomNumber)
-  const extraPrice = getRoomExtraPersonPrice(roomNumber)
+  const basePrice = getRoomBasePrice(number)
+  const extraPrice = getRoomExtraPersonPrice(number)
   const extraAdults = Math.max(0, adults - 2)
   const adultsExtra = extraAdults * extraPrice
 
@@ -67,7 +67,7 @@ export function calculateBookingTotal(
 const initialBookings: Booking[] = [
   {
     id: "1",
-    roomNumber: 1,
+    number: 1,
     guestName: "João Silva",
     phone: "(37) 99888-7766",
     email: "joao.silva@email.com",
@@ -85,7 +85,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "2",
-    roomNumber: 3,
+    number: 3,
     guestName: "Maria Santos",
     phone: "(37) 99777-5544",
     email: "maria@email.com",
@@ -102,7 +102,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "3",
-    roomNumber: 5,
+    number: 5,
     guestName: "Carlos Oliveira",
     phone: "(31) 98765-4321",
     email: "carlos.oliveira@email.com",
@@ -119,7 +119,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "4",
-    roomNumber: 2,
+    number: 2,
     guestName: "Ana Paula Ferreira",
     phone: "(37) 99666-3322",
     checkIn: "2026-01-14",
@@ -133,7 +133,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "5",
-    roomNumber: 7,
+    number: 7,
     guestName: "Roberto Almeida",
     phone: "(34) 99555-1100",
     email: "roberto@email.com",
@@ -151,7 +151,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "6",
-    roomNumber: 4,
+    number: 4,
     guestName: "Fernanda Lima",
     phone: "(37) 99444-8877",
     checkIn: "2026-01-20",
@@ -166,7 +166,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "7",
-    roomNumber: 8,
+    number: 8,
     guestName: "Pedro Henrique Costa",
     phone: "(31) 99333-2211",
     email: "pedro.costa@email.com",
@@ -182,7 +182,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "8",
-    roomNumber: 6,
+    number: 6,
     guestName: "Luciana Martins",
     phone: "(37) 99222-0099",
     checkIn: "2026-01-18",
@@ -198,7 +198,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "9",
-    roomNumber: 1,
+    number: 1,
     guestName: "Marcelo Souza",
     phone: "(37) 99111-2233",
     email: "marcelo.souza@email.com",
@@ -215,7 +215,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "10",
-    roomNumber: 3,
+    number: 3,
     guestName: "Juliana Pereira",
     phone: "(34) 98877-6655",
     checkIn: "2026-01-22",
@@ -230,7 +230,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "11",
-    roomNumber: 5,
+    number: 5,
     guestName: "Ricardo Mendes",
     phone: "(31) 99444-5566",
     email: "ricardo.mendes@email.com",
@@ -247,7 +247,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "12",
-    roomNumber: 2,
+    number: 2,
     guestName: "Camila Rodrigues",
     phone: "(37) 98765-1234",
     email: "camila@email.com",
@@ -263,7 +263,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "13",
-    roomNumber: 8,
+    number: 8,
     guestName: "Fernando Gomes",
     phone: "(34) 99666-7788",
     checkIn: "2026-01-17",
@@ -278,7 +278,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "14",
-    roomNumber: 6,
+    number: 6,
     guestName: "Patricia Campos",
     phone: "(37) 99888-1122",
     email: "patricia.campos@email.com",
@@ -295,7 +295,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "15",
-    roomNumber: 4,
+    number: 4,
     guestName: "Bruno Carvalho",
     phone: "(31) 98888-9999",
     checkIn: "2026-01-10",
@@ -311,7 +311,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "16",
-    roomNumber: 7,
+    number: 7,
     guestName: "Daniela Nunes",
     phone: "(37) 99777-3344",
     email: "daniela.nunes@email.com",
@@ -327,7 +327,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "17",
-    roomNumber: 1,
+    number: 1,
     guestName: "Gustavo Ribeiro",
     phone: "(37) 99123-4567",
     email: "gustavo.r@email.com",
@@ -344,7 +344,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "18",
-    roomNumber: 5,
+    number: 5,
     guestName: "Beatriz Andrade",
     phone: "(31) 98765-9876",
     checkIn: "2026-01-22",
@@ -359,7 +359,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "19",
-    roomNumber: 2,
+    number: 2,
     guestName: "Thiago Moreira",
     phone: "(37) 99234-5678",
     email: "thiago.m@email.com",
@@ -376,7 +376,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "20",
-    roomNumber: 3,
+    number: 3,
     guestName: "Vanessa Costa",
     phone: "(34) 99345-6789",
     checkIn: "2026-01-08",
@@ -390,7 +390,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "21",
-    roomNumber: 6,
+    number: 6,
     guestName: "Alexandre Santos",
     phone: "(31) 99456-7890",
     email: "alex.santos@email.com",
@@ -408,7 +408,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "22",
-    roomNumber: 7,
+    number: 7,
     guestName: "Renata Oliveira",
     phone: "(37) 99567-8901",
     checkIn: "2026-01-08",
@@ -423,7 +423,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "23",
-    roomNumber: 4,
+    number: 4,
     guestName: "Eduardo Lima",
     phone: "(34) 99678-9012",
     email: "eduardo.lima@email.com",
@@ -439,7 +439,7 @@ const initialBookings: Booking[] = [
   },
   {
     id: "24",
-    roomNumber: 8,
+    number: 8,
     guestName: "Mariana Ferreira",
     phone: "(37) 99789-0123",
     checkIn: "2026-01-24",
@@ -509,8 +509,8 @@ export default function Home() {
     }
   }
 
-  const handleCalendarSelect = (roomNumber: number, date: string) => {
-    setSelectedRoom(roomNumber)
+  const handleCalendarSelect = (number: number, date: string) => {
+    setSelectedRoom(number)
     setSelectedDate(date)
     setEditingBooking(null)
     setShowForm(true)
@@ -519,14 +519,14 @@ export default function Home() {
   const handleBookingClick = (booking: Booking) => {
     setSelectedBooking(booking)
     setEditingBooking(booking)
-    setSelectedRoom(booking.roomNumber)
+    setSelectedRoom(booking.number)
     setSelectedDate(booking.checkIn)
     setShowForm(true)
   }
 
   const handleEditBooking = (booking: Booking) => {
     setEditingBooking(booking)
-    setSelectedRoom(booking.roomNumber)
+    setSelectedRoom(booking.number)
     setSelectedDate(booking.checkIn)
     setShowForm(true)
   }
@@ -570,22 +570,20 @@ export default function Home() {
         <div className="flex gap-2 mb-6 border-b border-border">
           <button
             onClick={() => setActiveTab("reservas")}
-            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === "reservas"
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${activeTab === "reservas"
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <Calendar className="w-4 h-4" />
             Reservas
           </button>
           <button
             onClick={() => setActiveTab("financeiro")}
-            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${
-              activeTab === "financeiro"
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors border-b-2 -mb-px ${activeTab === "financeiro"
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <Wallet className="w-4 h-4" />
             Financeiro

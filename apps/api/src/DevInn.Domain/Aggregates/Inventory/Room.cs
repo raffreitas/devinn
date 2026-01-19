@@ -1,4 +1,5 @@
-﻿using DevInn.Domain.SeedWork;
+﻿using DevInn.Domain.Aggregates.Inventory.Enums;
+using DevInn.Domain.SeedWork;
 
 namespace DevInn.Domain.Aggregates.Inventory;
 
@@ -31,11 +32,6 @@ public sealed class Room : Entity
         Name = name;
         Status = status;
     }
-}
 
-public enum RoomStatus
-{
-    Active = 1,
-    Maintenance,
-    Inactive
+    public void Activate() => Status = RoomStatus.Active;
 }

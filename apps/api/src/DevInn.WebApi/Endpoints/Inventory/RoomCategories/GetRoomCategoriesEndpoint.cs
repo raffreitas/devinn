@@ -1,6 +1,8 @@
 using DevInn.Application.Features.Inventory.RoomCategories.GetRoomCategories;
 using DevInn.WebApi.Common;
 
+using Mediator;
+
 namespace DevInn.WebApi.Endpoints.Inventory.RoomCategories;
 
 public sealed class GetRoomCategoriesEndpoint : IEndpoint
@@ -9,9 +11,9 @@ public sealed class GetRoomCategoriesEndpoint : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet(Route, async (IGetRoomCategoriesUseCase uc, CancellationToken ct) =>
+        app.MapGet(Route, async (ISender sender, CancellationToken ct) =>
             {
-                var result = await uc.ExecuteAsync(new GetRoomCategoriesInput(), ct);
+                var result = await sender.Send(new GetRoomCategoriesQuery(), ct);
                 return result.ToOk();
             })
             .WithTags(Tags.RoomCategories)

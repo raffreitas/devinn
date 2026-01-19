@@ -1,12 +1,15 @@
 ﻿using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Tenancy.Abstractions;
+using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Inns.Abstractions;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
+using DevInn.Infrastructure.Common.Constants;
 using DevInn.Infrastructure.Common.Extensions;
 using DevInn.Infrastructure.Persistence.Context;
 using DevInn.Infrastructure.Persistence.Factories;
 using DevInn.Infrastructure.Persistence.Interceptors;
 using DevInn.Infrastructure.Persistence.Repositories;
+using DevInn.Infrastructure.Persistence.SeedData;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -40,6 +43,12 @@ public static class DependencyInjection
         services.AddScoped<IInnRepository, InnRepository>();
         services.AddScoped<IRoomCategoryRepository, RoomCategoryRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentNames.Development)
+        {
+            services.AddTransient<DatabaseSeed>();
+        }
 
         return services;
     }

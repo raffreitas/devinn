@@ -16,15 +16,21 @@ import {
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
 import { authService } from "../services/auth-service";
+import { useNavigate } from "react-router-dom";
 
 const signInSchema = z.object({
-  email: z.email({ error: "E-mail inválido" }).min(1, { error: "E-mail é obrigatório" }),
-  password: z.string({ error: "Senha inválida" }).min(6, { error: "Senha deve ter no mínimo 6 caracteres" }),
+  email: z
+    .email({ error: "E-mail inválido" })
+    .min(1, { error: "E-mail é obrigatório" }),
+  password: z
+    .string({ error: "Senha inválida" })
+    .min(6, { error: "Senha deve ter no mínimo 6 caracteres" }),
 });
 
 type SignInSchema = z.infer<typeof signInSchema>;
 
 export function SignInPage() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<SignInSchema>({
@@ -44,14 +50,15 @@ export function SignInPage() {
   async function handleAuthenticate({ email, password }: SignInSchema) {
     try {
       await authenticate({ email, password });
+      navigate("/", { replace: true });
     } catch {
       toast.error("Credenciais inválidas");
     }
   }
 
   return (
-    <div className="lg:p-8">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-87.5">
+    <div className="p-4 lg:p-8">
+      <div className="mx-auto flex w-full max-w-md flex-col justify-center space-y-6 px-2 sm:px-0">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Acessar</h1>
         </div>
@@ -121,4 +128,3 @@ export function SignInPage() {
     </div>
   );
 }
-

@@ -19,6 +19,7 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options)
         {
             entity.ToTable("asp_net_users");
             entity.Property(x => x.InnId);
+            entity.Property(x => x.Name).IsRequired().HasMaxLength(255);
         });
         builder.Entity<IdentityRole<Guid>>().ToTable("asp_net_roles");
         builder.Entity<IdentityUserRole<Guid>>().ToTable("asp_net_user_roles");

@@ -24,29 +24,13 @@ public sealed record Metadata
     };
 }
 
-public sealed record ApiResource<T>
-{
-    [JsonPropertyName("data")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public T Data { get; init; }
-
-    [JsonPropertyName("meta")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public Metadata? Metadata { get; init; }
-
-    public ApiResource(T data)
-    {
-        if (data is PaginatedResult<T> paginatedResult)
-        {
-            Metadata = Metadata.FromPaginationResult(paginatedResult);
-            Data = paginatedResult is { Items: T items } ? items : default!;
-        }
-        else
-        {
-            Data = data;
-        }
-    }
-}
+public sealed record ApiResource<T>(
+    [property: JsonPropertyName("data")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    T Data,
+    [property: JsonPropertyName("meta")]
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    Metadata? Metadata = null);
 
 public sealed class ApiProblemDetails : ProblemDetails
 {

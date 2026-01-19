@@ -1,7 +1,10 @@
 ﻿using System.Diagnostics;
 
+using DevInn.Application.Common.Identity;
 using DevInn.Application.Common.Tenancy;
 using DevInn.Application.Common.Tenancy.Abstractions;
+using DevInn.Infrastructure.Common.Constants;
+using DevInn.WebApi.Common;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,9 +27,22 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
             return;
         }
 
+        if (context.User.Identity is { IsAuthenticated: false })
+        {
+            logger.LogWarning("Requisição não autenticada para {Path}", context.Request.Path);
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsJsonAsync(new ApiProblemDetails
+            {
+                Title = "Não autorizado",
+                Status = StatusCodes.Status401Unauthorized,
+                Detail = "A requisição não foi autenticada."
+            });
+            return;
+        }
+
         var tenantId = ExtractTenantId(context);
 
-        if (tenantId == Guid.Empty)
+        if (tenantId == Guid.Empty && !context.User.IsInRole(nameof(UserRole.SuperAdmin)))
         {
             logger.LogWarning("Nenhum tenant identificado na requisição para {Path}", context.Request.Path);
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -61,14 +77,14 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
     private static Guid ExtractTenantId(HttpContext context)
     {
         // 1. Verificar header customizado
-        if (context.Request.Headers.TryGetValue("X-Tenant-Id", out var tenantHeader) &&
+        if (context.Request.Headers.TryGetValue(TenantKeys.InnHeader, out var tenantHeader) &&
             Guid.TryParse(tenantHeader.ToString(), out var tenantFromHeader))
         {
             return tenantFromHeader;
         }
 
         // 2. Verificar claim do JWT
-        var tenantClaim = context.User.FindFirst("tenant_id")?.Value ?? context.User.FindFirst("inn_id")?.Value;
+        var tenantClaim = context.User.FindFirst(TenantKeys.InnClaim)?.Value;
 
         if (tenantClaim != null && Guid.TryParse(tenantClaim, out var tenantFromClaim))
         {

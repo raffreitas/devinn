@@ -1,0 +1,2 @@
+﻿namespace DevInn.Application.Features.Bookings.Queries.ListBookings;
+

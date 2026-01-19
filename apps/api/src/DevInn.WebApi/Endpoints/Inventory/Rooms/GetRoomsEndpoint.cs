@@ -1,6 +1,8 @@
 using DevInn.Application.Features.Inventory.Rooms.GetRooms;
 using DevInn.WebApi.Common;
 
+using Mediator;
+
 namespace DevInn.WebApi.Endpoints.Inventory.Rooms;
 
 public sealed class GetRoomsEndpoint : IEndpoint
@@ -9,9 +11,9 @@ public sealed class GetRoomsEndpoint : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet(Route, async ([AsParameters] GetRoomsInput input, IGetRoomsUseCase uc, CancellationToken ct) =>
+        app.MapGet(Route, async ([AsParameters] GetRoomsQuery query, ISender sender, CancellationToken ct) =>
             {
-                var result = await uc.ExecuteAsync(input, ct);
+                var result = await sender.Send(query, ct);
                 return result.ToOk();
             })
             .WithTags(Tags.Rooms)

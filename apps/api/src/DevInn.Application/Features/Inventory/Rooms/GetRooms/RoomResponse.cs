@@ -1,12 +1,13 @@
-﻿using DevInn.Domain.Aggregates.Inventory;
-
-namespace DevInn.Application.Features.Inventory.Rooms.GetRooms;
+﻿namespace DevInn.Application.Features.Inventory.Rooms.GetRooms;
 
 public sealed record RoomResponse(
     Guid Id,
+    int Number,
+    string? Name,
+    string Status,
     Guid CategoryId,
     string CategoryName,
-    int Number,
-    string Name,
-    RoomStatus Status
+    int Capacity,
+    decimal BasePrice,
+    decimal ExtraGuestPrice
 );

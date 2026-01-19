@@ -4,3 +4,15 @@ export type ApiProblem = {
   status: number;
   errors: Record<string, string>;
 };
+
+export type ApiResponse<T> = {
+  data: T;
+  meta?: Metadata;
+};
+
+export interface Metadata {
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
