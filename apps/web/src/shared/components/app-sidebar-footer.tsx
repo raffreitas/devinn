@@ -7,15 +7,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "./ui/sidebar";
+import { useProfile } from "@/features/auth/hooks/use-profile";
 
 export function AppSidebarFooter() {
   const { logout } = useAuth();
+  const { data } = useProfile();
   return (
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton>
-            <User2Icon /> Username
+            <User2Icon /> {data?.name || "Usuário"}
             <Button
               variant="ghost"
               className="p-0 ml-auto cursor-pointer hover:text-primary"
