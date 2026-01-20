@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useAuth } from "@/features/auth/contexts/auth-context";
 import { roomService } from "../services/room-service";
 import type { CreateRoomRequest, RoomStatus } from "../types";
 
@@ -9,13 +10,17 @@ type RoomsFilters = {
 };
 
 export function useRooms({ categoryId, status }: RoomsFilters = {}) {
+  const { innId } = useAuth();
+
   const { data, isLoading } = useQuery({
-    queryKey: ["rooms", categoryId, status],
+    queryKey: ["rooms", innId, categoryId, status],
     queryFn: () =>
       roomService.getAll({
         categoryId,
         status,
       }),
+    enabled: !!innId,
+    staleTime: 30_000,
   });
 
   return {
@@ -26,11 +31,12 @@ export function useRooms({ categoryId, status }: RoomsFilters = {}) {
 
 export function useCreateRoom() {
   const queryClient = useQueryClient();
+  const { innId } = useAuth();
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: roomService.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["rooms", innId] });
       toast.success("Quarto criado com sucesso");
     },
     onError: () => {
@@ -46,12 +52,13 @@ export function useCreateRoom() {
 
 export function useUpdateRoom() {
   const queryClient = useQueryClient();
+  const { innId } = useAuth();
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: ({ id, data }: { id: string; data: CreateRoomRequest }) =>
       roomService.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["rooms", innId] });
       toast.success("Quarto atualizado com sucesso");
     },
     onError: () => {

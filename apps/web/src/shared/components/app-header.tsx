@@ -8,7 +8,6 @@ import { Skeleton } from "./ui/skeleton";
 
 export function AppHeader() {
   const { user, innId } = useAuth();
-  console.log(innId);
 
   const { data, isLoading } = useInn(innId || "");
   return (
