@@ -91,7 +91,7 @@ export function CategoryForm({
             name="extraPersonPrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preço Pessoa Extra (R$)</FormLabel>
+                <FormLabel>Preço Pessoa Extra</FormLabel>
                 <FormControl>
                   <InputMoney {...field} />
                 </FormControl>

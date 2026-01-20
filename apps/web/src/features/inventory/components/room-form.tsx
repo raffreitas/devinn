@@ -143,7 +143,7 @@ export function RoomForm({
             name="basePrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preço Base (R$)</FormLabel>
+                <FormLabel>Preço Base</FormLabel>
                 <FormControl>
                   <InputMoney {...field} min={0} />
                 </FormControl>
@@ -157,7 +157,7 @@ export function RoomForm({
             name="extraGuestPrice"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Preço Pessoa Extra (R$)</FormLabel>
+                <FormLabel>Preço Pessoa Extra</FormLabel>
                 <FormControl>
                   <InputMoney min={0} {...field} />
                 </FormControl>
