@@ -1,5 +1,11 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
-
+import {
+  Calendar,
+  Home,
+  Inbox,
+  Search,
+  Settings,
+} from "lucide-react";
+import { AppSidebarFooter } from "./app-sidebar-footer";
 import {
   Sidebar,
   SidebarContent,
@@ -9,7 +15,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "./ui/sidebar"
+} from "./ui/sidebar";
 
 // Menu items.
 const items = [
@@ -38,7 +44,7 @@ const items = [
     url: "#",
     icon: Settings,
   },
-]
+];
 
 export function AppSidebar() {
   return (
@@ -62,6 +68,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <AppSidebarFooter />
     </Sidebar>
-  )
+  );
 }
