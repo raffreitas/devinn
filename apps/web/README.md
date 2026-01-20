@@ -43,7 +43,7 @@ apps/web/src/
 │   │   ├── app-sidebar.tsx  # Sidebar responsivo mobile/desktop
 │   │   ├── theme-provider.tsx  # next-themes wrapper
 │   │   └── theme-toggle.tsx    # Sun/Moon/System toggle
-│   ├── contexts/         # TenantContext (multi-tenant)
+│   ├── contexts/         # AuthContext (multi-tenant via AuthProvider)
 │   ├── hooks/            # Custom hooks
 │   ├── layouts/          # AppLayout (Top Nav + Sidebar), AuthLayout
 │   └── lib/              # http-client (axios + auth interceptors)
@@ -94,7 +94,7 @@ xl: 1280px  /* Desktop grande */
 1. Login via [SignInPage](./src/features/auth/pages/sign-in-page.tsx)
 2. Token JWT armazenado em `localStorage.getItem('token')`
 3. Interceptor HTTP adiciona `Authorization: Bearer <token>` em todas requisições
-4. [AuthContext](./src/shared/contexts/auth-context.tsx) extrai `inn_id`:
+4. [AuthContext](./src/shared/contexts/auth-context.tsx) extrai `inn_id`: (use AuthProvider / useAuth)
    - **InnAdmin**: Extrai `inn_id` direto do JWT
    - **SuperAdmin**: Mostra dropdown para selecionar pousada
 5. Header `X-Inn-Id` enviado em todas requisições para API multi-tenant
