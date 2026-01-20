@@ -1,75 +1,70 @@
-# React + TypeScript + Vite
+# DevInn Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este projeto é o frontend do sistema DevInn, uma plataforma moderna de gestão de reservas para pousadas e hotéis.
 
-Currently, two official plugins are available:
+## Visão Geral
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+O DevInn Web é uma aplicação React 19 com TypeScript, construída com Vite, Tailwind CSS e shadcn/ui. Ela oferece uma interface rica para visualização de reservas (Gantt), dashboard financeiro e gestão de inventário.
 
-## React Compiler
+## Tecnologias Utilizadas
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- **React 19**
+- **TypeScript**
+- **Vite**
+- **Tailwind CSS v4** (com oklch colors)
+- **shadcn/ui** (Radix UI)
+- **TanStack Query v5**
+- **React Router v7**
+- **React Hook Form + Zod**
+- **date-fns**
+- **Biome** (lint/format)
 
-Note: This will impact Vite dev & build performances.
+## Estrutura do Projeto
 
-## Expanding the ESLint configuration
+O frontend segue a estrutura de feature folders, com código organizado por funcionalidades. Utiliza aliases (@/) para imports absolutos.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Como rodar o projeto
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Pré-requisitos
+- Node.js >= 18.0.0
+- pnpm >= 8.0.0
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Instalação
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+No diretório raiz do monorepo:
+
+```bash
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Ambiente de desenvolvimento
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Para rodar o frontend em modo desenvolvimento:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm dev:web
 ```
+
+Acesse: http://localhost:5173
+
+### Build de produção
+
+```bash
+pnpm build:web
+```
+
+Os arquivos finais estarão em `apps/web/dist`.
+
+## Convenções
+- Código organizado por feature
+- Uso de TypeScript para segurança de tipos
+- Tailwind para estilização
+- Biome para lint/format
+
+## Sobre o Monorepo
+
+O DevInn é um monorepo gerenciado por pnpm, contendo também a API backend em .NET. Consulte o README na raiz para mais detalhes sobre a arquitetura geral.
+
+---
+
+Para dúvidas ou contribuições, abra uma issue ou pull request.
