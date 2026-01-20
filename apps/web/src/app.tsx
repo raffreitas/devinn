@@ -6,11 +6,11 @@ import { router } from "./routes";
 import { queryClient } from "./shared/lib/react-query";
 
 export function App() {
-	return (
-		<QueryClientProvider client={queryClient}>
-			<RouterProvider router={router} />
-			<ReactQueryDevtools initialIsOpen={false} />
-			<Toaster richColors />
-		</QueryClientProvider>
-	);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      <ReactQueryDevtools initialIsOpen={false} />
+      <Toaster richColors />
+    </QueryClientProvider>
+  );
 }

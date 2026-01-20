@@ -1,10 +1,4 @@
-import {
-  Calendar,
-  Home,
-  Inbox,
-  Search,
-  Settings,
-} from "lucide-react";
+import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
 import { AppSidebarFooter } from "./app-sidebar-footer";
 import {
   Sidebar,

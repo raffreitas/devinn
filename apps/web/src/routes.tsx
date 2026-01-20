@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet } from "react-router";
+import { createBrowserRouter } from "react-router";
 import { loginRoutes } from "./features/auth/login-routes";
 import { RoomCategoryPage } from "./features/inventory/pages/room-category-page";
 import { AppLayout } from "./shared/components/app-layout";
