@@ -1,5 +1,8 @@
-﻿using DevInn.Infrastructure.Common.Extensions;
+﻿using DevInn.Infrastructure.Common.Constants;
+using DevInn.Infrastructure.Common.Extensions;
 using DevInn.Infrastructure.Observability.Options;
+
+using Grafana.OpenTelemetry;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,8 +64,17 @@ public static class DependencyInjection
                 options.IncludeFormattedMessage = true;
             });
 
-        if (observabilityOptions.Enabled)
+        if (!observabilityOptions.Enabled)
+            return services;
+
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentNames.Development)
+        {
             otelBuilder.UseOtlpExporter();
+        }
+        else
+        {
+            otelBuilder.UseGrafana();
+        }
 
         return services;
     }
