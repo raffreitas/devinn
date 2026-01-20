@@ -1,4 +1,3 @@
-
 import { menuItems } from "../constants/menu-items";
 import { AppSidebarFooter } from "./app-sidebar-footer";
 import { AppSidebarHeader } from "./app-sidebar-header";

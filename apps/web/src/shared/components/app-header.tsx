@@ -24,7 +24,7 @@ export function AppHeader() {
             {isLoading ? (
               <Skeleton className="h-4 w-32 sm:w-52" />
             ) : data?.name ? (
-              <>{data.name}</>
+              data.name
             ) : innId ? (
               <>(ID: {innId})</>
             ) : user?.role === "SuperAdmin" ? (
