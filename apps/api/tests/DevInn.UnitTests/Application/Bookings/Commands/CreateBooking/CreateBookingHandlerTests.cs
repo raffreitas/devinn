@@ -34,11 +34,15 @@ public sealed class CreateBookingHandlerTests
     {
         // Arrange
         var command = new CreateBookingCommand(
-            Guest: new GuestDto(_faker.Name.FirstName(), _faker.Person.Phone, _faker.Person.Email, "12345678900"),
+            Guest: new GuestDto(
+                Name: _faker.Name.FirstName(),
+                Phone: _faker.Phone.PhoneNumber("###########"),
+                Email: _faker.Person.Email,
+                Document: "12345678900"),
             RoomId: Guid.NewGuid(),
-            CheckIn: DateTimeOffset.UtcNow,
+            CheckIn: DateTimeOffset.UtcNow.AddDays(1),
             CheckOut: DateTimeOffset.UtcNow.AddDays(5),
-            Adults: _faker.Random.Int(min: 1),
+            Adults: 1,
             Children: 0,
             ChildrenAges: []
         );
