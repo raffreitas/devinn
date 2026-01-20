@@ -16,7 +16,6 @@ interface ModalProps {
   footer?: React.ReactNode;
 }
 
-
 export function Modal({
   isOpen,
   onClose,

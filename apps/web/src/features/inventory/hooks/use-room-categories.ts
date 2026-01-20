@@ -10,7 +10,6 @@ export function useRoomCategories() {
     queryFn: categoryService.getAll,
   });
 
-  // Placeholder implementation
   return {
     data: categories || [],
     isLoading,

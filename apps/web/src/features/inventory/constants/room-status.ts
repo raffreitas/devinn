@@ -22,3 +22,12 @@ export function getRoomStatusOptionLabel(
   }
   return String(value);
 }
+
+export const statusDisplayConfig: Record<
+  RoomStatus,
+  { label: string; variant: "default" | "secondary" | "destructive" }
+> = {
+  Active: { label: "Ativo", variant: "default" },
+  Maintenance: { label: "Manutenção", variant: "secondary" },
+  Inactive: { label: "Inativo", variant: "destructive" },
+};
