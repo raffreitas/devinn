@@ -47,78 +47,104 @@ export function SignInPage() {
     try {
       await signIn({ email, password });
       navigate("/", { replace: true });
-    } catch {
-      toast.error("Credenciais inválidas");
+    } catch (error) {
+      // Try to extract error message from backend response
+      let errorMessage = "Credenciais inválidas";
+
+      if (error && typeof error === "object" && "response" in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        if (axiosError.response?.data?.message) {
+          errorMessage = axiosError.response.data.message;
+        }
+      }
+
+      toast.error(errorMessage);
     }
   }
 
   return (
-    <div className="p-4 lg:p-8">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-87.5">
-        <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Acessar</h1>
+
+    <div className="relative min-h-screen grid grid-cols-1 items-center justify-center antialiased lg:grid lg:grid-cols-2 lg:max-w-none lg:px-0">
+      <div className="relative hidden h-full flex-col border-r border-foreground/5 bg-muted p-10 text-muted-foreground dark:border-r lg:flex">
+        <div className="flex items-center gap-3 text-lg font-medium text-foreground">
+          <span className="font-semibold">dev.inn</span>
         </div>
+        <div className="mt-auto">
+          <footer className="text-sm">
+            &copy; dev.inn - {new Date().getFullYear()}
+          </footer>
+        </div>
+      </div>
 
-        <div>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleAuthenticate)}
-              className="space-y-4"
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>E-mail</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="seu@email.com"
-                        autoComplete="email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <div className="relative flex min-h-screen flex-col items-center justify-center">
+        <div className="p-4 lg:p-8">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-87.5">
+            <div className="flex flex-col space-y-2 text-center">
+              <h1 className="text-2xl font-semibold tracking-tight">Acessar</h1>
+            </div>
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Senha</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          autoComplete="current-password"
-                          {...field}
-                        />
-                        <button
-                          type="button"
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOffIcon className="h-4 w-4" />
-                          ) : (
-                            <EyeIcon className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting ? "Acessando..." : "Acessar"}
-              </Button>
-            </form>
-          </Form>
+            <div>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(handleAuthenticate)}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>E-mail</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="seu@email.com"
+                            autoComplete="email"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Senha</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              autoComplete="current-password"
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground"
+                              onClick={() => setShowPassword(!showPassword)}
+                            >
+                              {showPassword ? (
+                                <EyeOffIcon className="h-4 w-4" />
+                              ) : (
+                                <EyeIcon className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" disabled={isSubmitting} className="w-full">
+                    {isSubmitting ? "Acessando..." : "Acessar"}
+                  </Button>
+                </form>
+              </Form>
+            </div>
+          </div>
         </div>
       </div>
     </div>
