@@ -1,12 +1,5 @@
-import {
-  BedDoubleIcon,
-  CalendarIcon,
-  CreditCardIcon,
-  Home,
-  LayoutGridIcon,
-  ReceiptIcon,
-  Settings,
-} from "lucide-react";
+
+import { menuItems } from "../constants/menu-items";
 import { AppSidebarFooter } from "./app-sidebar-footer";
 import { AppSidebarHeader } from "./app-sidebar-header";
 import {
@@ -19,17 +12,6 @@ import {
   SidebarMenuItem,
 } from "./ui/sidebar";
 
-// Menu items.
-const navigation = [
-  { title: "Dashboard", href: "/", icon: Home },
-  { title: "Categorias", href: "/inventory/categories", icon: LayoutGridIcon },
-  { title: "Quartos", href: "/inventory/rooms", icon: BedDoubleIcon },
-  { title: "Reservas", href: "/bookings", icon: CalendarIcon },
-  { title: "Financeiro", href: "/financial", icon: CreditCardIcon },
-  { title: "Despesas", href: "/financial/expenses", icon: ReceiptIcon },
-  { title: "Configurações", href: "/settings", icon: Settings },
-];
-
 export function AppSidebar() {
   return (
     <Sidebar>
@@ -38,7 +20,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigation.map((item) => (
+              {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.href}>
