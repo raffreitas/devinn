@@ -1,5 +1,6 @@
 import { Filter, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
+import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -77,6 +78,8 @@ export function RoomsPage() {
 
   return (
     <div className="space-y-4">
+      <LoadingOverlay isFetching={isLoading} position="top-bar" />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
