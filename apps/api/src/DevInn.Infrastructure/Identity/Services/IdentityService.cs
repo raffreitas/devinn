@@ -80,7 +80,7 @@ internal sealed class IdentityService(
 
         var roles = await userManager.GetRolesAsync(user);
         var userRoles = roles.Select(Enum.Parse<UserRole>).ToArray();
-        var resultUser = new User(user.Id, user.InnId, user.UserName!, user.Email!, userRoles);
+        var resultUser = new User(user.Id, user.InnId, user.Name, user.Email!, userRoles);
 
         return Result.Ok(resultUser);
     }
