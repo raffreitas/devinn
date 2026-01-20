@@ -4,17 +4,17 @@ import { roomService } from "../services/room-service";
 import type { CreateRoomRequest, RoomStatus } from "../types";
 
 type RoomsFilters = {
-  categoryId: string | "all";
-  status: RoomStatus | "all";
+  categoryId?: string;
+  status?: RoomStatus;
 };
 
-export function useRooms({ categoryId, status }: RoomsFilters) {
+export function useRooms({ categoryId, status }: RoomsFilters = {}) {
   const { data, isLoading } = useQuery({
     queryKey: ["rooms", categoryId, status],
     queryFn: () =>
       roomService.getAll({
-        categoryId: categoryId !== "all" ? categoryId : undefined,
-        status: status !== "all" ? status : undefined,
+        categoryId,
+        status,
       }),
   });
 

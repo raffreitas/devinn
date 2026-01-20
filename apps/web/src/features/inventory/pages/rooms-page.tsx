@@ -34,19 +34,19 @@ import {
   useRooms,
   useUpdateRoom,
 } from "../hooks";
-import type { Room, RoomFormData } from "../types";
+import type { Room, RoomFormData, RoomStatus } from "../types";
 
 export function RoomsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
 
   const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<RoomStatus | "all">("all");
 
   const { data: categories } = useRoomCategories();
   const { data: rooms, isLoading } = useRooms({
-    categoryId: "all",
-    status: "all",
+    categoryId: filterCategory === "all" ? undefined : filterCategory,
+    status: filterStatus === "all" ? undefined : filterStatus,
   });
 
   const { createRoom, isLoading: isCreating } = useCreateRoom();
@@ -123,7 +123,12 @@ export function RoomsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <Select
+                value={filterStatus}
+                onValueChange={(value) =>
+                  setFilterStatus(value as RoomStatus | "all")
+                }
+              >
                 <SelectTrigger className="w-full sm:w-45">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue />
