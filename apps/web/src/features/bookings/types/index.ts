@@ -1,3 +1,5 @@
+import z from "zod";
+
 export type BookingStatus =
   | "Scheduled"
   | "CheckedIn"
@@ -44,8 +46,8 @@ export interface Booking {
   number: string;
   categoryName: string;
   guest: Guest;
-  checkIn: string;
-  checkOut: string;
+  checkIn: Date;
+  checkOut: Date;
   adults: number;
   children: number;
   childrenAges?: number[];
@@ -63,8 +65,8 @@ export interface Booking {
 export interface CreateBookingRequest {
   roomId: string;
   guest: Guest;
-  checkIn: string;
-  checkOut: string;
+  checkIn: Date;
+  checkOut: Date;
   adults: number;
   children: number;
   childrenAges?: number[];
@@ -76,8 +78,8 @@ export interface CreateBookingRequest {
 
 export interface UpdateBookingRequest {
   guest?: Guest;
-  checkIn?: string;
-  checkOut?: string;
+  checkIn?: Date;
+  checkOut?: Date;
   adults?: number;
   children?: number;
   childrenAges?: number[];
@@ -95,3 +97,68 @@ export interface BookingFilters {
   status?: BookingStatus;
   paymentStatus?: PaymentStatus;
 }
+
+export function mapToFormData(dto?: Booking): BookingFormData | undefined {
+  if (!dto) return undefined;
+  return {
+    adults: dto.adults,
+    children: dto.children,
+    childrenAges: dto.childrenAges?.map((age) => ({ age })) || [],
+    checkIn: dto.checkIn,
+    checkOut: dto.checkOut,
+    guestName: dto.guest.name,
+    guestEmail: dto.guest.email || "",
+    guestPhone: dto.guest.phone,
+    guestBirthDate: dto.guest.birthDate,
+    guestDocument: dto.guest.document,
+    paidAmount: dto.totalPaid,
+    paymentMethod: dto.payments[0]?.method,
+    paymentNotes: dto.payments[0]?.notes,
+    roomId: dto.roomId,
+    notes: dto.notes,
+  };
+}
+
+export const bookingSchema = z
+  .object({
+    roomId: z.string().min(1, "Quarto é obrigatório"),
+    checkIn: z.date({ error: "Data de check-in é obrigatória" }),
+    checkOut: z.date({ error: "Data de check-out é obrigatória" }),
+    adults: z.number().int().min(1, "Mínimo 1 adulto"),
+    children: z.number().int().min(0, "Mínimo 0"),
+    childrenAges: z
+      .array(z.object({ age: z.number().min(0, "Idade inválida") }))
+      .optional(),
+    guestName: z.string().min(1, "Nome do hóspede é obrigatório"),
+    guestEmail: z.email("E-mail inválido").optional().or(z.literal("")),
+    guestPhone: z.string().min(10, "Telefone deve ter no mínimo 10 dígitos"),
+    guestDocument: z.string().optional(),
+    guestBirthDate: z.string().optional(),
+    notes: z.string().optional(),
+    paidAmount: z
+      .number()
+      .min(0, "Valor deve ser maior ou igual a 0")
+      .optional(),
+    paymentMethod: z
+      .enum(["Cash", "Pix", "DebitCard", "CreditCard", "BankTransfer"])
+      .optional(),
+    paymentNotes: z.string().optional(),
+  })
+  .refine((data) => data.checkOut > data.checkIn, {
+    message: "Data de check-out deve ser posterior ao check-in",
+    path: ["checkOut"],
+  })
+  .refine(
+    (data) => {
+      if (data.paidAmount && data.paidAmount > 0 && !data.paymentMethod) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Método de pagamento é obrigatório quando há valor pago",
+      path: ["paymentMethod"],
+    },
+  );
+
+export type BookingFormData = z.infer<typeof bookingSchema>;

@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Filter, Pencil, Plus, Trash2 } from "lucide-react";
+import { Filter, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { LoadingOverlay } from "@/shared/components/loading-overlay";
+import { Modal } from "@/shared/components/modal";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -27,104 +27,59 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { RoomFormDialog } from "../components/room-form-dialog";
-import { categoryService } from "../services/category-service";
-import { roomService } from "../services/room-service";
-import type { CreateRoomRequest, Room, RoomStatus } from "../types";
-
-const statusConfig: Record<
-  RoomStatus,
-  { label: string; variant: "default" | "secondary" | "destructive" }
-> = {
-  Active: { label: "Ativo", variant: "default" },
-  Maintenance: { label: "Manutenção", variant: "secondary" },
-  Inactive: { label: "Inativo", variant: "destructive" },
-};
+import { RoomForm } from "../components/room-form";
+import { statusDisplayConfig } from "../constants/room-status";
+import {
+  useCreateRoom,
+  useRoomCategories,
+  useRooms,
+  useUpdateRoom,
+} from "../hooks";
+import type { Room, RoomFormData, RoomStatus } from "../types";
 
 export function RoomsPage() {
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
+
   const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const queryClient = useQueryClient();
+  const [filterStatus, setFilterStatus] = useState<RoomStatus | "all">("all");
 
-  const { data: categories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: categoryService.getAll,
+  const { data: categories } = useRoomCategories();
+  const { data: rooms, isLoading } = useRooms({
+    categoryId: filterCategory === "all" ? undefined : filterCategory,
+    status: filterStatus === "all" ? undefined : filterStatus,
   });
 
-  const { data: roomsData, isLoading } = useQuery({
-    queryKey: ["rooms", filterCategory, filterStatus],
-    queryFn: () =>
-      roomService.getAll({
-        categoryId: filterCategory !== "all" ? filterCategory : undefined,
-        status: filterStatus !== "all" ? filterStatus : undefined,
-      }),
-  });
+  const { createRoom, isLoading: isCreating } = useCreateRoom();
+  const { updateRoom, isLoading: isUpdating } = useUpdateRoom();
 
-  const createMutation = useMutation({
-    mutationFn: roomService.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rooms"] });
-      toast.success("Quarto criado com sucesso");
-      setDialogOpen(false);
-    },
-    onError: () => {
-      toast.error("Erro ao criar quarto");
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CreateRoomRequest }) =>
-      roomService.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rooms"] });
-      toast.success("Quarto atualizado com sucesso");
-      setDialogOpen(false);
-      setSelectedRoom(undefined);
-    },
-    onError: () => {
-      toast.error("Erro ao atualizar quarto");
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: roomService.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rooms"] });
-      toast.success("Quarto excluído com sucesso");
-    },
-    onError: () => {
-      toast.error("Erro ao excluir quarto");
-    },
-  });
-
-  const handleSubmit = async (data: CreateRoomRequest) => {
+  const handleCreateOrUpdate = (data: RoomFormData) => {
     if (selectedRoom) {
-      await updateMutation.mutateAsync({ id: selectedRoom.id, data });
+      updateRoom({ id: selectedRoom.id, data });
     } else {
-      await createMutation.mutateAsync(data);
+      createRoom(data);
     }
+    setIsModalOpen(false);
+    setSelectedRoom(undefined);
   };
 
   const handleEdit = (room: Room) => {
     setSelectedRoom(room);
-    setDialogOpen(true);
+    setIsModalOpen(true);
   };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este quarto?")) {
-      await deleteMutation.mutateAsync(id);
-    }
-  };
-
-  const handleNew = () => {
+  const handleCreate = () => {
     setSelectedRoom(undefined);
-    setDialogOpen(true);
+    setIsModalOpen(true);
+  };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedRoom(undefined);
   };
 
   return (
     <div className="space-y-4">
+      <LoadingOverlay isFetching={isLoading} position="top-bar" />
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
@@ -134,7 +89,7 @@ export function RoomsPage() {
             Gerencie os quartos e acomodações
           </p>
         </div>
-        <Button onClick={handleNew} className="w-full sm:w-auto">
+        <Button onClick={handleCreate} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Novo Quarto
         </Button>
@@ -156,25 +111,44 @@ export function RoomsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas Categorias</SelectItem>
+                  <SelectItem className="cursor-pointer" value="all">
+                    Todas Categorias
+                  </SelectItem>
                   {categories?.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
+                    <SelectItem
+                      className="cursor-pointer"
+                      key={category.id}
+                      value={category.id}
+                    >
                       {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <Select
+                value={filterStatus}
+                onValueChange={(value) =>
+                  setFilterStatus(value as RoomStatus | "all")
+                }
+              >
                 <SelectTrigger className="w-full sm:w-45">
                   <Filter className="mr-2 h-4 w-4" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos Status</SelectItem>
-                  <SelectItem value="Active">Ativo</SelectItem>
-                  <SelectItem value="Maintenance">Manutenção</SelectItem>
-                  <SelectItem value="Inactive">Inativo</SelectItem>
+                  <SelectItem className="cursor-pointer" value="all">
+                    Todos Status
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="Active">
+                    Ativo
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="Maintenance">
+                    Manutenção
+                  </SelectItem>
+                  <SelectItem className="cursor-pointer" value="Inactive">
+                    Inativo
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -187,7 +161,7 @@ export function RoomsPage() {
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
-          ) : roomsData && roomsData.items.length > 0 ? (
+          ) : rooms && rooms.items.length > 0 ? (
             <div className="overflow-x-auto -mx-6 sm:mx-0">
               <div className="inline-block min-w-full align-middle">
                 <Table>
@@ -206,7 +180,7 @@ export function RoomsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {roomsData.items.map((room) => (
+                    {rooms.items.map((room) => (
                       <TableRow key={room.id}>
                         <TableCell className="font-medium">
                           {room.number}
@@ -219,8 +193,10 @@ export function RoomsPage() {
                           R$ {room.basePrice.toFixed(2)}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={statusConfig[room.status].variant}>
-                            {statusConfig[room.status].label}
+                          <Badge
+                            variant={statusDisplayConfig[room.status].variant}
+                          >
+                            {statusDisplayConfig[room.status].label}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -232,14 +208,6 @@ export function RoomsPage() {
                             >
                               <Pencil className="h-4 w-4" />
                               <span className="sr-only">Editar</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(room.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Excluir</span>
                             </Button>
                           </div>
                         </TableCell>
@@ -254,21 +222,28 @@ export function RoomsPage() {
               <p className="text-muted-foreground mb-4">
                 Nenhum quarto cadastrado
               </p>
-              <Button onClick={handleNew}>
-                <Plus className="mr-2 h-4 w-4" />
-                Criar primeiro quarto
-              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      <RoomFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSubmit={handleSubmit}
-        room={selectedRoom}
-      />
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title="Novo Quarto"
+        description={
+          selectedRoom
+            ? "Edite os detalhes do quarto."
+            : "Preencha os detalhes para criar uma novo quarto."
+        }
+      >
+        <RoomForm
+          initialData={selectedRoom}
+          onCancel={handleCloseModal}
+          onSubmit={handleCreateOrUpdate}
+          isSubmitting={isCreating || isUpdating}
+        />
+      </Modal>
     </div>
   );
 }

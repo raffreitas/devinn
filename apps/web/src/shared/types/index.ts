@@ -16,3 +16,11 @@ export interface Metadata {
   pageSize: number;
   totalPages: number;
 }
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}

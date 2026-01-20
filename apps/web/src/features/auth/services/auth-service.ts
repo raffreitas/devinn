@@ -1,36 +1,22 @@
-import type { SignInRequest } from "@/features/auth/types";
 import { api } from "@/shared/lib/http-client";
-import { STORAGE_KEYS, storage } from "@/shared/lib/storage";
 import type { ApiResponse } from "@/shared/types";
 
-interface SignInResponse {
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export type LoginResult = {
   accessToken: string;
-}
+};
 
 export const authService = {
-  signIn: async ({ email, password }: SignInRequest) => {
-    const response = await api.post<ApiResponse<SignInResponse>>(
+  login: async (payload: LoginRequest): Promise<LoginResult> => {
+    const response = await api.post<ApiResponse<LoginResult>>(
       "/api/v1/auth/login",
-      {
-        email,
-        password,
-      },
+      payload,
     );
 
-    const token = response.data.data?.accessToken;
-    if (!token) {
-      throw new Error("No access token received");
-    }
-    storage.set(STORAGE_KEYS.TOKEN, token);
-
-    return { token };
-  },
-
-  signOut: () => {
-    storage.remove(STORAGE_KEYS.TOKEN);
-    storage.remove(STORAGE_KEYS.TENANT_ID);
-
-    // Limpa o cache do React Query
-    window.location.href = "/sign-in";
+    return response.data.data;
   },
 };

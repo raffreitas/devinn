@@ -21,7 +21,13 @@ export const bookingService = {
     const response = await api.get<ApiResponse<Booking[]>>("/api/v1/bookings", {
       params,
     });
-    return response.data.data;
+    return response.data.data.map((booking) => {
+      return {
+        ...booking,
+        checkIn: new Date(booking.checkIn),
+        checkOut: new Date(booking.checkOut),
+      };
+    });
   },
 
   getById: async (id: string): Promise<Booking | null> => {

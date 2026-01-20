@@ -1,11 +1,6 @@
 import { api } from "@/shared/lib/http-client";
-import type { ApiResponse } from "@/shared/types";
-import type {
-  CreateRoomRequest,
-  PaginatedResponse,
-  Room,
-  UpdateRoomRequest,
-} from "../types";
+import type { ApiResponse, PaginatedResponse } from "@/shared/types";
+import type { CreateRoomRequest, Room, UpdateRoomRequest } from "../types";
 
 interface GetRoomsParams {
   page?: number;

@@ -1,0 +1,671 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  CalculatorIcon,
+  CalendarIcon,
+  InfoIcon,
+  UsersIcon,
+} from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { useRooms } from "@/features/inventory/hooks";
+import { InputMoney } from "@/shared/components/input-money";
+import { InputNumber } from "@/shared/components/input-number";
+import { Button } from "@/shared/components/ui/button";
+import { Calendar } from "@/shared/components/ui/calendar";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/shared/components/ui/form";
+import { Input } from "@/shared/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/shared/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { cn } from "@/shared/lib/utils";
+import { type BookingFormData, bookingSchema } from "../types";
+
+type BookingFormProps = {
+  initialData?: BookingFormData & { id?: string };
+  isSubmitting?: boolean;
+  onSubmit: (data: BookingFormData) => void | Promise<void>;
+  onCancel: () => void;
+  preSelectedRoom?: string;
+  preSelectedDate?: Date;
+};
+
+export function BookingForm({
+  initialData,
+  isSubmitting,
+  onCancel,
+  onSubmit,
+  preSelectedRoom,
+  preSelectedDate,
+}: BookingFormProps) {
+  const form = useForm<BookingFormData>({
+    resolver: zodResolver(bookingSchema),
+    defaultValues: {
+      roomId: preSelectedRoom ? preSelectedRoom : initialData?.roomId || "",
+      checkIn: preSelectedDate
+        ? preSelectedDate
+        : initialData
+          ? new Date(initialData.checkIn)
+          : undefined,
+      checkOut: initialData ? new Date(initialData.checkOut) : undefined,
+      adults: initialData?.adults || 2,
+      children: initialData?.children || 0,
+      childrenAges: initialData?.childrenAges || [],
+      guestName: initialData?.guestName || "",
+      guestEmail: initialData?.guestEmail || "",
+      guestPhone: initialData?.guestPhone || "",
+      guestDocument: initialData?.guestDocument || "",
+      guestBirthDate: initialData?.guestBirthDate || "",
+      notes: initialData?.notes || "",
+      paidAmount: initialData?.paidAmount || 0,
+      paymentMethod: initialData?.paymentMethod || "Pix",
+      paymentNotes: initialData?.paymentNotes || "",
+    },
+  });
+
+  const { fields: childrenAgeFields, replace: replaceChildrenAges } =
+    useFieldArray({
+      control: form.control,
+      name: "childrenAges",
+    });
+
+  const selectedRoomId = form.watch("roomId");
+  const checkIn = form.watch("checkIn");
+  const checkOut = form.watch("checkOut");
+  const childrenCount = form.watch("children");
+  const adults = form.watch("adults");
+  const childrenAges = form.watch("childrenAges");
+
+  const { data: roomsData } = useRooms();
+
+  const selectedRoom = roomsData?.items.find((r) => r.id === selectedRoomId);
+
+  const nights = useMemo(() => {
+    if (!checkIn || !checkOut) return 0;
+    const diff = Math.ceil(
+      (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    return diff > 0 ? diff : 0;
+  }, [checkIn, checkOut]);
+
+  // Calculate total
+  const priceBreakdown = useMemo(() => {
+    if (!selectedRoom || nights <= 0) return null;
+
+    const basePrice = selectedRoom.basePrice;
+    const extraPrice = selectedRoom.extraGuestPrice;
+
+    const extraAdults = Math.max(0, adults - 2);
+    const adultsExtraCost = extraAdults * extraPrice;
+
+    let childrenCost = 0;
+    const childrenDetails: string[] = [];
+
+    if (childrenAges) {
+      for (let i = 0; i < childrenAges.length; i++) {
+        const age = childrenAges[i]?.age || 0;
+        let cost = 0;
+        let label = "";
+
+        if (age < 5) {
+          cost = 0;
+          label = "Grátis";
+        } else if (age <= 10) {
+          cost = extraPrice * 0.5;
+          label = `R$ ${cost.toFixed(2)}`;
+        } else {
+          cost = extraPrice;
+          label = `R$ ${cost.toFixed(2)}`;
+        }
+
+        childrenCost += cost;
+        childrenDetails.push(`Criança ${i + 1} (${age} anos): ${label}`);
+      }
+    }
+
+    const dailyTotal = basePrice + adultsExtraCost + childrenCost;
+    const total = dailyTotal * nights;
+
+    return {
+      basePrice,
+      extraAdults,
+      adultsExtraCost,
+      childrenCost,
+      childrenDetails,
+      dailyTotal,
+      nights,
+      total,
+    };
+  }, [selectedRoom, adults, childrenAges, nights]);
+
+  const totalPeople = adults + childrenCount;
+  const maxCapacity = selectedRoom?.capacity || 10;
+
+  // Sync children ages fields with children count
+  useEffect(() => {
+    const currentAges = form.getValues("childrenAges") || [];
+    if (childrenCount > currentAges.length) {
+      const toAdd = childrenCount - currentAges.length;
+      const newAges = [...currentAges, ...Array(toAdd).fill({ age: 0 })];
+      replaceChildrenAges(newAges);
+    } else if (childrenCount < currentAges.length) {
+      const newAges = currentAges.slice(0, childrenCount);
+      replaceChildrenAges(newAges);
+    }
+  }, [childrenCount, replaceChildrenAges, form]);
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Quarto e Datas */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium border-b pb-2">
+            Informações da Reserva
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="roomId"
+              render={({ field }) => (
+                <FormItem className="md:col-span-3">
+                  <FormLabel>Quarto</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um quarto" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {roomsData?.items
+                        .filter((room) => room.status === "Active")
+                        .map((room) => (
+                          <SelectItem key={room.id} value={room.id}>
+                            Quarto {room.number} - {room.categoryName} (
+                            {room.capacity}p) - R$ {room.basePrice.toFixed(2)}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedRoom && (
+                    <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <UsersIcon className="w-3 h-3" />
+                        Máx: {selectedRoom.capacity} pessoas | Base: R${" "}
+                        {selectedRoom.basePrice}/dia | Extra: R${" "}
+                        {selectedRoom.extraGuestPrice}/pessoa
+                      </span>
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="checkIn"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Check-in</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP", { locale: ptBR })
+                          ) : (
+                            <span>Selecione a data</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date()}
+                        autoFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="checkOut"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Check-out</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP", { locale: ptBR })
+                          ) : (
+                            <span>Selecione a data</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => !checkIn || date <= checkIn}
+                        autoFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  {nights > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {nights} noite(s)
+                    </p>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="adults"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Adultos</FormLabel>
+                      <FormControl>
+                        <InputNumber {...field} min={1} max={maxCapacity} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="children"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Crianças</FormLabel>
+                      <FormControl>
+                        <InputNumber
+                          {...field}
+                          min={0}
+                          max={Math.max(0, maxCapacity - adults)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {totalPeople > 0 && (
+                <div
+                  className={cn(
+                    "mt-2 p-2 rounded-lg text-sm",
+                    totalPeople > maxCapacity
+                      ? "bg-destructive/10 text-destructive"
+                      : "bg-muted/50 text-muted-foreground",
+                  )}
+                >
+                  <UsersIcon className="w-4 h-4 inline mr-1" />
+                  Total: <span className="font-semibold">{totalPeople}</span> de{" "}
+                  {maxCapacity} pessoas
+                  {totalPeople > maxCapacity && " - Excede a capacidade!"}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {childrenCount > 0 && (
+            <div className="space-y-2 p-3 border rounded-lg bg-muted/20">
+              <h4 className="text-sm font-medium flex items-center gap-2">
+                <InfoIcon className="w-4 h-4" />
+                Idade das Crianças
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                <strong>Regras:</strong> Até 4 anos grátis | 5-10 anos pagam
+                metade | Acima de 10 pagam valor inteiro
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {childrenAgeFields.map((field, index) => (
+                  <FormField
+                    key={field.id}
+                    control={form.control}
+                    name={`childrenAges.${index}.age`}
+                    render={({ field: subField }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Select
+                            value={String(subField.value)}
+                            onValueChange={(value) =>
+                              subField.onChange(Number(value))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue
+                                placeholder={`Criança ${index + 1}`}
+                              />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: 18 }, (_, age) => (
+                                <SelectItem key={age} value={String(age)}>
+                                  {age} {age === 1 ? "ano" : "anos"}
+                                  {age < 5
+                                    ? " (grátis)"
+                                    : age <= 10
+                                      ? " (metade)"
+                                      : ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Cálculo Automático */}
+        {priceBreakdown && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium border-b pb-2 flex items-center gap-2">
+              <CalculatorIcon className="w-4 h-4 text-primary" />
+              Cálculo Automático
+            </h3>
+
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">
+                  Diária base (quarto {selectedRoom?.number}):
+                </span>
+                <span className="font-medium">
+                  R$ {priceBreakdown.basePrice.toFixed(2)}
+                </span>
+              </div>
+
+              {priceBreakdown.extraAdults > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    {priceBreakdown.extraAdults} adulto(s) adicional(is) × R${" "}
+                    {selectedRoom?.extraGuestPrice}:
+                  </span>
+                  <span className="font-medium">
+                    R$ {priceBreakdown.adultsExtraCost.toFixed(2)}
+                  </span>
+                </div>
+              )}
+
+              {priceBreakdown.childrenDetails.map((detail, i) => (
+                <div key={i} className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    {detail.split(":")[0]}:
+                  </span>
+                  <span className="font-medium">{detail.split(":")[1]}</span>
+                </div>
+              ))}
+
+              <div className="border-t border-border pt-2 mt-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Total por diária:
+                  </span>
+                  <span className="font-medium">
+                    R$ {priceBreakdown.dailyTotal.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Número de noites:
+                  </span>
+                  <span className="font-medium">{priceBreakdown.nights}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-border pt-2 mt-2">
+                <div className="flex justify-between text-lg">
+                  <span className="font-semibold">VALOR TOTAL:</span>
+                  <span className="font-bold text-primary">
+                    R$ {priceBreakdown.total.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dados do Hóspede */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium border-b pb-2">
+            Dados do Hóspede
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="guestName"
+              render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Nome Completo</FormLabel>
+                  <FormControl>
+                    <Input placeholder="João Silva" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="guestPhone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="(11) 98765-4321" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="guestEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-mail</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="joao@example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="guestBirthDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data de Nascimento</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="guestDocument"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CPF/RG</FormLabel>
+                  <FormControl>
+                    <Input placeholder="123.456.789-00" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Observações (opcional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Informações adicionais" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Payment Section */}
+        {priceBreakdown && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium border-b pb-2">
+              Pagamento Inicial (opcional)
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Registre o valor pago no momento da reserva, se houver.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="paidAmount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Valor Pago</FormLabel>
+                    <FormControl>
+                      <InputMoney
+                        min={0}
+                        max={priceBreakdown.total}
+                        placeholder="R$ 0,00"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="paymentMethod"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Método de Pagamento</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o método" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Pix">PIX</SelectItem>
+                        <SelectItem value="Cash">Dinheiro</SelectItem>
+                        <SelectItem value="CreditCard">
+                          Cartão de Crédito
+                        </SelectItem>
+                        <SelectItem value="DebitCard">
+                          Cartão de Débito
+                        </SelectItem>
+                        <SelectItem value="BankTransfer">
+                          Transferência
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="paymentNotes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Observações do Pagamento (opcional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Entrada de 50%" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}

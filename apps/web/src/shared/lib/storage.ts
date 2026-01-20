@@ -24,6 +24,9 @@ export const storage = {
 
   clear(): void {
     if (typeof window === "undefined") return;
-    localStorage.clear();
+
+    Object.values(STORAGE_KEYS).forEach((key) => {
+      localStorage.removeItem(key);
+    });
   },
 };

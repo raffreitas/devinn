@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { LoadingOverlay } from "@/shared/components/loading-overlay";
+import { Modal } from "@/shared/components/modal";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -19,85 +19,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { CategoryFormDialog } from "../components/category-form-dialog";
-import { categoryService } from "../services/category-service";
-import type { Category, CreateCategoryRequest } from "../types";
+import { CategoryForm } from "../components/category-form";
+import {
+  useCreateRoomCategory,
+  useRoomCategories,
+  useUpdateRoomCategory,
+} from "../hooks";
+import type { Category, CategoryFormData } from "../types";
 
 export function CategoriesPage() {
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<
-    Category | undefined
-  >();
-  const queryClient = useQueryClient();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
 
-  const { data: categories, isLoading } = useQuery({
-    queryKey: ["categories"],
-    queryFn: categoryService.getAll,
-  });
+  const { data, isLoading } = useRoomCategories();
+  const { createCategory, isLoading: isCreating } = useCreateRoomCategory();
+  const { updateCategory, isLoading: isUpdating } = useUpdateRoomCategory();
 
-  const createMutation = useMutation({
-    mutationFn: categoryService.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      toast.success("Categoria criada com sucesso");
-      setDialogOpen(false);
-    },
-    onError: () => {
-      toast.error("Erro ao criar categoria");
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CreateCategoryRequest }) =>
-      categoryService.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      toast.success("Categoria atualizada com sucesso");
-      setDialogOpen(false);
-      setSelectedCategory(undefined);
-    },
-    onError: () => {
-      toast.error("Erro ao atualizar categoria");
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: categoryService.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      toast.success("Categoria excluída com sucesso");
-    },
-    onError: () => {
-      toast.error("Erro ao excluir categoria");
-    },
-  });
-
-  const handleSubmit = async (data: CreateCategoryRequest) => {
+  const handleCreateOrUpdate = (data: CategoryFormData) => {
     if (selectedCategory) {
-      await updateMutation.mutateAsync({ id: selectedCategory.id, data });
+      updateCategory({ id: selectedCategory.id, ...data });
     } else {
-      await createMutation.mutateAsync(data);
+      createCategory(data);
     }
+    setIsModalOpen(false);
+    setSelectedCategory(null);
   };
 
   const handleEdit = (category: Category) => {
     setSelectedCategory(category);
-    setDialogOpen(true);
+    setIsModalOpen(true);
   };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Tem certeza que deseja excluir esta categoria?")) {
-      await deleteMutation.mutateAsync(id);
-    }
+  const handleCreate = () => {
+    setSelectedCategory(null);
+    setIsModalOpen(true);
   };
-
-  const handleNew = () => {
-    setSelectedCategory(undefined);
-    setDialogOpen(true);
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedCategory(null);
   };
 
   return (
     <div className="space-y-4">
+      <LoadingOverlay isFetching={isLoading} position="top-bar" />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
@@ -107,7 +72,7 @@ export function CategoriesPage() {
             Gerencie as categorias de acomodações
           </p>
         </div>
-        <Button onClick={handleNew} className="w-full sm:w-auto">
+        <Button onClick={handleCreate} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Nova Categoria
         </Button>
@@ -127,7 +92,7 @@ export function CategoriesPage() {
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
-          ) : categories && categories.length > 0 ? (
+          ) : data && data.length > 0 ? (
             <div className="overflow-x-auto -mx-6 sm:mx-0">
               <div className="inline-block min-w-full align-middle">
                 <Table>
@@ -143,7 +108,7 @@ export function CategoriesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {categories.map((category) => (
+                    {data.map((category) => (
                       <TableRow key={category.id}>
                         <TableCell className="font-medium">
                           {category.name}
@@ -168,14 +133,6 @@ export function CategoriesPage() {
                               <Pencil className="h-4 w-4" />
                               <span className="sr-only">Editar</span>
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(category.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Excluir</span>
-                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -189,21 +146,28 @@ export function CategoriesPage() {
               <p className="text-muted-foreground mb-4">
                 Nenhuma categoria cadastrada
               </p>
-              <Button onClick={handleNew}>
-                <Plus className="mr-2 h-4 w-4" />
-                Criar primeira categoria
-              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      <CategoryFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSubmit={handleSubmit}
-        category={selectedCategory}
-      />
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title="Nova Categoria"
+        description={
+          selectedCategory
+            ? "Edite os detalhes da categoria."
+            : "Preencha os detalhes para criar uma nova categoria."
+        }
+      >
+        <CategoryForm
+          initialData={selectedCategory}
+          onCancel={handleCloseModal}
+          onSubmit={handleCreateOrUpdate}
+          isSubmitting={isCreating || isUpdating}
+        />
+      </Modal>
     </div>
   );
 }

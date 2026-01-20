@@ -1,66 +1,44 @@
-import { createBrowserRouter } from "react-router-dom";
-import { SignInPage } from "./features/auth/pages/sign-in-page";
-import { BookingsListPage } from "./features/bookings/pages/bookings-list-page";
-import { CalendarPage } from "./features/bookings/pages/calendar-page";
-import { CategoriesPage } from "./features/inventory/pages/categories-page";
-import { RoomsPage } from "./features/inventory/pages/rooms-page";
+import { createBrowserRouter } from "react-router";
+import { loginRoutes } from "./features/auth/login-routes";
+import { bookingRoutes } from "./features/bookings/booking-routes";
+import { BookingCalendar } from "./features/bookings/components/booking-calendar";
+import { inventoryRoutes } from "./features/inventory/inventory-routes";
+import { AppLayout } from "./shared/components/app-layout";
 import { RequireAuth } from "./shared/components/auth-guard";
 import { RequireGuest } from "./shared/components/guest-guard";
-import { AppLayout } from "./shared/layouts/app-layout";
+import { NotFoundPage } from "./shared/pages/not-found-page";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <RequireGuest />,
-    children: [
-      {
-        index: true,
-        path: "/sign-in",
-        element: <SignInPage />,
-      },
-    ],
+    children: loginRoutes,
   },
   {
     path: "/",
     element: <RequireAuth />,
     children: [
       {
-        path: "/",
         element: <AppLayout />,
         children: [
           {
-            path: "/",
             index: true,
-            element: <CalendarPage />,
+            element: <BookingCalendar />,
           },
           {
             path: "/inventory",
-            children: [
-              {
-                path: "categories",
-                element: <CategoriesPage />,
-              },
-              {
-                path: "rooms",
-                element: <RoomsPage />,
-              },
-            ],
+            children: inventoryRoutes,
           },
           {
             path: "/bookings",
-            children: [
-              {
-                index: true,
-                element: <BookingsListPage />,
-              },
-              {
-                path: "calendar",
-                element: <CalendarPage />,
-              },
-            ],
-          }
+            children: bookingRoutes,
+          },
         ],
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
