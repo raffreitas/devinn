@@ -77,22 +77,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = Boolean(user);
 
-  const setInn = async (innId: string) => {
+  const setInn = (innId: string) => {
     if (typeof window === "undefined") return;
-    queryClient.invalidateQueries();
     storage.set(STORAGE_KEYS.TENANT_ID, innId);
+    setInnId(innId);
+    queryClient.invalidateQueries();
   };
 
-  const clearInn = async () => {
+  const clearInn = () => {
     if (typeof window === "undefined") return;
-    queryClient.invalidateQueries();
     storage.remove(STORAGE_KEYS.TENANT_ID);
+    setInnId(undefined);
+    queryClient.invalidateQueries();
   };
 
   const logout = async () => {
     storage.remove(STORAGE_KEYS.TOKEN);
     storage.remove(STORAGE_KEYS.TENANT_ID);
     setUser(undefined);
+    setInnId(undefined);
     queryClient.clear();
     navigate("/login", { replace: true });
   };

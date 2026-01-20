@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useAuth } from "@/features/auth/contexts/auth-context";
 import { bookingService } from "../services/booking-service";
 import type {
   BookingStatus,
@@ -14,15 +15,26 @@ type UseBookingsParams = {
   endDate?: string;
 };
 
-export function useBookings({ status, paymentStatus }: UseBookingsParams = {}) {
+export function useBookings({
+  status,
+  paymentStatus,
+  startDate,
+  endDate,
+}: UseBookingsParams = {}) {
+  const { innId } = useAuth();
+
   const { data, refetch, isLoading } = useQuery({
-    queryKey: ["bookings", status, paymentStatus],
+    queryKey: ["bookings", innId, status, paymentStatus, startDate, endDate],
     queryFn: () => {
       return bookingService.getAll({
         status: status,
         paymentStatus: paymentStatus,
+        startDate,
+        endDate,
       });
     },
+    enabled: !!innId,
+    staleTime: 30_000,
   });
 
   return {
@@ -34,11 +46,12 @@ export function useBookings({ status, paymentStatus }: UseBookingsParams = {}) {
 
 export function useCreateBooking() {
   const queryClient = useQueryClient();
+  const { innId } = useAuth();
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: bookingService.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings", innId] });
       toast.success("Reserva criada com sucesso");
     },
     onError: (error: Error) => {
@@ -54,11 +67,13 @@ export function useCreateBooking() {
 
 export function useUpdateBooking() {
   const queryClient = useQueryClient();
+  const { innId } = useAuth();
+
   const { mutateAsync, isPending } = useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateBookingRequest }) =>
       bookingService.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings", innId] });
       toast.success("Reserva atualizada com sucesso");
     },
     onError: () => {
@@ -74,10 +89,12 @@ export function useUpdateBooking() {
 
 export function useDeleteBooking() {
   const queryClient = useQueryClient();
+  const { innId } = useAuth();
+
   const { mutateAsync, isPending } = useMutation({
     mutationFn: bookingService.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings", innId] });
       toast.success("Reserva excluída com sucesso");
     },
     onError: () => {
