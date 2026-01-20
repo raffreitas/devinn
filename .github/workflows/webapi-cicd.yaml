@@ -2,7 +2,7 @@ name: CI/CD Web API
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
     paths:
       - "apps/api/**"
   pull_request:
@@ -45,7 +45,7 @@ jobs:
 
       - name: Run .NET tests
         working-directory: apps/api
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test --no-build --configuration Release --verbosity normal
 
   apply-migrations:
     name: Apply DB migrations
