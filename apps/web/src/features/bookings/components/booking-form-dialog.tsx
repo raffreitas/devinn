@@ -38,7 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { useTenant } from "@/shared/contexts/tenant-context";
+import { useAuth } from "@/shared/contexts/auth-context";
 import { cn } from "@/shared/lib/utils";
 import { bookingService } from "../services/booking-service";
 import type {
@@ -107,7 +107,7 @@ export function BookingFormDialog({
   preselectedRoom,
   preselectedDate,
 }: BookingFormDialogProps) {
-  const { innId } = useTenant();
+  const { innId } = useAuth();
 
   const { data: roomsData } = useQuery({
     queryKey: ["rooms"],

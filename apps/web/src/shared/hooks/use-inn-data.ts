@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { tenantService } from "@/features/tenants/services/tenant-service";
-import { useTenant } from "@/shared/contexts/tenant-context";
+import { useAuth } from "@/shared/contexts/auth-context";
 import { queryKeys } from "@/shared/lib/query-keys";
 
 /**
@@ -11,7 +11,7 @@ import { queryKeys } from "@/shared/lib/query-keys";
  * @param innId - ID da pousada (opcional, usa contexto se não fornecido)
  */
 export function useInnData(innId?: string) {
-  const { innId: contextInnId } = useTenant();
+  const { innId: contextInnId } = useAuth();
   const id = innId ?? contextInnId;
 
   return useQuery({

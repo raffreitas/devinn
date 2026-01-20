@@ -16,7 +16,7 @@ import {
   SidebarMenuItem,
 } from "@/shared/components/ui/sidebar";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { useTenant } from "@/shared/contexts/tenant-context";
+import { useAuth } from "@/shared/contexts/auth-context";
 
 export function TenantSelector() {
   const {
@@ -25,7 +25,7 @@ export function TenantSelector() {
     clearTenant,
     userRole,
     isLoading: isContextLoading,
-  } = useTenant();
+  } = useAuth();
 
   const { data: inns, isLoading: isInnsLoading } = useQuery({
     queryKey: ["inns"],

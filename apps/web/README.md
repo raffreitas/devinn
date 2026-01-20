@@ -94,7 +94,7 @@ xl: 1280px  /* Desktop grande */
 1. Login via [SignInPage](./src/features/auth/pages/sign-in-page.tsx)
 2. Token JWT armazenado em `localStorage.getItem('token')`
 3. Interceptor HTTP adiciona `Authorization: Bearer <token>` em todas requisições
-4. [TenantContext](./src/shared/contexts/tenant-context.tsx) extrai `inn_id`:
+4. [AuthContext](./src/shared/contexts/auth-context.tsx) extrai `inn_id`:
    - **InnAdmin**: Extrai `inn_id` direto do JWT
    - **SuperAdmin**: Mostra dropdown para selecionar pousada
 5. Header `X-Inn-Id` enviado em todas requisições para API multi-tenant

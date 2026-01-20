@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { useTenant } from "@/shared/contexts/tenant-context";
+import { useAuth } from "@/shared/contexts/auth-context";
 import { cn } from "@/shared/lib/utils";
 import { BookingFormDialog } from "../components/booking-form-dialog";
 import { ReservationBar } from "../components/reservation-bar";
@@ -34,7 +34,7 @@ import type {
 } from "../types";
 
 export function CalendarPage() {
-  const { innId } = useTenant();
+  const { innId } = useAuth();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [preselectedRoom, setPreselectedRoom] = useState<string | undefined>();

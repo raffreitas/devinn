@@ -5,10 +5,10 @@ import { tenantService } from "@/features/tenants/services/tenant-service";
 import { Badge } from "@/shared/components/ui/badge";
 import { SidebarTrigger } from "@/shared/components/ui/sidebar";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { useTenant } from "@/shared/contexts/tenant-context";
+import { useAuth } from "@/shared/contexts/auth-context";
 
 export function AppHeader() {
-  const { innId, userRole, isLoading: isTenantContextLoading } = useTenant();
+  const { innId, userRole, isLoading: isTenantContextLoading } = useAuth();
 
   const { data: inn, isLoading: isInnLoading } = useQuery({
     queryKey: ["inn", innId],

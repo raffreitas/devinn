@@ -35,7 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { useTenant } from "@/shared/contexts/tenant-context";
+import { useAuth } from "@/shared/contexts/auth-context";
 import { BookingFormDialog } from "../components/booking-form-dialog";
 import { GuestDetailsPanel } from "../components/guest-details-panel";
 import { bookingService } from "../services/booking-service";
@@ -69,7 +69,7 @@ const paymentStatusConfig: Record<
 };
 
 export function BookingsListPage() {
-  const { innId } = useTenant();
+  const { innId } = useAuth();
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | undefined>();

@@ -2,11 +2,11 @@ import { Outlet } from "react-router-dom";
 import { AppHeader } from "@/shared/components/app-header";
 import { AppSidebar } from "@/shared/components/app-sidebar";
 import { SidebarProvider } from "@/shared/components/ui/sidebar";
-import { TenantProvider } from "@/shared/contexts/tenant-context";
+import { AuthProvider } from "@/shared/contexts/auth-context";
 
 export function AppLayout() {
   return (
-    <TenantProvider>
+    <AuthProvider>
       <SidebarProvider>
         <AppSidebar />
         <div className="relative flex min-h-screen flex-1 flex-col antialiased bg-muted/30 dark:bg-muted/10">
@@ -18,6 +18,6 @@ export function AppLayout() {
           </main>
         </div>
       </SidebarProvider>
-    </TenantProvider>
+    </AuthProvider>
   );
 }
