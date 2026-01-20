@@ -1,37 +1,10 @@
-import { isAxiosError } from "axios";
-import { useLayoutEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { AppHeader } from "@/shared/components/app-header";
 import { AppSidebar } from "@/shared/components/app-sidebar";
 import { SidebarProvider } from "@/shared/components/ui/sidebar";
 import { TenantProvider } from "@/shared/contexts/tenant-context";
-import { api } from "@/shared/lib/http-client";
 
 export function AppLayout() {
-  const navigate = useNavigate();
-
-  useLayoutEffect(() => {
-    const interceptorId = api.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (isAxiosError(error)) {
-          const status = error.response?.status;
-
-          if (status === 401) {
-            navigate("/sign-in", {
-              replace: true,
-            });
-          }
-        }
-
-        return Promise.reject(error);
-      },
-    );
-    return () => {
-      api.interceptors.response.eject(interceptorId);
-    };
-  }, [navigate]);
-
   return (
     <TenantProvider>
       <SidebarProvider>
