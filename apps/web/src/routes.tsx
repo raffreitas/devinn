@@ -4,6 +4,7 @@ import { bookingRoutes } from "./features/bookings/booking-routes";
 import { BookingCalendar } from "./features/bookings/components/booking-calendar";
 import { inventoryRoutes } from "./features/inventory/inventory-routes";
 import { AppLayout } from "./shared/components/app-layout";
+import { RequireAuth } from "./shared/components/auth-guard";
 import { RequireGuest } from "./shared/components/guest-guard";
 import { NotFoundPage } from "./shared/pages/not-found-page";
 
@@ -15,7 +16,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/",
-    // element: <Outlet />,
+    element: <RequireAuth />,
     children: [
       {
         element: <AppLayout />,

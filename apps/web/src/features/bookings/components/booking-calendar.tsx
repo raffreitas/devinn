@@ -232,8 +232,8 @@ export function BookingCalendar() {
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
                     ? bookings.filter(
-                      (b) => b.roomId === room.id && b.status !== "Canceled",
-                    )
+                        (b) => b.roomId === room.id && b.status !== "Canceled",
+                      )
                     : [];
                   return (
                     <div key={room.id} className="flex border-b border-border">
@@ -276,8 +276,6 @@ export function BookingCalendar() {
                         })}
 
                         {roomBookings.map((booking) => {
-                          console.log(booking);
-
                           const checkIn = booking.checkIn;
                           const checkOut = booking.checkOut;
 

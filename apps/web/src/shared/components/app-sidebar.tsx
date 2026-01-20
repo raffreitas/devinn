@@ -8,6 +8,7 @@ import {
   Settings,
 } from "lucide-react";
 import { AppSidebarFooter } from "./app-sidebar-footer";
+import { AppSidebarHeader } from "./app-sidebar-header";
 import {
   Sidebar,
   SidebarContent,
@@ -33,9 +34,9 @@ const navigation = [
 export function AppSidebar() {
   return (
     <Sidebar>
+      <AppSidebarHeader />
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigation.map((item) => (
