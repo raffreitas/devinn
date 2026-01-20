@@ -26,6 +26,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\DevInn.Application\DevInn.Application.csproj"/>
+        <ProjectReference Include="..\..\src\DevInn.Domain\DevInn.Domain.csproj"/>
     </ItemGroup>
 
 </Project>
