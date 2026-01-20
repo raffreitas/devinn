@@ -53,6 +53,7 @@ help:
 # --- Build & Maintenance ---
 
 setup:
+	$(DOTNET_CMD) build
 	$(DOTNET_CMD) tool restore
 	$(DOTNET_CMD) restore
 
