@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { useNavigate } from "react-router";
 import { STORAGE_KEYS, storage } from "@/shared/lib/storage";
 import type { User, UserRole } from "../types";
 
@@ -20,10 +21,11 @@ interface JWTPayload {
 
 interface AuthContextData {
   user?: User;
+  innId?: string;
   isLoading: boolean;
   isAuthenticated: boolean;
-  setInnId: (innId: string) => void;
-  clearInnId: () => void;
+  setInn: (innId: string) => void;
+  clearInn: () => void;
   logout: () => Promise<void>;
 }
 
@@ -36,7 +38,9 @@ function coerceRole(raw: unknown): UserRole {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | undefined>();
+  const [innId, setInnId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -60,18 +64,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const role = coerceRole(payload.role);
 
     if (id) setUser({ id, role });
+    if (payload.inn_id) setInnId(payload.inn_id);
+
+    if (role === "SuperAdmin") {
+      const storedInnId = storage.get(STORAGE_KEYS.TENANT_ID);
+      if (storedInnId && typeof storedInnId === "string") {
+        setInnId(storedInnId);
+      }
+    }
     setIsLoading(false);
   }, []);
 
   const isAuthenticated = Boolean(user);
 
-  const setInnId = async (innId: string) => {
+  const setInn = async (innId: string) => {
     if (typeof window === "undefined") return;
     queryClient.invalidateQueries();
     storage.set(STORAGE_KEYS.TENANT_ID, innId);
   };
 
-  const clearInnId = async () => {
+  const clearInn = async () => {
     if (typeof window === "undefined") return;
     queryClient.invalidateQueries();
     storage.remove(STORAGE_KEYS.TENANT_ID);
@@ -81,6 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     storage.remove(STORAGE_KEYS.TOKEN);
     storage.remove(STORAGE_KEYS.TENANT_ID);
     setUser(undefined);
+    queryClient.clear();
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -89,8 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated,
-        setInnId,
-        clearInnId,
+        innId,
+        setInn,
+        clearInn,
         logout,
       }}
     >
