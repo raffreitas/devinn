@@ -1,4 +1,4 @@
-# GEMINI.md
+# AGENTS.md
 
 This file provides a comprehensive overview of the DevInn project, its structure, and how to work with it.
 
