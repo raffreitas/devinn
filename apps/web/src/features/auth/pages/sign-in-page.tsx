@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import z from "zod";
 import { Button } from "@/shared/components/ui/button";
@@ -15,8 +15,7 @@ import {
   FormMessage,
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
-import { authService } from "../services/auth-service";
-import { useNavigate } from "react-router-dom";
+import { useSignIn } from "../hooks/use-auth";
 
 const signInSchema = z.object({
   email: z
@@ -31,6 +30,7 @@ type SignInSchema = z.infer<typeof signInSchema>;
 
 export function SignInPage() {
   const navigate = useNavigate();
+  const { signIn } = useSignIn();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<SignInSchema>({
@@ -43,13 +43,9 @@ export function SignInPage() {
 
   const isSubmitting = form.formState.isSubmitting;
 
-  const { mutateAsync: authenticate } = useMutation({
-    mutationFn: authService.signIn,
-  });
-
   async function handleAuthenticate({ email, password }: SignInSchema) {
     try {
-      await authenticate({ email, password });
+      await signIn({ email, password });
       navigate("/", { replace: true });
     } catch {
       toast.error("Credenciais inválidas");
@@ -58,16 +54,16 @@ export function SignInPage() {
 
   return (
     <div className="p-4 lg:p-8">
-      <div className="mx-auto flex w-full max-w-md flex-col justify-center space-y-6 px-2 sm:px-0">
+      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-87.5">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Acessar</h1>
         </div>
 
-        <div className="grid gap-6">
+        <div>
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleAuthenticate)}
-              className="space-y-5"
+              className="space-y-4"
             >
               <FormField
                 control={form.control}
