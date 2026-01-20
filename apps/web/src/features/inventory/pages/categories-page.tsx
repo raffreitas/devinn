@@ -98,7 +98,7 @@ export function CategoriesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-50 sm:w-auto">Nome</TableHead>
+                      <TableHead className="w-25 sm:w-auto">Nome</TableHead>
                       <TableHead>Capacidade</TableHead>
                       <TableHead>Preço Base</TableHead>
                       <TableHead className="hidden md:table-cell">
@@ -110,7 +110,7 @@ export function CategoriesPage() {
                   <TableBody>
                     {data.map((category) => (
                       <TableRow key={category.id}>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium truncate">
                           {category.name}
                         </TableCell>
                         <TableCell>{category.capacity} Pessoas</TableCell>
