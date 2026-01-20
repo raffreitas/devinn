@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router";
 import { loginRoutes } from "./features/auth/login-routes";
-import { RoomCategoryPage } from "./features/inventory/pages/room-category-page";
+import { inventoryRoutes } from "./features/inventory/inventory-routes";
 import { AppLayout } from "./shared/components/app-layout";
 import { RequireGuest } from "./shared/components/guest-guard";
 import { NotFoundPage } from "./shared/pages/not-found-page";
@@ -19,9 +19,8 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           {
-            index: true,
-            path: "/",
-            element: <RoomCategoryPage />,
+            path: "/inventory",
+            children: inventoryRoutes,
           },
         ],
       },
