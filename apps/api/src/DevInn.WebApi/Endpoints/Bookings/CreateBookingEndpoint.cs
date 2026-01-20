@@ -22,6 +22,7 @@ public sealed class CreateBookingEndpoint : IEndpoint
             .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ApiProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)
-            .Produces<ApiProblemDetails>(StatusCodes.Status409Conflict);
+            .Produces<ApiProblemDetails>(StatusCodes.Status409Conflict)
+            .RequireAuthorization();
     }
 }

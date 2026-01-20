@@ -19,6 +19,7 @@ public sealed class DeleteRoomEndpoint : IEndpoint
             .WithTags(Tags.Rooms)
             .WithName("Delete Room")
             .Produces(StatusCodes.Status204NoContent)
-            .Produces<ApiProblemDetails>(StatusCodes.Status404NotFound);
+            .Produces<ApiProblemDetails>(StatusCodes.Status404NotFound)
+            .RequireAuthorization();
     }
 }

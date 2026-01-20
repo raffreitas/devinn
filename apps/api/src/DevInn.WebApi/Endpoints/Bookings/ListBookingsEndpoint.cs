@@ -1,4 +1,5 @@
 using DevInn.Application.Features.Bookings.Queries.ListBookings;
+using DevInn.Application.Features.Bookings.Shared;
 using DevInn.WebApi.Common;
 
 using Mediator;
@@ -18,7 +19,8 @@ public sealed class ListBookingsEndpoint : IEndpoint
             })
             .WithTags(Tags.Bookings)
             .WithName("List Bookings")
-            .Produces<ApiResource<List<DevInn.Application.Features.Bookings.Shared.BookingDto[]>>>()
-            .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ApiResource<List<BookingDto[]>>>()
+            .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 }

@@ -19,6 +19,7 @@ public sealed class DeleteRoomCategoryEndpoint : IEndpoint
             .WithTags(Tags.RoomCategories)
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ApiProblemDetails>(StatusCodes.Status404NotFound)
-            .Produces<ApiProblemDetails>(StatusCodes.Status409Conflict);
+            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)
+            .RequireAuthorization();
     }
 }

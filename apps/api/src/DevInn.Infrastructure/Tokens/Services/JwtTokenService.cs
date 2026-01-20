@@ -22,7 +22,7 @@ internal sealed class JwtTokenService(IOptions<JwtTokenOptions> options) : IToke
         var credentials = new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256);
 
         var roleClaims = request.Roles
-            .SelectMany(role => new List<Claim> { new(ClaimTypes.Role, role), new("role", role) });
+            .Select(role => new Claim("role", role));
 
         List<Claim> claims =
         [

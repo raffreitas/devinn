@@ -23,6 +23,7 @@ public sealed class UpdateRoomCategoryEndpoint : IEndpoint
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ApiProblemDetails>(StatusCodes.Status404NotFound)
-            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity);
+            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)
+            .RequireAuthorization();
     }
 }

@@ -71,4 +71,17 @@ internal sealed class IdentityService(
 
         return Result.Ok(resultUser);
     }
+
+    public async Task<Result<User>> GetUserByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(id.ToString());
+        if (user is null)
+            return Result.Fail(new NotFoundError("Usuário não encontrado"));
+
+        var roles = await userManager.GetRolesAsync(user);
+        var userRoles = roles.Select(Enum.Parse<UserRole>).ToArray();
+        var resultUser = new User(user.Id, user.InnId, user.UserName!, user.Email!, userRoles);
+
+        return Result.Ok(resultUser);
+    }
 }

@@ -49,7 +49,11 @@ public static class DependencyInjection
             .AddPolicy(Policies.InnAdminOnly,
                 policy => policy.RequireRole(nameof(UserRole.InnAdmin), nameof(UserRole.SuperAdmin)));
 
+        // Configure HTTP Context Accessor
+        services.AddHttpContextAccessor();
+
         // Add Services
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IUserContext, UserContextService>();
     }
 }

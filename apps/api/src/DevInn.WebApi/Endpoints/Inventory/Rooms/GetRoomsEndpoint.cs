@@ -20,6 +20,7 @@ public sealed class GetRoomsEndpoint : IEndpoint
             .WithName("List Rooms")
             .Produces<ApiResource<List<RoomResponse[]>>>()
             .Produces<ApiProblemDetails>(StatusCodes.Status401Unauthorized)
-            .Produces<ApiProblemDetails>(StatusCodes.Status403Forbidden);
+            .Produces<ApiProblemDetails>(StatusCodes.Status403Forbidden)
+            .RequireAuthorization();
     }
 }

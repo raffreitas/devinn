@@ -20,6 +20,7 @@ public sealed class CreateRoomCategoryEndpoint : IEndpoint
             .WithName("Create Room Category")
             .Produces<ApiResource<Guid>>(StatusCodes.Status201Created)
             .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
-            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity);
+            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)
+            .RequireAuthorization();
     }
 }

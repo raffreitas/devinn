@@ -20,6 +20,7 @@ public sealed class GetRoomCategoriesEndpoint : IEndpoint
             .WithName("List Room Categories")
             .Produces<ApiResource<RoomCategoryResponse[]>>()
             .Produces<ApiProblemDetails>(StatusCodes.Status401Unauthorized)
-            .Produces<ApiProblemDetails>(StatusCodes.Status403Forbidden);
+            .Produces<ApiProblemDetails>(StatusCodes.Status403Forbidden)
+            .RequireAuthorization();
     }
 }

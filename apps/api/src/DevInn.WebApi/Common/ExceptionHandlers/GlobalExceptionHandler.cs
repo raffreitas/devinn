@@ -1,4 +1,5 @@
 ﻿using DevInn.Domain.SeedWork;
+using DevInn.Infrastructure.Common.Exceptions;
 
 using Microsoft.AspNetCore.Diagnostics;
 
@@ -13,26 +14,36 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
     {
         logger.LogError(exception, "Unhandled exception occurred");
 
-        if (exception is DomainException domainException)
+        switch (exception)
         {
-            await httpContext.Response.WriteAsJsonAsync(
-                new ApiProblemDetails
-                {
-                    Title = "Requisição inválida",
-                    Status = StatusCodes.Status422UnprocessableEntity,
-                    Detail = domainException.Message
-                }, cancellationToken: cancellationToken);
-            return true;
+            case DomainException domainException:
+                await httpContext.Response.WriteAsJsonAsync(
+                    new ApiProblemDetails
+                    {
+                        Title = "Requisição inválida",
+                        Status = StatusCodes.Status422UnprocessableEntity,
+                        Detail = domainException.Message
+                    }, cancellationToken: cancellationToken);
+                return true;
+            case UnauthorizedException:
+                await httpContext.Response.WriteAsJsonAsync(
+                    new ApiProblemDetails
+                    {
+                        Title = "Acesso não autorizado",
+                        Status = StatusCodes.Status401Unauthorized,
+                        Detail = exception.Message
+                    }, cancellationToken: cancellationToken);
+                return true;
+            default:
+                await httpContext.Response.WriteAsJsonAsync(
+                    new ApiProblemDetails
+                    {
+                        Title = "Erro Interno do Servidor",
+                        Status = StatusCodes.Status500InternalServerError,
+                        Detail = "Houve um erro inesperado ao processar a requisição."
+                    }, cancellationToken);
+
+                return true;
         }
-
-        await httpContext.Response.WriteAsJsonAsync(
-            new ApiProblemDetails
-            {
-                Title = "Erro Interno do Servidor",
-                Status = StatusCodes.Status500InternalServerError,
-                Detail = "Houve um erro inesperado ao processar a requisição."
-            }, cancellationToken);
-
-        return true;
     }
 }

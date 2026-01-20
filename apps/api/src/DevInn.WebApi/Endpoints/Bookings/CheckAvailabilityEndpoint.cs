@@ -19,6 +19,7 @@ public sealed class CheckAvailabilityEndpoint : IEndpoint
             .WithTags(Tags.Bookings)
             .WithName("Check Availability")
             .Produces<ApiResource<CheckAvailabilityResponse>>()
-            .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest);
+            .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
     }
 }
