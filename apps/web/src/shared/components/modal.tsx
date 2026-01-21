@@ -29,7 +29,9 @@ export function Modal({
 }: ModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn("sm:max-w-lg max-h-[90vh] overflow-y-auto", className)}>
+      <DialogContent
+        className={cn("sm:max-w-lg max-h-[90vh] overflow-y-auto", className)}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}

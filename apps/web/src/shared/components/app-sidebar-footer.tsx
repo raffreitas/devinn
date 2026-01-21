@@ -1,5 +1,6 @@
 import { LogOutIcon, User2Icon } from "lucide-react";
 import { useAuth } from "@/features/auth/contexts/auth-context";
+import { useProfile } from "@/features/auth/hooks/use-profile";
 import { Button } from "./ui/button";
 import {
   SidebarFooter,
@@ -7,7 +8,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "./ui/sidebar";
-import { useProfile } from "@/features/auth/hooks/use-profile";
 
 export function AppSidebarFooter() {
   const { logout } = useAuth();
