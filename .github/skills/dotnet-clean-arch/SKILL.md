@@ -41,15 +41,15 @@ public sealed class Room : Entity
     public string Number { get; private set; }
     public RoomCategory Category { get; private set; }
     public Guid CategoryId { get; private set; }
-    
+
     private Room() { } // EF Core
-    
+
     public Room(string number, Guid categoryId)
     {
         Number = number;
         CategoryId = categoryId;
     }
-    
+
     public void UpdateNumber(string newNumber)
     {
         Number = newNumber;
@@ -73,16 +73,16 @@ public readonly record struct StayPeriod
 {
     public DateTimeOffset CheckIn { get; private init; }
     public DateTimeOffset CheckOut { get; private init; }
-    
+
     public StayPeriod(DateTimeOffset checkIn, DateTimeOffset checkOut)
     {
         if (checkIn >= checkOut)
             throw new ArgumentException("Check-in must be before check-out");
-            
+
         CheckIn = checkIn;
         CheckOut = checkOut;
     }
-    
+
     public int Nights => (CheckOut.Date - CheckIn.Date).Days;
 }
 ```
@@ -100,11 +100,11 @@ Root entities that enforce business rules:
 public sealed class Booking : Entity
 {
     private readonly List<Payment> _payments = [];
-    
+
     public Guid RoomId { get; private set; }
     public StayPeriod StayPeriod { get; private set; }
     public IReadOnlyList<Payment> Payments => _payments.AsReadOnly();
-    
+
     public void AddPayment(decimal amount, PaymentMethod method)
     {
         var payment = new Payment(Id, amount, method);
@@ -143,20 +143,20 @@ public sealed record CreateRoomCategoryCommand(
     string Name,
     string Description,
     int Capacity
-) : IRequest<Result<Guid>>;
+) : ICommand<Result<Guid>>;
 
-internal sealed class CreateRoomCategoryHandler 
-    : IRequestHandler<CreateRoomCategoryCommand, Result<Guid>>
+internal sealed class CreateRoomCategoryHandler
+    : ICommandHandler<CreateRoomCategoryCommand, Result<Guid>>
 {
     private readonly IApplicationDbContext _context;
-    
+
     public CreateRoomCategoryHandler(IApplicationDbContext context)
     {
         _context = context;
     }
-    
-    public async Task<Result<Guid>> Handle(
-        CreateRoomCategoryCommand command, 
+
+    public async ValueTask<Result<Guid>> Handle(
+        CreateRoomCategoryCommand command,
         CancellationToken ct)
     {
         var category = new RoomCategory(
@@ -164,10 +164,10 @@ internal sealed class CreateRoomCategoryHandler
             command.Description,
             command.Capacity
         );
-        
+
         _context.RoomCategories.Add(category);
         await _context.SaveChangesAsync(ct);
-        
+
         return Result.Success(category.Id);
     }
 }
@@ -176,16 +176,16 @@ internal sealed class CreateRoomCategoryHandler
 ### Queries (Read Operations)
 
 ```csharp
-public sealed record GetRoomCategoriesQuery 
-    : IRequest<Result<List<RoomCategoryDto>>>;
+public sealed record GetRoomCategoriesQuery
+    : IQuery<Result<List<RoomCategoryDto>>>;
 
-internal sealed class GetRoomCategoriesHandler 
-    : IRequestHandler<GetRoomCategoriesQuery, Result<List<RoomCategoryDto>>>
+internal sealed class GetRoomCategoriesHandler
+    : IQueryHandler<GetRoomCategoriesQuery, Result<List<RoomCategoryDto>>>
 {
     private readonly IApplicationDbContext _context;
-    
-    public async Task<Result<List<RoomCategoryDto>>> Handle(
-        GetRoomCategoriesQuery query, 
+
+    public async ValueTask<Result<List<RoomCategoryDto>>> Handle(
+        GetRoomCategoriesQuery query,
         CancellationToken ct)
     {
         var categories = await _context.RoomCategories
@@ -197,7 +197,7 @@ internal sealed class GetRoomCategoriesHandler
                 Capacity = c.Capacity
             })
             .ToListAsync(ct);
-            
+
         return Result.Success(categories);
     }
 }
@@ -208,7 +208,7 @@ internal sealed class GetRoomCategoriesHandler
 Use FluentValidation for command/query validation:
 
 ```csharp
-public sealed class CreateRoomCategoryValidator 
+internal sealed class CreateRoomCategoryValidator
     : AbstractValidator<CreateRoomCategoryCommand>
 {
     public CreateRoomCategoryValidator()
@@ -216,7 +216,7 @@ public sealed class CreateRoomCategoryValidator
         RuleFor(x => x.Name)
             .NotEmpty()
             .MaximumLength(100);
-            
+
         RuleFor(x => x.Capacity)
             .GreaterThan(0)
             .LessThanOrEqualTo(10);
@@ -236,20 +236,18 @@ public sealed class CreateRoomCategoryEndpoint : IEndpoint
         app.MapPost("/api/v1/room-categories", Handle)
             .WithTags("Inventory")
             .RequireAuthorization()
-            .Produces<Guid>(StatusCodes.Status201Created)
-            .ProducesValidationProblem();
+            .Produces<ApiResource<Guid>>(StatusCodes.Status201Created)
+            .Produces<ApiProblemDetails>();
     }
-    
+
     private static async Task<IResult> Handle(
         CreateRoomCategoryCommand command,
         ISender sender,
         CancellationToken ct)
     {
         var result = await sender.Send(command, ct);
-        
-        return result.IsSuccess
-            ? Results.Created($"/api/v1/room-categories/{result.Value}", result.Value)
-            : result.ToProblemDetails();
+
+        return result.ToCreated(value => $"/api/v1/room-categories/{value}");
     }
 }
 ```
@@ -282,26 +280,26 @@ public sealed class CreateRoomCategoryEndpoint : IEndpoint
 
 ```csharp
 // Register by assembly scanning
-services.AddMediatR(cfg => 
-    cfg.RegisterServicesFromAssembly(typeof(ApplicationModule).Assembly));
-    
-services.AddValidatorsFromAssembly(typeof(ApplicationModule).Assembly);
+services.AddMediator(o => o.ServiceLifetime = ServiceLifetime.Scoped);
 ```
 
 ### Error Handling
 
-Use Result pattern for business logic errors:
+Use Result pattern for business logic errors and validation:
 
 ```csharp
-public sealed record Result<T>
+using FluentResults;
+
+Result SomeMethod()
 {
-    public bool IsSuccess { get; }
-    public T? Value { get; }
-    public Error? Error { get; }
-    
-    public static Result<T> Success(T value) => new(true, value, null);
-    public static Result<T> Failure(Error error) => new(false, default, error);
+    if (someErrorCondition)
+    {
+        return Result.Fail(new UnauthorizedError("An error occurred."));
+    }
+
+    return Result.Ok();
 }
+
 ```
 
 ### Testing Structure
@@ -326,11 +324,15 @@ Tests/
 5. Add endpoint in `WebApi/Endpoints/{Aggregate}/`
 
 ### Database Migration
+Always uses makefile commands to crate and apply migrations. Each migration in versioned by a number ex: V001:
 
 ```bash
-# From Infrastructure project
-dotnet ef migrations add {MigrationName} --startup-project ../WebApi
-dotnet ef database update --startup-project ../WebApi
+make db-add V=0004 ## For ApplicationDbContext
+make db-update
+make id-add V=0002 ## For IdentityDbContext
+make id-update
+
+make migrate-all # Applies all pending migrations
 ```
 
 ## References
