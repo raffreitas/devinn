@@ -73,6 +73,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     setIsLoading(false);
+
+    // Ouve evento global de unauthorized emitido pelo http-client
+    const onUnauthorized = () => {
+      // usa o logout local para garantir limpeza e navegação via react-router
+      logout().catch(() => {});
+    };
+
+    window.addEventListener("auth:unauthorized", onUnauthorized as EventListener);
+
+    return () => {
+      window.removeEventListener("auth:unauthorized", onUnauthorized as EventListener);
+    };
   }, []);
 
   const isAuthenticated = Boolean(user);

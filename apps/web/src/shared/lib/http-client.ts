@@ -25,3 +25,26 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    if (status === 401) {
+      storage.remove(STORAGE_KEYS.TOKEN);
+      storage.remove(STORAGE_KEYS.TENANT_ID);
+
+      try {
+        // emite evento global que o AuthProvider pode ouvir e executar logout de forma segura
+        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+      } catch (e) {
+        // se CustomEvent não estiver disponível, faz um replace na rota como fallback
+        try {
+          window.location.replace("/login");
+        } catch { }
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
