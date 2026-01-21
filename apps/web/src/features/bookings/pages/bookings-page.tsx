@@ -103,6 +103,9 @@ export function BookingsPage() {
       },
       roomId: data.roomId,
       notes: data.notes,
+      paidAmount: data.paidAmount,
+      paymentMethod: data.paymentMethod,
+      paymentNotes: data.paymentNotes,
     };
 
     if (selectedBooking) {

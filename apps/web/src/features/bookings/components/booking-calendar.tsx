@@ -104,6 +104,9 @@ export function BookingCalendar() {
       },
       roomId: data.roomId,
       notes: data.notes,
+      paidAmount: data.paidAmount,
+      paymentMethod: data.paymentMethod,
+      paymentNotes: data.paymentNotes,
     };
     if (editingBooking) {
       handleUpdate(editingBooking.id, payload);
@@ -249,8 +252,8 @@ export function BookingCalendar() {
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
                     ? bookings.filter(
-                        (b) => b.roomId === room.id && b.status !== "Canceled",
-                      )
+                      (b) => b.roomId === room.id && b.status !== "Canceled",
+                    )
                     : [];
                   return (
                     <div key={room.id} className="flex border-border">

@@ -55,7 +55,14 @@ export const bookingService = {
   update: async (id: string, data: UpdateBookingRequest): Promise<Booking> => {
     const response = await api.put<ApiResponse<Booking>>(
       `/api/v1/bookings/${id}`,
-      data,
+      {
+        ...data,
+        guest: {
+          ...data.guest,
+          birthDate: data.guest?.birthDate || undefined,
+          document: data.guest?.document || undefined,
+        }
+      },
     );
     return response.data.data;
   },
