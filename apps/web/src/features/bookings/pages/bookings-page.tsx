@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { BookingDetails } from "../components/booking-details";
 import { BookingForm } from "../components/booking-form";
 import {
   useBookings,
@@ -67,6 +68,7 @@ const paymentStatusConfig: Record<
 
 export function BookingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | undefined>();
 
   const [filterStatus, setFilterStatus] = useState<BookingStatus | "all">(
@@ -109,7 +111,13 @@ export function BookingsPage() {
       createBooking(payload);
     }
     setIsModalOpen(false);
+    setIsDetailsModalOpen(false);
     setSelectedBooking(undefined);
+  };
+
+  const handleViewDetails = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setIsDetailsModalOpen(true);
   };
 
   const handleEdit = (booking: Booking) => {
@@ -128,6 +136,7 @@ export function BookingsPage() {
   };
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsDetailsModalOpen(false);
     setSelectedBooking(undefined);
   };
 
@@ -256,7 +265,7 @@ export function BookingsPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => {}}
+                              onClick={() => handleViewDetails(booking)}
                             >
                               <EyeIcon className="h-4 w-4" />
                               <span className="sr-only">Ver detalhes</span>
@@ -314,6 +323,22 @@ export function BookingsPage() {
           onSubmit={handleCreateOrUpdate}
           isSubmitting={isCreating || isUpdating}
         />
+      </Modal>
+
+      <Modal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseModal}
+        title="Detalhes da Reserva"
+        description="Visualize as informações completas da reserva."
+        className="sm:max-w-3xl max-h-[90vh] overflow-y-auto"
+      >
+        {selectedBooking && (
+          <BookingDetails
+            booking={selectedBooking}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        )}
       </Modal>
     </div>
   );
