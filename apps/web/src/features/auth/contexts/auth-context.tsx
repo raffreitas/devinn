@@ -80,10 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout().catch(() => {});
     };
 
-    window.addEventListener("auth:unauthorized", onUnauthorized as EventListener);
+    window.addEventListener(
+      "auth:unauthorized",
+      onUnauthorized as EventListener,
+    );
 
     return () => {
-      window.removeEventListener("auth:unauthorized", onUnauthorized as EventListener);
+      window.removeEventListener(
+        "auth:unauthorized",
+        onUnauthorized as EventListener,
+      );
     };
   }, []);
 
