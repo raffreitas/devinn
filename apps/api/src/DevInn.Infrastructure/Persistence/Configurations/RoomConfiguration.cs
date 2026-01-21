@@ -19,8 +19,8 @@ internal sealed class RoomConfiguration : IEntityTypeConfiguration<Room>
         builder.Property(r => r.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
 
         builder.HasOne<RoomCategory>()
-            .WithOne()
-            .HasForeignKey<Room>(r => r.CategoryId)
+            .WithMany()
+            .HasForeignKey(r => r.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<Inn>()

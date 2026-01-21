@@ -99,7 +99,9 @@ internal sealed class GuestDtoValidation : AbstractValidator<GuestDto>
         });
 
         RuleFor(guest => guest.BirthDate)
-            .Must(d => !d.HasValue || d.Value < DateOnly.FromDateTime(DateTime.UtcNow))
+            .LessThan(DateOnly.FromDateTime(DateTime.UtcNow))
+            .When(guest => guest.BirthDate.HasValue)
             .WithMessage("Data de nascimento inválida.");
+
     }
 }

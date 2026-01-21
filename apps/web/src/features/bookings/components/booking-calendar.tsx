@@ -23,7 +23,7 @@ import {
 } from "@/shared/components/ui/card";
 import { cn } from "@/shared/lib/utils";
 import { ReservationBar } from "../components/reservation-bar";
-import { useBookings } from "../hooks/use-booking";
+import { useBookings, useDeleteBooking } from "../hooks/use-booking";
 import { bookingService } from "../services/booking-service";
 import {
   type Booking,
@@ -32,6 +32,7 @@ import {
   mapToFormData,
   type UpdateBookingRequest,
 } from "../types";
+import { BookingDetails } from "./booking-details";
 import { BookingForm } from "./booking-form";
 
 export function BookingCalendar() {
@@ -40,6 +41,8 @@ export function BookingCalendar() {
   const [preselectedRoom, setPreselectedRoom] = useState<string | undefined>();
   const [preselectedDate, setPreselectedDate] = useState<Date | undefined>();
   const [editingBooking, setEditingBooking] = useState<Booking | undefined>();
+  const [detailsBooking, setDetailsBooking] = useState<Booking | undefined>();
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -51,6 +54,7 @@ export function BookingCalendar() {
     startDate: format(monthStart, "yyyy-MM-dd"),
     endDate: format(monthEnd, "yyyy-MM-dd"),
   });
+  const { deleteBooking } = useDeleteBooking();
 
   const handlePreviousMonth = () => {
     setCurrentMonth((prev) => subMonths(prev, 1));
@@ -79,11 +83,9 @@ export function BookingCalendar() {
   };
 
   const handleBookingClick = (booking: Booking) => {
-    // Open booking in edit mode
-    setEditingBooking(booking);
-    setPreselectedRoom(booking.roomId);
-    setPreselectedDate(new Date(booking.checkIn));
-    setFormDialogOpen(true);
+    // Open booking details first
+    setDetailsBooking(booking);
+    setIsDetailsModalOpen(true);
   };
 
   const handleFormSubmit = (data: BookingFormData) => {
@@ -102,6 +104,9 @@ export function BookingCalendar() {
       },
       roomId: data.roomId,
       notes: data.notes,
+      paidAmount: data.paidAmount,
+      paymentMethod: data.paymentMethod,
+      paymentNotes: data.paymentNotes,
     };
     if (editingBooking) {
       handleUpdate(editingBooking.id, payload);
@@ -146,6 +151,21 @@ export function BookingCalendar() {
     setEditingBooking(undefined);
     setPreselectedRoom(undefined);
     setPreselectedDate(undefined);
+  };
+
+  const handleEditFromDetails = (booking: Booking) => {
+    setIsDetailsModalOpen(false);
+    setEditingBooking(booking);
+    setPreselectedRoom(booking.roomId);
+    setPreselectedDate(new Date(booking.checkIn));
+    setFormDialogOpen(true);
+  };
+
+  const handleDeleteFromDetails = (id: string) => {
+    if (confirm("Tem certeza que deseja excluir esta reserva?")) {
+      deleteBooking(id);
+      setIsDetailsModalOpen(false);
+    }
   };
 
   const getBookingsForRoomAndDate = (
@@ -232,11 +252,11 @@ export function BookingCalendar() {
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
                     ? bookings.filter(
-                        (b) => b.roomId === room.id && b.status !== "Canceled",
-                      )
+                      (b) => b.roomId === room.id && b.status !== "Canceled",
+                    )
                     : [];
                   return (
-                    <div key={room.id} className="flex border-b border-border">
+                    <div key={room.id} className="flex border-border">
                       <div className="w-28 shrink-0 p-3 flex items-center border-r border-border">
                         <div>
                           <div className="font-medium text-sm">
@@ -258,7 +278,7 @@ export function BookingCalendar() {
                             <div
                               key={`${room.id}-${day.toISOString()}`}
                               className={cn(
-                                "border-r p-1 relative h-15 w-15 cursor-pointer hover:bg-accent/50 transition-colors",
+                                "border-r p-1 relative h-15 w-15 cursor-pointer hover:bg-accent/50 transition-colors border-b",
                                 isToday(day) && "bg-primary/5",
                               )}
                               onClick={() =>
@@ -338,6 +358,7 @@ export function BookingCalendar() {
             ? "Atualize os detalhes da reserva."
             : "Preencha os detalhes para criar uma nova reserva."
         }
+        className="sm:max-w-3xl max-h-[90vh] overflow-y-auto"
       >
         <BookingForm
           initialData={mapToFormData(editingBooking)}
@@ -347,6 +368,25 @@ export function BookingCalendar() {
           onSubmit={handleFormSubmit}
           isSubmitting={false}
         />
+      </Modal>
+
+      <Modal
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setDetailsBooking(undefined);
+        }}
+        title="Detalhes da Reserva"
+        description="Visualize as informações completas da reserva."
+        className="sm:max-w-3xl max-h-[90vh] overflow-y-auto"
+      >
+        {detailsBooking && (
+          <BookingDetails
+            booking={detailsBooking}
+            onEdit={handleEditFromDetails}
+            onDelete={handleDeleteFromDetails}
+          />
+        )}
       </Modal>
     </div>
   );

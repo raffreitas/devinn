@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { InputMoney } from "@/shared/components/input-money";
 import { InputNumber } from "@/shared/components/input-number";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -41,9 +40,6 @@ export function RoomForm({
     defaultValues: {
       categoryId: room?.categoryId || "",
       number: room?.number || 1,
-      capacity: room?.capacity || 2,
-      basePrice: room?.basePrice || 0,
-      extraGuestPrice: room?.extraGuestPrice || 0,
       status: room?.status || "Active",
       description: room?.description || "",
     },
@@ -95,77 +91,28 @@ export function RoomForm({
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="capacity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Capacidade</FormLabel>
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Status</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <InputNumber {...field} min={1} max={10} />
+                  <SelectTrigger className="w-full h-9" data-size="default">
+                    <SelectValue />
+                  </SelectTrigger>
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full h-9" data-size="default">
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Active">Ativo</SelectItem>
-                    <SelectItem value="Maintenance">Manutenção</SelectItem>
-                    <SelectItem value="Inactive">Inativo</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="basePrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Preço Base</FormLabel>
-                <FormControl>
-                  <InputMoney {...field} min={0} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="extraGuestPrice"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Preço Pessoa Extra</FormLabel>
-                <FormControl>
-                  <InputMoney min={0} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+                <SelectContent>
+                  <SelectItem value="Active">Ativo</SelectItem>
+                  <SelectItem value="Maintenance">Manutenção</SelectItem>
+                  <SelectItem value="Inactive">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}

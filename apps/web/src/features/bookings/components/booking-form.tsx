@@ -92,6 +92,7 @@ export function BookingForm({
   const childrenCount = form.watch("children");
   const adults = form.watch("adults");
   const childrenAges = form.watch("childrenAges");
+  const paidAmount = form.watch("paidAmount");
 
   const { data: roomsData } = useRooms();
 
@@ -153,10 +154,14 @@ export function BookingForm({
       nights,
       total,
     };
-  }, [selectedRoom, adults, childrenAges, nights]);
+  }, [selectedRoom, adults, nights, JSON.stringify(childrenAges)]);
 
   const totalPeople = adults + childrenCount;
   const maxCapacity = selectedRoom?.capacity || 10;
+
+  const remainingAmount = priceBreakdown
+    ? priceBreakdown.total - (paidAmount ?? 0)
+    : 0;
 
   // Sync children ages fields with children count
   useEffect(() => {
@@ -192,7 +197,7 @@ export function BookingForm({
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecione um quarto" />
                       </SelectTrigger>
                     </FormControl>
@@ -554,7 +559,7 @@ export function BookingForm({
               name="guestDocument"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CPF/RG</FormLabel>
+                  <FormLabel>CPF</FormLabel>
                   <FormControl>
                     <Input placeholder="123.456.789-00" {...field} />
                   </FormControl>
@@ -582,19 +587,17 @@ export function BookingForm({
         {/* Payment Section */}
         {priceBreakdown && (
           <div className="space-y-3">
-            <h3 className="text-sm font-medium border-b pb-2">
-              Pagamento Inicial (opcional)
-            </h3>
+            <h3 className="text-sm font-medium border-b pb-2">Pagamento</h3>
             <p className="text-sm text-muted-foreground">
               Registre o valor pago no momento da reserva, se houver.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="paidAmount"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="md:col-span-2">
                     <FormLabel>Valor Pago</FormLabel>
                     <FormControl>
                       <InputMoney
@@ -617,7 +620,7 @@ export function BookingForm({
                     <FormLabel>Método de Pagamento</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecione o método" />
                         </SelectTrigger>
                       </FormControl>
@@ -641,19 +644,28 @@ export function BookingForm({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="paymentNotes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Observações do Pagamento (opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Entrada de 50%" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {priceBreakdown.total > 0 && (
+              <div className="mt-2 p-2 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  Saldo devedor:{" "}
+                  <span
+                    className={`font-semibold ${
+                      remainingAmount > 0
+                        ? "text-rose-600"
+                        : remainingAmount < 0
+                          ? "text-blue-600"
+                          : "text-emerald-600"
+                    }`}
+                  >
+                    {remainingAmount > 0
+                      ? `R$ ${remainingAmount.toFixed(2)}`
+                      : remainingAmount < 0
+                        ? `R$ ${Math.abs(remainingAmount).toFixed(2)} (Pago a mais)`
+                        : "Pago integralmente"}
+                  </span>
+                </p>
+              </div>
+            )}
           </div>
         )}
 

@@ -33,7 +33,7 @@ internal sealed class CreateRoomHandler(
         if (!isUnique)
             return Result.Fail(new ConflictError("Já existe um quarto com este número nesta pousada"));
 
-        var room = new Room(command.CategoryId, command.Number, command.Name);
+        var room = new Room(command.CategoryId, command.Number, command.Name, command.Status);
         await roomRepository.AddAsync(room, cancellationToken);
         await uow.CommitAsync(cancellationToken);
 

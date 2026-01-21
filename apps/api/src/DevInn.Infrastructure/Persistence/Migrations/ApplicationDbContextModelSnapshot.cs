@@ -261,7 +261,6 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasName("pk_rooms");
 
                     b.HasIndex("CategoryId")
-                        .IsUnique()
                         .HasDatabaseName("ix_rooms_category_id");
 
                     b.HasIndex("InnId")
@@ -428,8 +427,8 @@ namespace DevInn.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("DevInn.Domain.Aggregates.Inventory.Room", b =>
                 {
                     b.HasOne("DevInn.Domain.Aggregates.Inventory.RoomCategory", null)
-                        .WithOne()
-                        .HasForeignKey("DevInn.Domain.Aggregates.Inventory.Room", "CategoryId")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_rooms_room_categories_category_id");

@@ -5,6 +5,7 @@ using DevInn.Infrastructure.Identity.Context;
 using DevInn.Infrastructure.Identity.Models;
 using DevInn.Infrastructure.Identity.Services;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -46,8 +47,10 @@ public static class DependencyInjection
         // Configure Auth
         services.AddAuthorizationBuilder()
             .AddPolicy(Policies.SuperAdminOnly, policy => policy.RequireRole(nameof(UserRole.SuperAdmin)))
-            .AddPolicy(Policies.InnAdminOnly,
-                policy => policy.RequireRole(nameof(UserRole.InnAdmin), nameof(UserRole.SuperAdmin)));
+            .AddPolicy(Policies.InnAdminOnly, policy => policy.RequireRole(nameof(UserRole.InnAdmin), nameof(UserRole.SuperAdmin)))
+            .SetFallbackPolicy(new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build());
 
         // Configure HTTP Context Accessor
         services.AddHttpContextAccessor();

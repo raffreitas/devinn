@@ -10,15 +10,21 @@ public sealed class Room : Entity
     public string? Name { get; private set; }
     public RoomStatus Status { get; private set; }
 
+    private Room()
+    {
+    }
+
     public Room(
         Guid categoryId,
         int number,
-        string? name)
+        string? name = null,
+        RoomStatus? status = null
+    )
     {
         CategoryId = categoryId;
         Number = number;
         Name = name;
-        Status = RoomStatus.Inactive;
+        Status = status ?? RoomStatus.Active;
     }
 
     public void Update(

@@ -1,4 +1,4 @@
-import { AlertCircle, Check, Pencil } from "lucide-react";
+import { AlertCircle, Check } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { Booking, PaymentStatus } from "../types";
 
@@ -53,7 +53,6 @@ export function ReservationBar({
         {booking.guest.name}
       </span>
       <div className="flex items-center gap-0.5 ml-1">
-        <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
         {remaining <= 0 ? (
           <Check className="w-3 h-3" />
         ) : (
