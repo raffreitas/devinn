@@ -98,8 +98,11 @@ internal sealed class GuestDtoValidation : AbstractValidator<GuestDto>
                 .MaximumLength(100).WithMessage("Email deve ter no máximo 100 caracteres.");
         });
 
-        RuleFor(guest => guest.BirthDate)
-            .Must(d => !d.HasValue || d.Value < DateOnly.FromDateTime(DateTime.UtcNow))
-            .WithMessage("Data de nascimento inválida.");
+        When(guest => guest.BirthDate is not null, () =>
+        {
+            // RuleFor(guest => guest.BirthDate)
+            //     .Must(d => d.HasValue && d.Value < DateOnly.FromDateTime(DateTime.UtcNow))
+            //     .WithMessage("Data de nascimento inválida.");
+        });
     }
 }

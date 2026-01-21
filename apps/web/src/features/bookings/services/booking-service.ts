@@ -40,7 +40,14 @@ export const bookingService = {
   create: async (data: CreateBookingRequest): Promise<Booking> => {
     const response = await api.post<ApiResponse<Booking>>(
       "/api/v1/bookings",
-      data,
+      {
+        ...data,
+        guest: {
+          ...data.guest,
+          birthDate: data.guest.birthDate || undefined,
+          document: data.guest.document || undefined,
+        }
+      },
     );
     return response.data.data;
   },

@@ -54,8 +54,8 @@ export function useCreateBooking() {
       queryClient.invalidateQueries({ queryKey: ["bookings", innId] });
       toast.success("Reserva criada com sucesso");
     },
-    onError: (error: Error) => {
-      toast.error(error.message || "Erro ao criar reserva");
+    onError: () => {
+      toast.error("Erro ao criar reserva");
     },
   });
 
