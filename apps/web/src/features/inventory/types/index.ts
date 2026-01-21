@@ -57,8 +57,6 @@ export type CreateRoomRequest = {
   categoryId: string;
   number: number;
   capacity: number;
-  basePrice: number;
-  extraGuestPrice: number;
   status: RoomStatus;
   description?: string;
 };
@@ -79,12 +77,6 @@ export const roomSchema = z.object({
     .int("Capacidade deve ser um número inteiro")
     .min(1, "Capacidade mínima é 1")
     .max(10, "Capacidade máxima é 10"),
-  basePrice: z
-    .number({ error: "Preço base é obrigatório" })
-    .positive("Preço deve ser maior que 0"),
-  extraGuestPrice: z
-    .number({ error: "Preço pessoa extra é obrigatório" })
-    .min(0, "Preço pessoa extra não pode ser negativo"),
   status: z.enum(["Active", "Maintenance", "Inactive"], {
     error: "Status é obrigatório",
   }),
