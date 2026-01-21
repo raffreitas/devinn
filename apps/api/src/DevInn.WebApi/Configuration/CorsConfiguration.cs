@@ -2,16 +2,23 @@
 
 public static class CorsConfiguration
 {
+    const string AllowFrontendPolicy = "AllowFrontendPolicy";
+
     public static IServiceCollection AddCorsConfiguration(this IServiceCollection services)
     {
+        var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")
+                             ?? "http://localhost:5173";
+
+        var origins = allowedOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
         services.AddCors(options =>
         {
-            options.AddDefaultPolicy(builder =>
+            options.AddPolicy(AllowFrontendPolicy, policy =>
             {
-                builder
-                    .AllowAnyOrigin()
+                policy.WithOrigins(origins)
+                    .AllowAnyHeader()
                     .AllowAnyMethod()
-                    .AllowAnyHeader();
+                    .AllowCredentials();
             });
         });
 
@@ -20,7 +27,7 @@ public static class CorsConfiguration
 
     public static IApplicationBuilder UseCorsConfiguration(this IApplicationBuilder app)
     {
-        app.UseCors();
+        app.UseCors(AllowFrontendPolicy);
 
         return app;
     }

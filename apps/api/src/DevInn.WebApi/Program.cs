@@ -28,8 +28,6 @@ builder.Services.AddScoped<TenantMiddleware>();
 
 var app = builder.Build();
 
-app.UseInfrastructureModule();
-
 if (app.Environment.IsDevelopment())
 {
     app.UseScalarOpenApi();
@@ -37,8 +35,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseCorsConfiguration();
 app.UseHttpsRedirection();
-
 app.UseExceptionHandler();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseInfrastructureModule();
 
 // Middlewares
 app.UseMiddleware<TenantMiddleware>();
