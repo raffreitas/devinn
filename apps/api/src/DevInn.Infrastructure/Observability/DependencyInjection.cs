@@ -29,6 +29,11 @@ public static class DependencyInjection
 
         var observabilityOptions = configuration.GetOrThrow<ObservabilityOptions>(ObservabilityOptions.SectionName);
 
+        if (!observabilityOptions.Enabled)
+            return services;
+
+        var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentNames.Production;
+
         var otelBuilder = services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService(
                 serviceName: AppDomain.CurrentDomain.FriendlyName,
@@ -62,19 +67,13 @@ public static class DependencyInjection
                 options.IncludeScopes = true;
                 options.ParseStateValues = true;
                 options.IncludeFormattedMessage = true;
+
+                if (isProduction) options.UseGrafana();
             });
 
-        if (!observabilityOptions.Enabled)
-            return services;
 
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentNames.Development)
-        {
-            otelBuilder.UseOtlpExporter();
-        }
-        else
-        {
-            otelBuilder.UseGrafana();
-        }
+        if (isProduction) otelBuilder.UseGrafana();
+        else otelBuilder.UseOtlpExporter();
 
         return services;
     }
