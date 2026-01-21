@@ -56,7 +56,6 @@ export interface Room {
 export type CreateRoomRequest = {
   categoryId: string;
   number: number;
-  capacity: number;
   status: RoomStatus;
   description?: string;
 };
@@ -72,11 +71,6 @@ export const roomSchema = z.object({
       const num = val;
       return !Number.isNaN(num) && num >= 1 && num <= 999;
     }, "Número deve estar entre 1 e 999"),
-  capacity: z
-    .number({ error: "Capacidade é obrigatória" })
-    .int("Capacidade deve ser um número inteiro")
-    .min(1, "Capacidade mínima é 1")
-    .max(10, "Capacidade máxima é 10"),
   status: z.enum(["Active", "Maintenance", "Inactive"], {
     error: "Status é obrigatório",
   }),
