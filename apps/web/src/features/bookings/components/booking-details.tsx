@@ -12,7 +12,6 @@ import {
   Mail,
   Pencil,
   Phone,
-  Trash2,
   User,
   Users,
   XCircle,
@@ -112,7 +111,6 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
 export function BookingDetails({
   booking,
   onEdit,
-  onDelete,
 }: BookingDetailsProps) {
   const formatCurrency = (value: number) => {
     return value.toLocaleString("pt-BR", {
@@ -224,7 +222,7 @@ export function BookingDetails({
                     <span className="text-foreground">
                       {formatCurrency(
                         booking.pricing.extraGuestPrice *
-                          booking.pricing.numberOfExtraGuests,
+                        booking.pricing.numberOfExtraGuests,
                       )}
                     </span>
                   </div>
@@ -235,8 +233,8 @@ export function BookingDetails({
                   <span className="text-foreground">
                     {formatCurrency(
                       booking.pricing.basePrice +
-                        booking.pricing.extraGuestPrice *
-                          booking.pricing.numberOfExtraGuests,
+                      booking.pricing.extraGuestPrice *
+                      booking.pricing.numberOfExtraGuests,
                     )}
                   </span>
                 </div>
