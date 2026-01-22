@@ -30,7 +30,12 @@ internal sealed class UpdateRoomCategoryHandler(IRoomCategoryRepository category
         if (existingCategory != null && existingCategory.Id != command.Id)
             return Result.Fail(new ConflictError("Uma categoria com este nome já existe para esta pousada"));
 
-        category.Update(command.Name, command.Capacity, command.Description);
+        category.Update(
+            command.Name,
+            command.Capacity,
+            command.Description,
+            command.BasePrice,
+            command.ExtraPersonPrice);
         await categoryRepository.UpdateAsync(category, cancellationToken);
 
         await uow.CommitAsync(cancellationToken);

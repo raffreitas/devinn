@@ -24,6 +24,7 @@ builder.Services.AddInfrastructureModule(builder.Configuration);
 builder.Services.AddEndpoints(typeof(Program).Assembly);
 
 // Middlewares registration
+builder.Services.AddScoped<RequestLoggingMiddleware>();
 builder.Services.AddScoped<TenantMiddleware>();
 
 var app = builder.Build();
@@ -43,6 +44,7 @@ app.UseAuthorization();
 app.UseInfrastructureModule();
 
 // Middlewares
+app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<TenantMiddleware>();
 
 app.MapEndpoints();

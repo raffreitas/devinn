@@ -1,5 +1,4 @@
-﻿using DevInn.Application.Common.Data.Abstractions;
-using DevInn.Domain.Aggregates.Bookings.Abstractions;
+﻿using DevInn.Domain.Aggregates.Bookings.Abstractions;
 
 using FluentResults;
 

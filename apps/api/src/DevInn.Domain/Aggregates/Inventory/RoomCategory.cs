@@ -1,4 +1,5 @@
 ﻿using DevInn.Domain.SeedWork;
+using DevInn.Domain.Shared.ValueObjects;
 
 namespace DevInn.Domain.Aggregates.Inventory;
 
@@ -24,10 +25,12 @@ public sealed class RoomCategory : Entity
         ExtraPersonPrice = extraPersonPrice;
     }
 
-    public void Update(string name, int maxCapacity, string description)
+    public void Update(string name, int maxCapacity, string description, decimal basePrice, decimal extraPersonPrice)
     {
         Name = name;
         Description = description;
         MaxCapacity = maxCapacity;
+        BasePrice = basePrice;
+        ExtraPersonPrice = extraPersonPrice;
     }
 }

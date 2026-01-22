@@ -1,13 +1,9 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 
 using DevInn.Application.Common.Identity.Abstractions;
 using DevInn.Infrastructure.Common.Exceptions;
 
 using Microsoft.AspNetCore.Http;
-
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace DevInn.Infrastructure.Identity.Services;
 
