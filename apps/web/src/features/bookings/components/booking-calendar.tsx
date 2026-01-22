@@ -226,9 +226,9 @@ export function BookingCalendar() {
         <CardContent>
           <div className="overflow-hidden">
             <div className="overflow-x-auto">
-              <div className="max-w-xs">
+              <div className="inline-block min-w-full">
                 <div className="flex">
-                  <div className="w-28 shrink-0 p-3 font-semibold text-sm text-foreground border-r border-border border-b bg-muted/30 sticky top-0 z-10">
+                  <div className="w-28 shrink-0 p-3 font-semibold text-sm text-foreground border-r border-border border-b bg-muted sticky top-0 z-10 left-0">
                     Quartos
                   </div>
                   <div className="flex">
@@ -252,12 +252,12 @@ export function BookingCalendar() {
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
                     ? bookings.filter(
-                      (b) => b.roomId === room.id && b.status !== "Canceled",
-                    )
+                        (b) => b.roomId === room.id && b.status !== "Canceled",
+                      )
                     : [];
                   return (
                     <div key={room.id} className="flex border-border">
-                      <div className="w-28 shrink-0 p-3 flex items-center border-r border-border">
+                      <div className="w-28 shrink-0 p-3 flex items-center border-r border-border sticky top-0 z-10 left-0 bg-muted">
                         <div>
                           <div className="font-medium text-sm">
                             {room.number}
@@ -275,7 +275,8 @@ export function BookingCalendar() {
                             day,
                           );
                           return (
-                            <div
+                            <button
+                              type="button"
                               key={`${room.id}-${day.toISOString()}`}
                               className={cn(
                                 "border-r p-1 relative h-15 w-15 cursor-pointer hover:bg-accent/50 transition-colors border-b",
@@ -291,7 +292,7 @@ export function BookingCalendar() {
                                   <Plus className="h-4 w-4 text-muted-foreground" />
                                 </div>
                               )}
-                            </div>
+                            </button>
                           );
                         })}
 
