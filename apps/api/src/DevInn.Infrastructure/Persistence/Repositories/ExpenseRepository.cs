@@ -22,4 +22,16 @@ internal sealed class ExpenseRepository(ApplicationDbContext dbContext) : IExpen
     {
         return await dbContext.Expenses.AsNoTracking().ToListAsync(cancellationToken);
     }
+
+    public Task UpdateAsync(Expense expense, CancellationToken cancellationToken = default)
+    {
+        dbContext.Expenses.Update(expense);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(Expense expense, CancellationToken cancellationToken = default)
+    {
+        dbContext.Expenses.Remove(expense);
+        return Task.CompletedTask;
+    }
 }
