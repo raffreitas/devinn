@@ -1,8 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { InputMoney } from "@/shared/components/input-money";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -19,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { useCreateExpenseCategory } from "../hooks/use-expense-categories";
 import type { ExpenseCategory } from "../types";
 import { paymentMethodLabels } from "../types";
 
@@ -61,6 +69,54 @@ export function ExpenseForm({
     },
   });
 
+  // Local copy to allow optimistic creation of categories inside this form
+  const [localCategories, setLocalCategories] =
+    useState<ExpenseCategory[]>(categories);
+  useEffect(() => setLocalCategories(categories), [categories]);
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  // Simple create form schema for category
+  const createSchema = z.object({
+    name: z
+      .string("Nome inválido")
+      .min(1, { error: "O nome é obrigatório" })
+      .max(100, { error: "O nome deve ter no máximo 100 caracteres" }),
+  });
+  type CreateData = z.infer<typeof createSchema>;
+  const createForm = useForm<CreateData>({
+    resolver: zodResolver(createSchema),
+    defaultValues: { name: "" },
+  });
+
+  const { createCategory } = useCreateExpenseCategory();
+
+  const handleCreateCategory = async (data: CreateData) => {
+    // optimistic local category while waiting the API
+    const tempId = `temp-${Date.now()}`;
+    const temp: ExpenseCategory = {
+      id: tempId,
+      name: data.name,
+    } as ExpenseCategory;
+    setLocalCategories((prev) => [temp, ...prev]);
+    form.setValue("categoryId", tempId, { shouldValidate: true });
+
+    try {
+      const res = await createCategory(data.name);
+      // replace temp id with real id returned from API
+      setLocalCategories((prev) =>
+        prev.map((c) => (c.id === tempId ? { ...c, id: res.id } : c)),
+      );
+      form.setValue("categoryId", res.id, { shouldValidate: true });
+      createForm.reset();
+      setIsCreateOpen(false);
+    } catch {
+      // roll back optimistic update
+      setLocalCategories((prev) => prev.filter((c) => c.id !== tempId));
+      form.setValue("categoryId", "", { shouldValidate: true });
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -100,7 +156,13 @@ export function ExpenseForm({
               <FormItem>
                 <FormLabel>Categoria</FormLabel>
                 <Select
-                  onValueChange={field.onChange}
+                  onValueChange={(val) => {
+                    if (val === "__add__") {
+                      setIsCreateOpen(true);
+                      return;
+                    }
+                    field.onChange(val);
+                  }}
                   defaultValue={field.value}
                 >
                   <FormControl>
@@ -109,14 +171,63 @@ export function ExpenseForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {categories.map((category) => (
+                    {/* existing categories */}
+                    {localCategories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
                     ))}
+                    {/* creatable action */}
+                    <SelectItem key="__add__" value="__add__">
+                      <span className="italic">+ Adicionar categoria...</span>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
+
+                {/* Dialog to create category */}
+                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Adicionar categoria</DialogTitle>
+                    </DialogHeader>
+
+                    <Form {...createForm}>
+                      <form
+                        onSubmit={createForm.handleSubmit(handleCreateCategory)}
+                        className="space-y-4"
+                      >
+                        <FormField
+                          control={createForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Ex: Internet" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              createForm.reset();
+                              setIsCreateOpen(false);
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button type="submit">Criar</Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
               </FormItem>
             )}
           />
