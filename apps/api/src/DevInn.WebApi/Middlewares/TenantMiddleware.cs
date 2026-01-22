@@ -27,18 +27,18 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
             return;
         }
 
-        // if (context.User.Identity is { IsAuthenticated: false })
-        // {
-        //     logger.LogWarning("Requisição não autenticada para {Path}", context.Request.Path);
-        //     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        //     await context.Response.WriteAsJsonAsync(new ApiProblemDetails
-        //     {
-        //         Title = "Não autorizado",
-        //         Status = StatusCodes.Status401Unauthorized,
-        //         Detail = "A requisição não foi autenticada."
-        //     });
-        //     return;
-        // }
+        if (context.User.Identity is { IsAuthenticated: false })
+        {
+            logger.LogWarning("Requisição não autenticada para {Path}", context.Request.Path);
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsJsonAsync(new ApiProblemDetails
+            {
+                Title = "Não autorizado",
+                Status = StatusCodes.Status401Unauthorized,
+                Detail = "A requisição não foi autenticada."
+            });
+            return;
+        }
 
         var tenantId = ExtractTenantId(context);
 

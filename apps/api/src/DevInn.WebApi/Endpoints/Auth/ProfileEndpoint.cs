@@ -1,5 +1,4 @@
-﻿using DevInn.Application.Features.Auth.Login;
-using DevInn.Application.Features.Auth.Queries.GetProfile;
+﻿using DevInn.Application.Features.Auth.Queries.GetProfile;
 using DevInn.WebApi.Common;
 
 using Mediator;
