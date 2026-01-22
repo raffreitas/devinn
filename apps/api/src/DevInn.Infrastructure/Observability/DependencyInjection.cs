@@ -59,6 +59,7 @@ public static class DependencyInjection
 
                         options.RecordException = true;
                     })
+                    .SetErrorStatusOnException()
                     .AddHttpClientInstrumentation()
                     .AddNpgsql();
             })
