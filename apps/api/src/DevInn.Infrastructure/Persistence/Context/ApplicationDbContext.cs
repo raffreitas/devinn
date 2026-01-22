@@ -1,9 +1,10 @@
 ﻿using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Domain.Aggregates.Bookings;
 using DevInn.Domain.Aggregates.Bookings.Entities;
+using DevInn.Domain.Aggregates.Financial;
 using DevInn.Domain.Aggregates.Inns;
 using DevInn.Domain.Aggregates.Inventory;
-using DevInn.Domain.Aggregates.Financial;
+using DevInn.Domain.Shared.ValueObjects;
 using DevInn.Infrastructure.Persistence.Configurations;
 using DevInn.Infrastructure.Persistence.Converters;
 
@@ -49,8 +50,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        // PostgreSQL requires UTC for timestamp with time zone
-        configurationBuilder.Properties<DateTimeOffset>()
-            .HaveConversion<DateTimeOffsetToUtcConverter>();
+        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<DateTimeOffsetToUtcConverter>();
+        configurationBuilder.Properties<DateOnly?>().HaveConversion<DateOnlyToDateTimeConverter>();
+        configurationBuilder.Properties<DateOnly>().HaveConversion<DateOnlyToDateTimeConverter>();
+        configurationBuilder.Properties<Money>().HaveConversion<MoneyToDecimalConverter>();
     }
 }

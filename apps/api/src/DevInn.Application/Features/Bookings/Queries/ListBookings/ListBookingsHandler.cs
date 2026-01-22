@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Dapper;
 
 using DevInn.Application.Common.Data.Abstractions;
@@ -5,13 +7,11 @@ using DevInn.Application.Common.Pagination;
 using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Application.Features.Bookings.Shared;
 using DevInn.Domain.Aggregates.Bookings.Enums;
+using DevInn.Domain.Shared.Enums;
 
 using FluentResults;
 
 using Mediator;
-
-using System.Text.Json;
-using DevInn.Domain.Shared.Enums;
 
 namespace DevInn.Application.Features.Bookings.Queries.ListBookings;
 

@@ -87,7 +87,7 @@ export function BookingsPage() {
   const { updateBooking, isLoading: isUpdating } = useUpdateBooking();
   const { deleteBooking } = useDeleteBooking();
 
-  const handleCreateOrUpdate = (data: BookingFormData) => {
+  const handleCreateOrUpdate = async (data: BookingFormData) => {
     const payload = {
       adults: data.adults,
       children: data.children,
@@ -109,9 +109,9 @@ export function BookingsPage() {
     };
 
     if (selectedBooking) {
-      updateBooking({ id: selectedBooking.id, data: payload });
+      await updateBooking({ id: selectedBooking.id, data: payload });
     } else {
-      createBooking(payload);
+      await createBooking(payload);
     }
     setIsModalOpen(false);
     setIsDetailsModalOpen(false);
@@ -131,10 +131,10 @@ export function BookingsPage() {
     setSelectedBooking(undefined);
     setIsModalOpen(true);
   };
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     // TODO: Trocar para um AlertDialog
     if (confirm("Tem certeza que deseja excluir esta reserva?")) {
-      deleteBooking(id);
+      await deleteBooking(id);
     }
   };
   const handleCloseModal = () => {

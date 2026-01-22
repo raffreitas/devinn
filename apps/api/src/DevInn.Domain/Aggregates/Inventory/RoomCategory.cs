@@ -1,5 +1,5 @@
 ﻿using DevInn.Domain.SeedWork;
- 
+
 namespace DevInn.Domain.Aggregates.Inventory;
 
 public sealed class RoomCategory : Entity

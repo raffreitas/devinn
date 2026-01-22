@@ -2,8 +2,8 @@ using System.Data;
 
 using Dapper;
 
-using DevInn.Application.Common.Pagination;
 using DevInn.Application.Common.Data.Abstractions;
+using DevInn.Application.Common.Pagination;
 using DevInn.Application.Common.Tenancy.Abstractions;
 
 using FluentResults;
