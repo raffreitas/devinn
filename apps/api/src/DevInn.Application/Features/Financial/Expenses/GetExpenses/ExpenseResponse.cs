@@ -10,5 +10,6 @@ public sealed record ExpenseResponse(
     DateOnly DueDate,
     DateOnly? PaymentDate,
     PaymentMethod PaymentMethod,
-    string Status
+    string Status,
+    string CategoryName
 );

@@ -146,6 +146,98 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                     b.ToTable("payments", (string)null);
                 });
 
+            modelBuilder.Entity("DevInn.Domain.Aggregates.Financial.Expense", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("date")
+                        .HasColumnName("due_date");
+
+                    b.Property<Guid>("InnId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("inn_id");
+
+                    b.Property<DateTime?>("PaymentDate")
+                        .HasColumnType("date")
+                        .HasColumnName("payment_date");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("payment_method");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_expenses");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_expenses_category_id");
+
+                    b.ToTable("expenses", (string)null);
+                });
+
+            modelBuilder.Entity("DevInn.Domain.Aggregates.Financial.ExpenseCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("InnId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("inn_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_expense_categories");
+
+                    b.ToTable("expense_categories", (string)null);
+                });
+
             modelBuilder.Entity("DevInn.Domain.Aggregates.Inns.Inn", b =>
                 {
                     b.Property<Guid>("Id")
@@ -422,6 +514,16 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_payments_bookings_booking_id");
+                });
+
+            modelBuilder.Entity("DevInn.Domain.Aggregates.Financial.Expense", b =>
+                {
+                    b.HasOne("DevInn.Domain.Aggregates.Financial.ExpenseCategory", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_expenses_expense_categories_category_id");
                 });
 
             modelBuilder.Entity("DevInn.Domain.Aggregates.Inventory.Room", b =>
