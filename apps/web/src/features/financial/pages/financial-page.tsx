@@ -46,6 +46,7 @@ import {
   useExpenses,
   useUpdateExpense,
 } from "../hooks/use-expenses";
+import type { PaymentMethod } from "../types";
 
 export function FinancialPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -88,7 +89,7 @@ export function FinancialPage() {
       categoryId: data.categoryId,
       description: data.description,
       amount: data.amount,
-      paymentMethod: data.paymentMethod,
+      paymentMethod: data.paymentMethod as PaymentMethod,
       dueDate: data.date,
       paymentDate: data.date,
     });
