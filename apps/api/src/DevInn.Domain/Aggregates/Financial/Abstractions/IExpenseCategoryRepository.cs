@@ -1,5 +1,3 @@
-using DevInn.Domain.Aggregates.Financial;
-
 namespace DevInn.Domain.Aggregates.Financial.Abstractions;
 
 public interface IExpenseCategoryRepository
