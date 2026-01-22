@@ -7,7 +7,7 @@ using FluentValidation;
 
 using Mediator;
 
-namespace DevInn.Application.Features.Auth.Register;
+namespace DevInn.Application.Features.Auth.Commands.Register;
 
 public sealed record RegisterCommand(
     string Name,

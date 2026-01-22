@@ -6,7 +6,7 @@ using FluentValidation;
 
 using Mediator;
 
-namespace DevInn.Application.Features.Auth.Login;
+namespace DevInn.Application.Features.Auth.Commands.Login;
 
 public record LoginCommand(string Email, string Password) : ICommand<Result<LoginResult>>
 {

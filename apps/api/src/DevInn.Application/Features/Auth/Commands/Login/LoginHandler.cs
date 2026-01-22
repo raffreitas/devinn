@@ -8,7 +8,7 @@ using FluentResults;
 
 using Mediator;
 
-namespace DevInn.Application.Features.Auth.Login;
+namespace DevInn.Application.Features.Auth.Commands.Login;
 
 internal sealed class LoginHandler(IIdentityService identityService, ITokenService tokenService)
     : ICommandHandler<LoginCommand, Result<LoginResult>>

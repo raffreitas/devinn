@@ -7,7 +7,7 @@ using FluentResults;
 
 using Mediator;
 
-namespace DevInn.Application.Features.Auth.Register;
+namespace DevInn.Application.Features.Auth.Commands.Register;
 
 internal sealed class RegisterCommandHandler(IIdentityService identityService, IInnRepository innRepository)
     : ICommandHandler<RegisterCommand, Result>
