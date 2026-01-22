@@ -2,7 +2,9 @@ using DevInn.Application.Common.Validation;
 using DevInn.Domain.Shared.Enums;
 
 using FluentResults;
+
 using FluentValidation;
+
 using Mediator;
 
 namespace DevInn.Application.Features.Financial.Expenses.CreateExpense;
@@ -38,7 +40,8 @@ internal sealed class CreateExpenseValidator : AbstractValidator<CreateExpenseCo
         When(x => x.PaymentDate.HasValue, () =>
         {
             RuleFor(x => x.PaymentDate!.Value)
-                .GreaterThanOrEqualTo(x => x.DueDate).WithMessage("Data de pagamento não pode ser anterior à data de vencimento");
+                .GreaterThanOrEqualTo(x => x.DueDate)
+                .WithMessage("Data de pagamento não pode ser anterior à data de vencimento");
         });
     }
 }

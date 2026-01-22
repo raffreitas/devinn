@@ -1,3 +1,5 @@
+using System.Data;
+
 using Dapper;
 
 using DevInn.Application.Common.Pagination;
@@ -29,7 +31,7 @@ internal sealed class GetExpensesHandler(IDbConnectionFactory dbConnectionFactor
 
         const string sql = $"""
                             SELECT
-                                e.id             AS"{nameof(ExpenseResponse.Id)}",
+                                e.id             AS "{nameof(ExpenseResponse.Id)}",
                                 e.category_id    AS "{nameof(ExpenseResponse.CategoryId)}",
                                 e.description    AS "{nameof(ExpenseResponse.Description)}",
                                 e.amount         AS "{nameof(ExpenseResponse.Amount)}",
@@ -51,30 +53,19 @@ internal sealed class GetExpensesHandler(IDbConnectionFactory dbConnectionFactor
                             LIMIT @PageSize;
                             """;
 
-        await using var connection = await dbConnectionFactory.OpenConnectionAsync(cancellationToken);
-        var count = await connection.ExecuteScalarAsync<int>(countSql,
-            new
-            {
-                TenantId = tenantContext.Tenant.Id,
-                query.CategoryId,
-                PaymentMethod = query.PaymentMethod?.ToString(),
-                query.Status,
-                query.DueDateFrom,
-                query.DueDateTo
-            });
+        var parameters = new DynamicParameters();
+        parameters.Add("@TenantId", tenantContext.Tenant.Id, DbType.Guid);
+        parameters.Add("@CategoryId", query.CategoryId, DbType.Guid);
+        parameters.Add("@PaymentMethod", query.PaymentMethod?.ToString(), DbType.AnsiString);
+        parameters.Add("@Status", query.Status, DbType.AnsiString);
+        parameters.Add("@DueDateFrom", query.DueDateFrom, DbType.Date);
+        parameters.Add("@DueDateTo", query.DueDateTo, DbType.Date);
+        parameters.Add("@PageSize", query.PageSize, DbType.Int32);
+        parameters.Add("@Offset", query.Offset, DbType.Int32);
 
-        var expenses = await connection.QueryAsync<ExpenseResponse>(sql,
-            new
-            {
-                TenantId = tenantContext.Tenant.Id,
-                query.CategoryId,
-                PaymentMethod = query.PaymentMethod?.ToString(),
-                query.Status,
-                query.DueDateFrom,
-                query.DueDateTo,
-                query.PageSize,
-                query.Offset
-            });
+        await using var connection = await dbConnectionFactory.OpenConnectionAsync(cancellationToken);
+        var count = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+        var expenses = await connection.QueryAsync<ExpenseResponse>(sql, parameters);
 
         var paged = new PaginatedResult<ExpenseResponse>(expenses.ToArray(), count, query.PageNumber, query.PageSize);
         return Result.Ok(paged);
