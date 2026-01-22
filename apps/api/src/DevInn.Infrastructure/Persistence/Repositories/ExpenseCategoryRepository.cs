@@ -1,6 +1,7 @@
 using DevInn.Domain.Aggregates.Financial;
 using DevInn.Domain.Aggregates.Financial.Abstractions;
 using DevInn.Infrastructure.Persistence.Context;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace DevInn.Infrastructure.Persistence.Repositories;
@@ -20,5 +21,10 @@ internal sealed class ExpenseCategoryRepository(ApplicationDbContext dbContext) 
     public async Task<ExpenseCategory?> GetByNameAsync(string name, CancellationToken cancellationToken)
     {
         return await dbContext.ExpenseCategories.FirstOrDefaultAsync(c => c.Name == name, cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<ExpenseCategory>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ExpenseCategories.AsNoTracking().ToListAsync(cancellationToken);
     }
 }

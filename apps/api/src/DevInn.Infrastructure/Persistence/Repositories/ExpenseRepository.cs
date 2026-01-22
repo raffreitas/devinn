@@ -17,4 +17,9 @@ internal sealed class ExpenseRepository(ApplicationDbContext dbContext) : IExpen
     {
         return await dbContext.Expenses.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
+
+    public async Task<IReadOnlyCollection<Expense>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Expenses.AsNoTracking().ToListAsync(cancellationToken);
+    }
 }
