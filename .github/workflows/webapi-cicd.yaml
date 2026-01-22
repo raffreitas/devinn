@@ -6,6 +6,8 @@ on:
     paths:
       - "apps/api/**"
   pull_request:
+    paths:
+      - "apps/api/**"
   workflow_dispatch:
 
 env:

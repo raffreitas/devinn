@@ -6,6 +6,8 @@ on:
     paths:
       - "apps/web/**"
   pull_request:
+    paths:
+      - "apps/web/**"
   workflow_dispatch:
 
 env:
@@ -67,6 +69,7 @@ jobs:
         run: pnpm run build
 
       - name: Verify build output
+        working-directory: apps/web
         run: |
           if [ ! -d "dist" ]; then
             echo "❌ Build failed: dist directory not found"
