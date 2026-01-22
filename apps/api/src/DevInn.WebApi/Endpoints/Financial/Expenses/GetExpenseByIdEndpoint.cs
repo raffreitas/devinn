@@ -1,1 +1,25 @@
-using DevInn.Application.Features.Financial.Expenses.GetExpenseById;using DevInn.WebApi.Common;using Mediator;namespace DevInn.WebApi.Endpoints.Financial.Expenses;public sealed class GetExpenseByIdEndpoint : IEndpoint{    private const string Route = "api/v1/expenses/{id:guid}";    public void MapEndpoint(IEndpointRouteBuilder app)    {        app.MapGet(Route, async (Guid id, ISender sender, CancellationToken ct) =>            {                var result = await sender.Send(new GetExpenseByIdQuery(id), ct);                return result.ToOk();            })            .WithTags(Tags.Expenses)            .WithName("Get Expense By Id")            .Produces<ApiResource<ExpenseDetailResponse>>(StatusCodes.Status200OK)            .Produces<ApiProblemDetails>(StatusCodes.Status404NotFound)            .RequireAuthorization();    }}
+using DevInn.Application.Features.Financial.Expenses.GetExpenseById;
+using DevInn.WebApi.Common;
+
+using Mediator;
+
+namespace DevInn.WebApi.Endpoints.Financial.Expenses;
+
+public sealed class GetExpenseByIdEndpoint : IEndpoint
+{
+    private const string Route = "api/v1/expenses/{id:guid}";
+
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet(Route, async (Guid id, ISender sender, CancellationToken ct) =>
+            {
+                var result = await sender.Send(new GetExpenseByIdQuery(id), ct);
+                return result.ToOk();
+            })
+            .WithTags(Tags.Expenses)
+            .WithName("Get Expense By Id")
+            .Produces<ApiResource<ExpenseDetailResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiProblemDetails>(StatusCodes.Status404NotFound)
+            .RequireAuthorization();
+    }
+}

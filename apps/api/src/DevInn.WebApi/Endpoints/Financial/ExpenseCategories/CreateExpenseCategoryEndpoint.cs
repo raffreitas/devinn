@@ -1,1 +1,26 @@
-using DevInn.Application.Features.Financial.ExpenseCategories.CreateExpenseCategory;using DevInn.WebApi.Common;using Mediator;namespace DevInn.WebApi.Endpoints.Financial.ExpenseCategories;public sealed class CreateExpenseCategoryEndpoint : IEndpoint{    private const string Route = "api/v1/expense-categories";    public void MapEndpoint(IEndpointRouteBuilder app)    {        app.MapPost(Route, async (CreateExpenseCategoryCommand command, ISender sender, CancellationToken ct) =>            {                var result = await sender.Send(command, ct);                return result.ToCreated(id => $"{Route}/{id}");            })            .WithTags(Tags.ExpenseCategories)            .WithName("Create Expense Category")            .Produces<ApiResource<Guid>>(StatusCodes.Status201Created)            .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)            .RequireAuthorization();    }}
+using DevInn.Application.Features.Financial.ExpenseCategories.CreateExpenseCategory;
+using DevInn.WebApi.Common;
+
+using Mediator;
+
+namespace DevInn.WebApi.Endpoints.Financial.ExpenseCategories;
+
+public sealed class CreateExpenseCategoryEndpoint : IEndpoint
+{
+    private const string Route = "api/v1/expense-categories";
+
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapPost(Route, async (CreateExpenseCategoryCommand command, ISender sender, CancellationToken ct) =>
+            {
+                var result = await sender.Send(command, ct);
+                return result.ToCreated(id => $"{Route}/{id}");
+            })
+            .WithTags(Tags.ExpenseCategories)
+            .WithName("Create Expense Category")
+            .Produces<ApiResource<Guid>>(StatusCodes.Status201Created)
+            .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)
+            .RequireAuthorization();
+    }
+}
