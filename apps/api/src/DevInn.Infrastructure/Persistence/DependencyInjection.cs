@@ -1,6 +1,7 @@
 ﻿using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
+using DevInn.Domain.Aggregates.Financial.Abstractions;
 using DevInn.Domain.Aggregates.Inns.Abstractions;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 using DevInn.Infrastructure.Common.Constants;
@@ -44,6 +45,8 @@ public static class DependencyInjection
         services.AddScoped<IRoomCategoryRepository, RoomCategoryRepository>();
         services.AddScoped<IRoomRepository, RoomRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IExpenseRepository, ExpenseRepository>();
+        services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
 
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentNames.Development)
         {

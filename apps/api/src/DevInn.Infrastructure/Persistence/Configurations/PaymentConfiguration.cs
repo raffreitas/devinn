@@ -15,9 +15,7 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(x => x.Id).ValueGeneratedNever();
         builder.Property(x => x.BookingId).IsRequired();
         builder.Property(x => x.InnId).IsRequired();
-        // Money conversion
-        var moneyConverter = new ValueConverter<Money, decimal>(m => m.Value, d => new Money(d));
-        builder.Property(x => x.Amount).HasConversion(moneyConverter).HasPrecision(18, 2).IsRequired();
+        builder.Property(x => x.Amount).HasPrecision(18, 2).IsRequired();
         builder.Property(x => x.Method).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(x => x.PaymentDate).IsRequired().HasColumnType("timestamp with time zone");
         builder.Property(x => x.Notes).HasMaxLength(500);

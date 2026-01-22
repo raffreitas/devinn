@@ -33,6 +33,7 @@ public sealed class Expense : Entity
         Amount = amount;
         PaymentMethod = paymentMethod;
         PaymentDate = paymentDate;
+        Status = paymentDate is not null ? ExpenseStatus.Paid : ExpenseStatus.Pending;
     }
 
     public bool IsOverdue(DateOnly referenceDate)

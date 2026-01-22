@@ -1,4 +1,4 @@
-﻿using DevInn.Application.Features.Auth.Login;
+﻿using DevInn.Application.Features.Auth.Commands.Login;
 using DevInn.WebApi.Common;
 
 using Mediator;

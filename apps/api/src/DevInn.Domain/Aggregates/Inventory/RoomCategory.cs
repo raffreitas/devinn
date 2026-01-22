@@ -1,5 +1,4 @@
 ﻿using DevInn.Domain.SeedWork;
-using DevInn.Domain.Shared.ValueObjects;
 
 namespace DevInn.Domain.Aggregates.Inventory;
 

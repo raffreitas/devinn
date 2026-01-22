@@ -24,9 +24,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.Property(b => b.Notes).HasMaxLength(1000);
         builder.Property(b => b.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(b => b.Source).IsRequired().HasConversion<string>().HasMaxLength(20);
-        // Money conversions
-        var moneyConverter = new ValueConverter<Money, decimal>(m => m.Value, d => new Money(d));
-        builder.Property(b => b.TotalValue).HasConversion(moneyConverter).HasPrecision(18, 2).IsRequired();
+        builder.Property(b => b.TotalValue).HasPrecision(18, 2).IsRequired();
         builder.Ignore(b => b.PaidValue); // Calculated from Payments collection
         // Timestamps
         builder.Property(b => b.CreatedAt).IsRequired();
@@ -41,17 +39,13 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         });
 
         // Owned: Guest
-        var dateOnlyConverter = new ValueConverter<DateOnly?, DateTime?>(
-            d => d.HasValue ? d.Value.ToDateTime(TimeOnly.MinValue) : null,
-            dt => dt.HasValue ? DateOnly.FromDateTime(dt.Value) : null);
         builder.OwnsOne(b => b.Guest, gb =>
         {
             gb.Property(g => g.Name).HasColumnName("guest_name").IsRequired().HasMaxLength(200);
             gb.Property(g => g.Phone).HasColumnName("guest_phone").IsRequired().HasMaxLength(20);
             gb.Property(g => g.Email).HasColumnName("guest_email").HasMaxLength(200);
             gb.Property(g => g.Document).HasColumnName("guest_document").HasMaxLength(50);
-            gb.Property(g => g.BirthDate).HasColumnName("guest_birth_date").HasConversion(dateOnlyConverter)
-                .HasColumnType("date");
+            gb.Property(g => g.BirthDate).HasColumnName("guest_birth_date").HasColumnType("date");
         });
 
         // Owned: Occupancy
@@ -74,9 +68,6 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
                 .HasColumnType("jsonb");
             childrenProp.Metadata.SetValueComparer(childrenComparer);
         });
-
-        // Payments collection (owned entities)
-
 
         // Foreign key to Room
         builder.HasOne<Room>().WithMany().HasForeignKey(b => b.RoomId).OnDelete(DeleteBehavior.Restrict);

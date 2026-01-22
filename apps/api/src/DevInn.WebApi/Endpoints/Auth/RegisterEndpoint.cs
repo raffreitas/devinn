@@ -1,5 +1,5 @@
 ﻿using DevInn.Application.Common.Identity;
-using DevInn.Application.Features.Auth.Register;
+using DevInn.Application.Features.Auth.Commands.Register;
 using DevInn.WebApi.Common;
 
 using Mediator;

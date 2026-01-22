@@ -2,8 +2,8 @@
 using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.Validation;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
-using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.Aggregates.Bookings.Enums;
+using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 using DevInn.Domain.Shared.ValueObjects;
 

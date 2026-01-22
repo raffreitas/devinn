@@ -11,7 +11,7 @@ export function AppHeader() {
 
   const { data, isLoading } = useInn(innId || "");
   return (
-    <header className="sticky top-0 z-10 flex h-12 sm:h-14 items-center gap-3 border-b bg-background/80 px-3 sm:px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <header className="sticky top-0 z-20 flex h-12 sm:h-14 items-center gap-3 border-b bg-background/80 px-3 sm:px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
       <SidebarTrigger />
 
       <div className="flex min-w-0 flex-1 items-center gap-3">
