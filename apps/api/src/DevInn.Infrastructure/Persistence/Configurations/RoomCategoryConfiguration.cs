@@ -16,8 +16,13 @@ internal sealed class RoomCategoryConfiguration : IEntityTypeConfiguration<RoomC
         builder.Property(r => r.Name).IsRequired().HasMaxLength(100);
         builder.Property(r => r.Description).HasMaxLength(500);
         builder.Property(r => r.MaxCapacity).IsRequired();
-        builder.Property(r => r.BasePrice).IsRequired().HasPrecision(18, 2);
-        builder.Property(r => r.ExtraPersonPrice).IsRequired().HasPrecision(18, 2);
+        builder.ComplexProperty(r => r.PricingPolicy, policy =>
+        {
+            policy.Property(p => p.BasePrice).HasColumnName("base_price").IsRequired().HasPrecision(18, 2);
+            policy.Property(p => p.PersonPrice).HasColumnName("person_price").IsRequired().HasPrecision(18, 2);
+            policy.Ignore(r => r.IncludedOccupants);
+            policy.Ignore(r => r.ChildrenRules);
+        });
 
         builder.HasOne<Inn>()
             .WithMany()

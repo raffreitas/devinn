@@ -3,6 +3,7 @@ using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.Validation;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
+using DevInn.Domain.Aggregates.Inventory.ValueObjects;
 
 using FluentResults;
 
@@ -32,8 +33,8 @@ internal sealed class CreateRoomCategoryHandler(
             command.Name,
             command.Description,
             command.Capacity,
-            command.BasePrice,
-            command.ExtraPersonPrice);
+            new PricingPolicy(command.BasePrice, command.ExtraPersonPrice)
+        );
 
         await categoryRepository.AddAsync(category, cancellationToken);
         await uow.CommitAsync(cancellationToken);

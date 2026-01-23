@@ -1,4 +1,6 @@
 ﻿using DevInn.Application.Common.Tenancy.Abstractions;
+using DevInn.Domain.Aggregates.Bookings.Abstractions;
+using DevInn.Domain.Aggregates.Bookings.Services;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +14,13 @@ public static class ApplicationModule
 
         services.AddScoped<ITenantContext, TenantContext>();
 
+        services.AddDomainServices();
+
         return services;
+    }
+
+    private static void AddDomainServices(this IServiceCollection services)
+    {
+        services.AddScoped<IPricingCalculatorService, PricingCalculatorService>();
     }
 }

@@ -17,6 +17,7 @@ internal sealed class UpdateBookingCommandHandler(
     IRoomRepository roomRepository,
     IRoomCategoryRepository categoryRepository,
     IBookingRepository bookingRepository,
+    IPricingCalculatorService pricingCalculatorService,
     IUnitOfWork uow) : ICommandHandler<UpdateBookingCommand, Result>
 {
     public async ValueTask<Result> Handle(UpdateBookingCommand command, CancellationToken cancellationToken)
@@ -52,31 +53,9 @@ internal sealed class UpdateBookingCommandHandler(
         if (hasConflict)
             return Result.Fail(new ConflictError("O quarto não está disponível nas datas solicitadas."));
 
-        var nights = stay.TotalNights();
-        decimal extraAdults = Math.Max(0, command.Adults - 2);
-        decimal adultExtraTotal = extraAdults * category.ExtraPersonPrice;
-
-        decimal childrenTotalPerNight = 0;
-        if (command.ChildrenAges != null)
-        {
-            foreach (var age in command.ChildrenAges)
-            {
-                switch (age)
-                {
-                    case <= 4:
-                        continue;
-                    case <= 10:
-                        childrenTotalPerNight += category.ExtraPersonPrice * 0.5m;
-                        break;
-                    default:
-                        childrenTotalPerNight += category.ExtraPersonPrice;
-                        break;
-                }
-            }
-        }
-
-        var perNight = category.BasePrice + adultExtraTotal + childrenTotalPerNight;
-        var total = perNight * nights;
+        // Calculate price using domain service (single source of truth)
+        var breakdown = pricingCalculatorService.CalculateBreakdown(stay, category, occupancy);
+        var total = breakdown.Total.Value;
 
         var guest = new Guest(
             command.Guest.Name,

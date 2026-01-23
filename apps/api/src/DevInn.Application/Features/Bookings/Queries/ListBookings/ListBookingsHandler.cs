@@ -42,7 +42,7 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                                   r.number                  AS "Number",
                                   rc.name                   AS "CategoryName",
                                   rc.base_price             AS "BasePrice",
-                                  rc.extra_person_price     AS "ExtraPersonPrice",
+                                  rc.person_price           AS "ExtraPersonPrice",
                                   b.guest_name              AS "GuestName",
                                   b.guest_phone             AS "GuestPhone",
                                   b.guest_email             AS "GuestEmail",

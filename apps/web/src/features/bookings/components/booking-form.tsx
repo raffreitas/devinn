@@ -7,9 +7,10 @@ import {
   InfoIcon,
   UsersIcon,
 } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useRooms } from "@/features/inventory/hooks";
+import { useCalculatePriceBreakdown } from "@/features/bookings/hooks/use-calculate-price-breakdown";
 import { InputMoney } from "@/shared/components/input-money";
 import { InputNumber } from "@/shared/components/input-number";
 import { Button } from "@/shared/components/ui/button";
@@ -91,77 +92,63 @@ export function BookingForm({
   const checkOut = form.watch("checkOut");
   const childrenCount = form.watch("children");
   const adults = form.watch("adults");
-  const childrenAges = form.watch("childrenAges");
+  const childrenAges = form.watch("childrenAges") || [];
   const paidAmount = form.watch("paidAmount");
 
   const { data: roomsData } = useRooms();
 
   const selectedRoom = roomsData?.items.find((r) => r.id === selectedRoomId);
 
-  const nights = useMemo(() => {
+  // Buscar breakdown de preços do backend
+  const { priceBreakdown, isLoading: isPricingLoading } =
+    useCalculatePriceBreakdown({
+      roomCategoryId: selectedRoom?.categoryId,
+      checkIn,
+      checkOut,
+      adults,
+      children: childrenCount,
+      childrenAges,
+    });
+
+  // Preparar dados para exibição
+  const displayData = priceBreakdown ? {
+    basePrice: selectedRoom?.basePrice || 0,
+    payingUnits: priceBreakdown.payingUnits,
+    perPersonPrice: selectedRoom?.extraGuestPrice || 0,
+    childrenCost: priceBreakdown.childrenCost,
+    childrenDetails: childrenAges
+      .map((child, i) => {
+        const age = child.age || 0;
+        let label = "";
+        if (age < 5) {
+          label = "Grátis";
+        } else if (age <= 10) {
+          label = `R$ ${((selectedRoom?.extraGuestPrice || 0) * 0.5).toFixed(2)}`;
+        } else {
+          label = `R$ ${(selectedRoom?.extraGuestPrice || 0).toFixed(2)}`;
+        }
+        return `Criança ${i + 1} (${age} anos): ${label}`;
+      }),
+    dailyTotal: priceBreakdown.dailyTotal,
+    nights: priceBreakdown.nights,
+    total: priceBreakdown.total,
+  } : null;
+
+  const maxCapacity = selectedRoom?.capacity || 10;
+  const totalPeople = adults + childrenCount;
+
+  const remainingAmount = displayData
+    ? displayData.total - (paidAmount ?? 0)
+    : 0;
+
+  // Calcular noites
+  const nights = (() => {
     if (!checkIn || !checkOut) return 0;
     const diff = Math.ceil(
       (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24),
     );
     return diff > 0 ? diff : 0;
-  }, [checkIn, checkOut]);
-
-  // Calculate total
-  const priceBreakdown = useMemo(() => {
-    if (!selectedRoom || nights <= 0) return null;
-
-    const basePrice = selectedRoom.basePrice;
-    const extraPrice = selectedRoom.extraGuestPrice;
-
-    const extraAdults = Math.max(0, adults - 2);
-    const adultsExtraCost = extraAdults * extraPrice;
-
-    let childrenCost = 0;
-    const childrenDetails: string[] = [];
-
-    if (childrenAges) {
-      for (let i = 0; i < childrenAges.length; i++) {
-        const age = childrenAges[i]?.age || 0;
-        let cost = 0;
-        let label = "";
-
-        if (age < 5) {
-          cost = 0;
-          label = "Grátis";
-        } else if (age <= 10) {
-          cost = extraPrice * 0.5;
-          label = `R$ ${cost.toFixed(2)}`;
-        } else {
-          cost = extraPrice;
-          label = `R$ ${cost.toFixed(2)}`;
-        }
-
-        childrenCost += cost;
-        childrenDetails.push(`Criança ${i + 1} (${age} anos): ${label}`);
-      }
-    }
-
-    const dailyTotal = basePrice + adultsExtraCost + childrenCost;
-    const total = dailyTotal * nights;
-
-    return {
-      basePrice,
-      extraAdults,
-      adultsExtraCost,
-      childrenCost,
-      childrenDetails,
-      dailyTotal,
-      nights,
-      total,
-    };
-  }, [selectedRoom, adults, nights, JSON.stringify(childrenAges)]);
-
-  const totalPeople = adults + childrenCount;
-  const maxCapacity = selectedRoom?.capacity || 10;
-
-  const remainingAmount = priceBreakdown
-    ? priceBreakdown.total - (paidAmount ?? 0)
-    : 0;
+  })();
 
   // Sync children ages fields with children count
   useEffect(() => {
@@ -207,7 +194,7 @@ export function BookingForm({
                         .map((room) => (
                           <SelectItem key={room.id} value={room.id}>
                             Quarto {room.number} - {room.categoryName} (
-                            {room.capacity}p) - R$ {room.basePrice.toFixed(2)}
+                            {room.capacity}p)
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -420,11 +407,16 @@ export function BookingForm({
         </div>
 
         {/* Cálculo Automático */}
-        {priceBreakdown && (
+        {displayData && (
           <div className="space-y-3">
             <h3 className="text-sm font-medium border-b pb-2 flex items-center gap-2">
               <CalculatorIcon className="w-4 h-4 text-primary" />
               Cálculo Automático
+              {isPricingLoading && (
+                <span className="text-xs text-muted-foreground ml-auto">
+                  Carregando...
+                </span>
+              )}
             </h3>
 
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-2 text-sm">
@@ -433,23 +425,22 @@ export function BookingForm({
                   Diária base (quarto {selectedRoom?.number}):
                 </span>
                 <span className="font-medium">
-                  R$ {priceBreakdown.basePrice.toFixed(2)}
+                  R$ {displayData.basePrice.toFixed(2)}
                 </span>
               </div>
 
-              {priceBreakdown.extraAdults > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    {priceBreakdown.extraAdults} adulto(s) adicional(is) × R${" "}
-                    {selectedRoom?.extraGuestPrice}:
-                  </span>
-                  <span className="font-medium">
-                    R$ {priceBreakdown.adultsExtraCost.toFixed(2)}
-                  </span>
+              {/* Show which pricing rule is applied for transparency */}
+              {displayData.payingUnits <= 2 ? (
+                <div className="text-xs text-muted-foreground italic mt-1">
+                  Regra aplicada: Diária base (cobre até 2 pessoas).
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground italic mt-1">
+                  Regra aplicada: Preço por pessoa × unidades pagantes — R$ {displayData.perPersonPrice.toFixed(2)} × {Number(displayData.payingUnits).toFixed(2)} = R$ {displayData.dailyTotal.toFixed(2)} por diária
                 </div>
               )}
 
-              {priceBreakdown.childrenDetails.map((detail, i) => (
+              {displayData.childrenDetails.map((detail, i) => (
                 <div key={i} className="flex justify-between text-xs">
                   <span className="text-muted-foreground">
                     {detail.split(":")[0]}:
@@ -464,14 +455,14 @@ export function BookingForm({
                     Total por diária:
                   </span>
                   <span className="font-medium">
-                    R$ {priceBreakdown.dailyTotal.toFixed(2)}
+                    R$ {displayData.dailyTotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
                     Número de noites:
                   </span>
-                  <span className="font-medium">{priceBreakdown.nights}</span>
+                  <span className="font-medium">{displayData.nights}</span>
                 </div>
               </div>
 
@@ -479,7 +470,7 @@ export function BookingForm({
                 <div className="flex justify-between text-lg">
                   <span className="font-semibold">VALOR TOTAL:</span>
                   <span className="font-bold text-primary">
-                    R$ {priceBreakdown.total.toFixed(2)}
+                    R$ {displayData.total.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -585,7 +576,7 @@ export function BookingForm({
         />
 
         {/* Payment Section */}
-        {priceBreakdown && (
+        {displayData && (
           <div className="space-y-3">
             <h3 className="text-sm font-medium border-b pb-2">Pagamento</h3>
             <p className="text-sm text-muted-foreground">
@@ -602,7 +593,7 @@ export function BookingForm({
                     <FormControl>
                       <InputMoney
                         min={0}
-                        max={priceBreakdown.total}
+                        max={displayData.total}
                         placeholder="R$ 0,00"
                         {...field}
                       />
@@ -644,7 +635,7 @@ export function BookingForm({
               />
             </div>
 
-            {priceBreakdown.total > 0 && (
+            {displayData.total > 0 && (
               <div className="mt-2 p-2 bg-muted/50 rounded-lg">
                 <p className="text-sm text-muted-foreground">
                   Saldo devedor:{" "}

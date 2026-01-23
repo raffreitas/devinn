@@ -25,6 +25,9 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
+import { useAuth } from "@/features/auth/contexts/auth-context";
+import { useInn } from "@/features/inns/hooks/use-inns";
+import { BookingReceiptPrinter } from "./booking-receipt-printer";
 import type {
   Booking,
   BookingStatus,
@@ -112,6 +115,9 @@ export function BookingDetails({
   booking,
   onEdit,
 }: BookingDetailsProps) {
+  const { innId } = useAuth();
+  const { data: innData } = useInn(innId || "");
+
   const formatCurrency = (value: number) => {
     return value.toLocaleString("pt-BR", {
       style: "currency",
@@ -149,6 +155,7 @@ export function BookingDetails({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <BookingReceiptPrinter booking={booking} innName={innData?.name} />
           <Button
             variant="outline"
             size="icon"

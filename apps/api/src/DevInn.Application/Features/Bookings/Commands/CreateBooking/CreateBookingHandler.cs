@@ -17,6 +17,7 @@ internal sealed class CreateBookingHandler(
     IRoomRepository roomRepository,
     IRoomCategoryRepository categoryRepository,
     IBookingRepository bookingRepository,
+    IPricingCalculatorService pricingCalculatorService,
     IUnitOfWork uow) : ICommandHandler<CreateBookingCommand, Result<Guid>>
 {
     public async ValueTask<Result<Guid>> Handle(CreateBookingCommand command, CancellationToken cancellationToken)
@@ -55,39 +56,16 @@ internal sealed class CreateBookingHandler(
         if (hasConflict)
             return Result.Fail(new ConflictError("O quarto não está disponível nas datas solicitadas."));
 
-        // Price calculation based on PRD: (Base + AdultsExtra * ExtraPrice + SumChildrenPrice) * nights
-        var nights = stay.TotalNights();
-        decimal extraAdults = Math.Max(0, command.Adults - 2);
-        decimal adultExtraTotal = extraAdults * category.ExtraPersonPrice;
-
-        decimal childrenTotalPerNight = 0;
-        if (command.ChildrenAges != null)
-        {
-            foreach (var age in command.ChildrenAges)
-            {
-                switch (age)
-                {
-                    case <= 4:
-                        continue; // free
-                    case <= 10:
-                        childrenTotalPerNight += category.ExtraPersonPrice * 0.5m; // 50% of extra person
-                        break;
-                    default:
-                        childrenTotalPerNight += category.ExtraPersonPrice; // full value
-                        break;
-                }
-            }
-        }
-
-        var perNight = category.BasePrice + adultExtraTotal + childrenTotalPerNight;
-        var total = perNight * nights;
+        // Calculate price using domain service (single source of truth)
+        var breakdown = pricingCalculatorService.CalculateBreakdown(stay, category, occupancy);
+        var total = breakdown.Total.Value;
 
         var booking = new Booking(
             room.Id,
             guest,
             stay,
             occupancy,
-            new Money(decimal.Round(total, 2)),
+            total,
             command.Source,
             command.Notes);
 
@@ -101,7 +79,6 @@ internal sealed class CreateBookingHandler(
                 command.PaymentNotes);
         }
 
-        // Note: Availability/conflict checks across reservations should be performed at application layer using repository queries.
         await bookingRepository.AddAsync(booking, cancellationToken);
         await uow.CommitAsync(cancellationToken);
 

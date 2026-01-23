@@ -33,7 +33,7 @@ internal sealed class GetRoomsHandler(IDbConnectionFactory dbConnectionFactory, 
                                    rc.name                   AS "{nameof(RoomResponse.CategoryName)}",
                                    rc.max_capacity           AS "{nameof(RoomResponse.Capacity)}",
                                    rc.base_price             AS "{nameof(RoomResponse.BasePrice)}",
-                                   rc.extra_person_price     AS "{nameof(RoomResponse.ExtraGuestPrice)}"
+                                   rc.person_price           AS "{nameof(RoomResponse.ExtraGuestPrice)}"
                             FROM rooms r
                             JOIN room_categories rc ON r.category_id = rc.Id
                                 AND rc.inn_id = r.inn_id
