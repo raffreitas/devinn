@@ -1,5 +1,6 @@
 import { Outlet } from "react-router";
 import { AuthProvider } from "@/features/auth/contexts/auth-context";
+import { STORAGE_KEYS } from "@/shared/lib/storage.ts";
 import { ThemeProvider } from "../contexts/theme-context";
 import { AppHeader } from "./app-header";
 import { AppSidebar } from "./app-sidebar";
@@ -8,7 +9,7 @@ import { SidebarProvider } from "./ui/sidebar";
 export function AppLayout() {
   return (
     <AuthProvider>
-      <ThemeProvider>
+      <ThemeProvider storageKey={STORAGE_KEYS.THEME}>
         <SidebarProvider>
           <AppSidebar />
           <div className="relative flex min-h-screen flex-1 flex-col min-w-0 antialiased bg-muted/30 dark:bg-muted/10">
