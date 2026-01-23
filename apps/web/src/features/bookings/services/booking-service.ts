@@ -1,3 +1,4 @@
+import type { PriceBreakdownResponse } from "@/features/bookings/hooks/use-calculate-price-breakdown.ts";
 import { api } from "@/shared/lib/http-client";
 import type { ApiResponse } from "@/shared/types";
 import type {
@@ -38,17 +39,14 @@ export const bookingService = {
   },
 
   create: async (data: CreateBookingRequest): Promise<Booking> => {
-    const response = await api.post<ApiResponse<Booking>>(
-      "/api/v1/bookings",
-      {
-        ...data,
-        guest: {
-          ...data.guest,
-          birthDate: data.guest.birthDate || undefined,
-          document: data.guest.document || undefined,
-        }
+    const response = await api.post<ApiResponse<Booking>>("/api/v1/bookings", {
+      ...data,
+      guest: {
+        ...data.guest,
+        birthDate: data.guest.birthDate || undefined,
+        document: data.guest.document || undefined,
       },
-    );
+    });
     return response.data.data;
   },
 
@@ -61,7 +59,7 @@ export const bookingService = {
           ...data.guest,
           birthDate: data.guest?.birthDate || undefined,
           document: data.guest?.document || undefined,
-        }
+        },
       },
     );
     return response.data.data;
@@ -109,5 +107,33 @@ export const bookingService = {
       { params },
     );
     return !response.data.data.available;
+  },
+
+  calculatePriceBreakdown: async (
+    roomCategoryId: string,
+    checkIn: Date,
+    checkOut: Date,
+    adults: number,
+    children: number,
+    childrenAges: number[],
+  ): Promise<PriceBreakdownResponse> => {
+    const params = new URLSearchParams({
+      roomCategoryId,
+      checkIn: checkIn.toISOString(),
+      checkOut: checkOut.toISOString(),
+      adults: String(adults),
+      children: String(children),
+    });
+
+    childrenAges.forEach((age) => {
+      params.append("childrenAges", String(age));
+    });
+
+    const response = await api.get<ApiResponse<PriceBreakdownResponse>>(
+      "/api/v1/bookings/price-breakdown",
+      { params },
+    );
+
+    return response.data.data;
   },
 };

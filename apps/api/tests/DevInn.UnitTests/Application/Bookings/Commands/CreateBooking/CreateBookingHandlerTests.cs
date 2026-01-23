@@ -20,13 +20,19 @@ public sealed class CreateBookingHandlerTests
     private readonly IRoomRepository _roomRepository = Substitute.For<IRoomRepository>();
     private readonly IRoomCategoryRepository _categoryRepository = Substitute.For<IRoomCategoryRepository>();
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
+    private readonly IPricingCalculatorService _pricingCalculatorService = Substitute.For<IPricingCalculatorService>();
     private readonly IUnitOfWork _uow = Substitute.For<IUnitOfWork>();
 
     private readonly CreateBookingHandler _sut;
 
     public CreateBookingHandlerTests()
     {
-        _sut = new CreateBookingHandler(_roomRepository, _categoryRepository, _bookingRepository, _uow);
+        _sut = new CreateBookingHandler(
+            _roomRepository,
+            _categoryRepository,
+            _bookingRepository,
+            _pricingCalculatorService,
+            _uow);
     }
 
     [Fact]
@@ -48,6 +54,7 @@ public sealed class CreateBookingHandlerTests
         );
 
         _roomRepository.GetByIdAsync(command.RoomId).ReturnsNull();
+
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);
 

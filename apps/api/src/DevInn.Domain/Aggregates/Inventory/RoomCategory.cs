@@ -1,4 +1,5 @@
-﻿using DevInn.Domain.SeedWork;
+﻿using DevInn.Domain.Aggregates.Inventory.ValueObjects;
+using DevInn.Domain.SeedWork;
 
 namespace DevInn.Domain.Aggregates.Inventory;
 
@@ -7,21 +8,24 @@ public sealed class RoomCategory : Entity
     public string Name { get; private set; }
     public string Description { get; private set; }
     public int MaxCapacity { get; private set; }
-    public decimal BasePrice { get; private set; }
-    public decimal ExtraPersonPrice { get; private set; }
+    public PricingPolicy PricingPolicy { get; private set; }
+
+    private RoomCategory()
+    {
+    }
 
     public RoomCategory(
         string name,
         string description,
         int maxCapacity,
         decimal basePrice,
-        decimal extraPersonPrice)
+        decimal extraPersonPrice,
+        PricingPolicy? pricingPolicy = null)
     {
         Name = name;
         Description = description;
         MaxCapacity = maxCapacity;
-        BasePrice = basePrice;
-        ExtraPersonPrice = extraPersonPrice;
+        PricingPolicy = pricingPolicy ?? new PricingPolicy(basePrice, extraPersonPrice);
     }
 
     public void Update(string name, int maxCapacity, string description, decimal basePrice, decimal extraPersonPrice)
@@ -29,7 +33,6 @@ public sealed class RoomCategory : Entity
         Name = name;
         Description = description;
         MaxCapacity = maxCapacity;
-        BasePrice = basePrice;
-        ExtraPersonPrice = extraPersonPrice;
+        PricingPolicy = new PricingPolicy(basePrice, extraPersonPrice);
     }
 }

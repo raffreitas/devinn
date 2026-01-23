@@ -20,8 +20,8 @@ internal sealed class GetRoomCategoriesHandler(IRoomCategoryRepository categoryR
                 c.Name,
                 c.MaxCapacity,
                 c.Description,
-                c.BasePrice,
-                c.ExtraPersonPrice))
+                c.PricingPolicy.BasePrice,
+                c.PricingPolicy.PersonPrice))
             .ToArray();
 
         return Result.Ok(response);

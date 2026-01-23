@@ -367,11 +367,6 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<decimal>("BasePrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("base_price");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -381,11 +376,6 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("description");
-
-                    b.Property<decimal>("ExtraPersonPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)")
-                        .HasColumnName("extra_person_price");
 
                     b.Property<Guid>("InnId")
                         .HasColumnType("uuid")
@@ -404,6 +394,21 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "PricingPolicy", "DevInn.Domain.Aggregates.Inventory.RoomCategory.PricingPolicy#PricingPolicy", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<decimal>("BasePrice")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("base_price");
+
+                            b1.Property<decimal>("PersonPrice")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("person_price");
+                        });
 
                     b.HasKey("Id")
                         .HasName("pk_room_categories");
