@@ -1,6 +1,7 @@
 ﻿using Bogus;
 
 using DevInn.Application.Common.Data.Abstractions;
+using DevInn.Application.Common.Errors;
 using DevInn.Application.Features.Bookings.Commands.CreateBooking;
 using DevInn.Application.Features.Bookings.Shared;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
@@ -60,6 +61,8 @@ public sealed class CreateBookingHandlerTests
 
         // Assert
         result.IsFailed.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem();
+        result.Errors[0].ShouldBeAssignableTo<NotFoundError>();
         result.Errors[0].Message.ShouldBe("Quarto não encontrado");
     }
 }

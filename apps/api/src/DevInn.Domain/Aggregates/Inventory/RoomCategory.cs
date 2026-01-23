@@ -18,14 +18,12 @@ public sealed class RoomCategory : Entity
         string name,
         string description,
         int maxCapacity,
-        decimal basePrice,
-        decimal extraPersonPrice,
-        PricingPolicy? pricingPolicy = null)
+        PricingPolicy pricingPolicy)
     {
         Name = name;
         Description = description;
         MaxCapacity = maxCapacity;
-        PricingPolicy = pricingPolicy ?? new PricingPolicy(basePrice, extraPersonPrice);
+        PricingPolicy = pricingPolicy;
     }
 
     public void Update(string name, int maxCapacity, string description, decimal basePrice, decimal extraPersonPrice)

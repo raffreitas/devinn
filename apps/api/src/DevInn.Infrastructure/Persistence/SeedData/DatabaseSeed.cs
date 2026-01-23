@@ -6,6 +6,7 @@ using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.Aggregates.Inns;
 using DevInn.Domain.Aggregates.Inventory;
+using DevInn.Domain.Aggregates.Inventory.ValueObjects;
 using DevInn.Domain.Shared.Enums;
 using DevInn.Domain.Shared.ValueObjects;
 using DevInn.Infrastructure.Identity.Models;
@@ -91,7 +92,7 @@ internal sealed class DatabaseSeed(
         // Create a room category and room
         if (!await appDb.RoomCategories.AnyAsync(c => c.Name == "Standard", cancellationToken))
         {
-            var category = new RoomCategory("Standard", "Quarto padrão", 2, 200m, 50m);
+            var category = new RoomCategory("Standard", "Quarto padrão", 2, new PricingPolicy(200m, 50m));
             await appDb.RoomCategories.AddAsync(category, cancellationToken);
             await appDb.SaveChangesAsync(cancellationToken);
 

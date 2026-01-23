@@ -16,12 +16,12 @@ public sealed record CalculatePriceBreakdownQuery(
     int Children,
     int[] ChildrenAges) : IQuery<Result<PriceBreakdownDto>>
 {
-    public Validation Validate() => new CalculatePriceBreakdownQueryValidator().Validate(this).ToFailure();
+    public Validation Validate() => new CalculatePriceBreakdownValidator().Validate(this).ToFailure();
 };
 
-internal sealed class CalculatePriceBreakdownQueryValidator : AbstractValidator<CalculatePriceBreakdownQuery>
+internal sealed class CalculatePriceBreakdownValidator : AbstractValidator<CalculatePriceBreakdownQuery>
 {
-    public CalculatePriceBreakdownQueryValidator()
+    public CalculatePriceBreakdownValidator()
     {
         RuleFor(x => x.RoomCategoryId)
             .NotEmpty().WithMessage("O Id da categoria de quarto é obrigatório.");
