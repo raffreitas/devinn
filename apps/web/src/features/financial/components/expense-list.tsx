@@ -253,7 +253,10 @@ export function ExpenseList({
                           setEditData({ ...editData, categoryId: v })
                         }
                       >
-                        <SelectTrigger size="sm" className="h-8 text-sm px-2">
+                        <SelectTrigger
+                          size="sm"
+                          className="h-8 text-sm px-2 w-full"
+                        >
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
