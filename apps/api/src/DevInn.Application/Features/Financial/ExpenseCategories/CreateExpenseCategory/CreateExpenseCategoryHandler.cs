@@ -15,14 +15,15 @@ internal sealed class CreateExpenseCategoryHandler(
     IUnitOfWork uow
 ) : ICommandHandler<CreateExpenseCategoryCommand, Result<Guid>>
 {
-    public async ValueTask<Result<Guid>> Handle(CreateExpenseCategoryCommand command, CancellationToken cancellationToken)
+    public async ValueTask<Result<Guid>> Handle(CreateExpenseCategoryCommand command,
+        CancellationToken cancellationToken)
     {
         var validation = command.Validate();
         if (validation.IsFailure)
             return Result.Fail(validation.ToError());
 
         var existing = await categoryRepository.GetByNameAsync(command.Name, cancellationToken);
-        if (existing != null)
+        if (string.Equals(existing?.Name, command.Name, StringComparison.OrdinalIgnoreCase))
             return Result.Fail(new ConflictError("Uma categoria com este nome já existe para esta pousada"));
 
         var category = new ExpenseCategory(command.Name);

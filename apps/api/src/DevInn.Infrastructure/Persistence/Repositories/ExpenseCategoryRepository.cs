@@ -16,7 +16,7 @@ internal sealed class ExpenseCategoryRepository(ApplicationDbContext dbContext) 
 
     public async Task<ExpenseCategory?> GetByNameAsync(string name, CancellationToken cancellationToken)
         => await dbContext.ExpenseCategories
-            .FirstOrDefaultAsync(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase), cancellationToken);
+            .FirstOrDefaultAsync(c => c.Name == name, cancellationToken);
 
     public async Task<IReadOnlyCollection<ExpenseCategory>> GetAllAsync(CancellationToken cancellationToken = default)
         => await dbContext.ExpenseCategories.AsNoTracking().ToListAsync(cancellationToken);
