@@ -111,9 +111,7 @@ export function FinancialPage() {
   };
 
   const handleDeleteExpense = async (id: string) => {
-    if (confirm("Tem certeza que deseja excluir esta despesa?")) {
-      await deleteExpense(id);
-    }
+    await deleteExpense(id);
   };
 
   const formatCurrency = (value: number) => {

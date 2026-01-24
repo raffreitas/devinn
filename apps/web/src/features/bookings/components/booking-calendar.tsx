@@ -162,10 +162,8 @@ export function BookingCalendar() {
   };
 
   const handleDeleteFromDetails = (id: string) => {
-    if (confirm("Tem certeza que deseja excluir esta reserva?")) {
-      deleteBooking(id);
-      setIsDetailsModalOpen(false);
-    }
+    deleteBooking(id);
+    setIsDetailsModalOpen(false);
   };
 
   const getBookingsForRoomAndDate = (

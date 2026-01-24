@@ -12,12 +12,24 @@ import {
   Mail,
   Pencil,
   Phone,
+  Trash2,
   User,
   Users,
   XCircle,
 } from "lucide-react";
 import { useAuth } from "@/features/auth/contexts/auth-context";
 import { useInn } from "@/features/inns/hooks/use-inns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/components/ui/alert-dialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -111,7 +123,11 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   BankTransfer: "Transferência Bancária",
 };
 
-export function BookingDetails({ booking, onEdit }: BookingDetailsProps) {
+export function BookingDetails({
+  booking,
+  onEdit,
+  onDelete,
+}: BookingDetailsProps) {
   const { innId } = useAuth();
   const { data: innData } = useInn(innId || "");
 
@@ -161,15 +177,35 @@ export function BookingDetails({ booking, onEdit }: BookingDetailsProps) {
           >
             <Pencil className="w-4 h-4" />
           </Button>
-          {/* <Button
-            variant="outline"
-            size="icon"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onDelete(booking.id)}
-            title="Excluir reserva"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button> */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                title="Excluir reserva"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Tem certeza que deseja excluir esta reserva?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Essa ação não pode ser desfeita. Isso excluirá permanentemente
+                  a reserva.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(booking.id)}>
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
