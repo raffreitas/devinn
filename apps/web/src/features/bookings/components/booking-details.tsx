@@ -16,6 +16,8 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
+import { useAuth } from "@/features/auth/contexts/auth-context";
+import { useInn } from "@/features/inns/hooks/use-inns";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -25,15 +27,13 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
-import { useAuth } from "@/features/auth/contexts/auth-context";
-import { useInn } from "@/features/inns/hooks/use-inns";
-import { BookingReceiptPrinter } from "./booking-receipt-printer";
 import type {
   Booking,
   BookingStatus,
   PaymentMethod,
   PaymentStatus,
 } from "../types";
+import { BookingReceiptPrinter } from "./booking-receipt-printer";
 
 interface BookingDetailsProps {
   booking: Booking;
@@ -111,10 +111,7 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   BankTransfer: "Transferência Bancária",
 };
 
-export function BookingDetails({
-  booking,
-  onEdit,
-}: BookingDetailsProps) {
+export function BookingDetails({ booking, onEdit }: BookingDetailsProps) {
   const { innId } = useAuth();
   const { data: innData } = useInn(innId || "");
 
@@ -229,7 +226,7 @@ export function BookingDetails({
                     <span className="text-foreground">
                       {formatCurrency(
                         booking.pricing.extraGuestPrice *
-                        booking.pricing.numberOfExtraGuests,
+                          booking.pricing.numberOfExtraGuests,
                       )}
                     </span>
                   </div>
@@ -240,8 +237,8 @@ export function BookingDetails({
                   <span className="text-foreground">
                     {formatCurrency(
                       booking.pricing.basePrice +
-                      booking.pricing.extraGuestPrice *
-                      booking.pricing.numberOfExtraGuests,
+                        booking.pricing.extraGuestPrice *
+                          booking.pricing.numberOfExtraGuests,
                     )}
                   </span>
                 </div>

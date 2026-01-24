@@ -310,7 +310,7 @@ export function BookingsPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title="Novo Quarto"
+        title={selectedBooking ? "Editar Reserva" : "Nova Reserva"}
         description={
           selectedBooking
             ? "Edite os detalhes da reserva."

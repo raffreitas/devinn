@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { useRooms } from "@/features/inventory/hooks";
 import { useCalculatePriceBreakdown } from "@/features/bookings/hooks/use-calculate-price-breakdown";
+import { useRooms } from "@/features/inventory/hooks";
 import { InputMoney } from "@/shared/components/input-money";
 import { InputNumber } from "@/shared/components/input-number";
 import { Button } from "@/shared/components/ui/button";
@@ -111,28 +111,29 @@ export function BookingForm({
     });
 
   // Preparar dados para exibição
-  const displayData = priceBreakdown ? {
-    basePrice: selectedRoom?.basePrice || 0,
-    payingUnits: priceBreakdown.payingUnits,
-    perPersonPrice: selectedRoom?.extraGuestPrice || 0,
-    childrenCost: priceBreakdown.childrenCost,
-    childrenDetails: childrenAges
-      .map((child, i) => {
-        const age = child.age || 0;
-        let label = "";
-        if (age < 5) {
-          label = "Grátis";
-        } else if (age <= 10) {
-          label = `R$ ${((selectedRoom?.extraGuestPrice || 0) * 0.5).toFixed(2)}`;
-        } else {
-          label = `R$ ${(selectedRoom?.extraGuestPrice || 0).toFixed(2)}`;
-        }
-        return `Criança ${i + 1} (${age} anos): ${label}`;
-      }),
-    dailyTotal: priceBreakdown.dailyTotal,
-    nights: priceBreakdown.nights,
-    total: priceBreakdown.total,
-  } : null;
+  const displayData = priceBreakdown
+    ? {
+        basePrice: selectedRoom?.basePrice || 0,
+        payingUnits: priceBreakdown.payingUnits,
+        perPersonPrice: selectedRoom?.extraGuestPrice || 0,
+        childrenCost: priceBreakdown.childrenCost,
+        childrenDetails: childrenAges.map((child, i) => {
+          const age = child.age || 0;
+          let label = "";
+          if (age < 5) {
+            label = "Grátis";
+          } else if (age <= 10) {
+            label = `R$ ${((selectedRoom?.extraGuestPrice || 0) * 0.5).toFixed(2)}`;
+          } else {
+            label = `R$ ${(selectedRoom?.extraGuestPrice || 0).toFixed(2)}`;
+          }
+          return `Criança ${i + 1} (${age} anos): ${label}`;
+        }),
+        dailyTotal: priceBreakdown.dailyTotal,
+        nights: priceBreakdown.nights,
+        total: priceBreakdown.total,
+      }
+    : null;
 
   const maxCapacity = selectedRoom?.capacity || 10;
   const totalPeople = adults + childrenCount;
@@ -436,7 +437,10 @@ export function BookingForm({
                 </div>
               ) : (
                 <div className="text-xs text-muted-foreground italic mt-1">
-                  Regra aplicada: Preço por pessoa × unidades pagantes — R$ {displayData.perPersonPrice.toFixed(2)} × {Number(displayData.payingUnits).toFixed(2)} = R$ {displayData.dailyTotal.toFixed(2)} por diária
+                  Regra aplicada: Preço por pessoa × unidades pagantes — R${" "}
+                  {displayData.perPersonPrice.toFixed(2)} ×{" "}
+                  {Number(displayData.payingUnits).toFixed(2)} = R${" "}
+                  {displayData.dailyTotal.toFixed(2)} por diária
                 </div>
               )}
 

@@ -41,13 +41,14 @@ api.interceptors.response.use(
         // se CustomEvent não estiver disponível, faz um replace na rota como fallback
         try {
           window.location.replace("/login");
-        } catch { }
+        } catch {}
       }
     }
 
     return Promise.reject({
       ...error,
-      message: error?.response?.data?.detail || "Falha ao processar sua requisição",
+      message:
+        error?.response?.data?.detail || "Falha ao processar sua requisição",
     });
   },
 );
