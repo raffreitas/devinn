@@ -12,10 +12,24 @@ import {
   Mail,
   Pencil,
   Phone,
+  Trash2,
   User,
   Users,
   XCircle,
 } from "lucide-react";
+import { useAuth } from "@/features/auth/contexts/auth-context";
+import { useInn } from "@/features/inns/hooks/use-inns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/components/ui/alert-dialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -25,15 +39,13 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
-import { useAuth } from "@/features/auth/contexts/auth-context";
-import { useInn } from "@/features/inns/hooks/use-inns";
-import { BookingReceiptPrinter } from "./booking-receipt-printer";
 import type {
   Booking,
   BookingStatus,
   PaymentMethod,
   PaymentStatus,
 } from "../types";
+import { BookingReceiptPrinter } from "./booking-receipt-printer";
 
 interface BookingDetailsProps {
   booking: Booking;
@@ -114,6 +126,7 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
 export function BookingDetails({
   booking,
   onEdit,
+  onDelete,
 }: BookingDetailsProps) {
   const { innId } = useAuth();
   const { data: innData } = useInn(innId || "");
@@ -164,15 +177,35 @@ export function BookingDetails({
           >
             <Pencil className="w-4 h-4" />
           </Button>
-          {/* <Button
-            variant="outline"
-            size="icon"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onDelete(booking.id)}
-            title="Excluir reserva"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button> */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                title="Excluir reserva"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Tem certeza que deseja excluir esta reserva?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Essa ação não pode ser desfeita. Isso excluirá permanentemente
+                  a reserva.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(booking.id)}>
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
@@ -229,7 +262,7 @@ export function BookingDetails({
                     <span className="text-foreground">
                       {formatCurrency(
                         booking.pricing.extraGuestPrice *
-                        booking.pricing.numberOfExtraGuests,
+                          booking.pricing.numberOfExtraGuests,
                       )}
                     </span>
                   </div>
@@ -240,8 +273,8 @@ export function BookingDetails({
                   <span className="text-foreground">
                     {formatCurrency(
                       booking.pricing.basePrice +
-                      booking.pricing.extraGuestPrice *
-                      booking.pricing.numberOfExtraGuests,
+                        booking.pricing.extraGuestPrice *
+                          booking.pricing.numberOfExtraGuests,
                     )}
                   </span>
                 </div>

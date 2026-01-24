@@ -3,6 +3,17 @@ import { EyeIcon, Filter, PenBoxIcon, Plus, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/components/ui/alert-dialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -132,10 +143,7 @@ export function BookingsPage() {
     setIsModalOpen(true);
   };
   const handleDelete = async (id: string) => {
-    // TODO: Trocar para um AlertDialog
-    if (confirm("Tem certeza que deseja excluir esta reserva?")) {
-      await deleteBooking(id);
-    }
+    await deleteBooking(id);
   };
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -281,16 +289,35 @@ export function BookingsPage() {
                               <PenBoxIcon className="h-4 w-4" />
                               <span className="sr-only">Editar</span>
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(booking.id)}
-                            >
-                              <Trash2Icon className="h-4 w-4" />
-                              <span className="sr-only">Excluir</span>
-                            </Button>
-                          </div>
-                        </TableCell>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <Trash2Icon className="h-4 w-4" />
+                                <span className="sr-only">Excluir</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Tem certeza que deseja excluir esta reserva?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Essa ação não pode ser desfeita. Isso
+                                  excluirá permanentemente a reserva.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(booking.id)}
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -310,7 +337,7 @@ export function BookingsPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title="Novo Quarto"
+        title={selectedBooking ? "Editar Reserva" : "Nova Reserva"}
         description={
           selectedBooking
             ? "Edite os detalhes da reserva."

@@ -1,4 +1,5 @@
 import { Building2Icon } from "lucide-react";
+import { Link } from "react-router";
 import { env } from "@/env";
 import { useAuth } from "@/features/auth/contexts/auth-context";
 import { useInn } from "@/features/inns/hooks/use-inns";
@@ -15,9 +16,11 @@ export function AppHeader() {
       <SidebarTrigger />
 
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <div className="flex size-8 items-center justify-center rounded-md bg-muted">
-          <Building2Icon className="size-4 text-muted-foreground" />
-        </div>
+        <Link to="/">
+          <div className="flex size-8 items-center justify-center rounded-md bg-muted">
+            <Building2Icon className="size-4 text-muted-foreground" />
+          </div>
+        </Link>
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">
             {isLoading ? (

@@ -110,7 +110,7 @@ This architectural style ensures that the core business logic in `DevInn.Domain`
 
 ## CI/CD
 
-The project has a CI/CD workflow configured in `.github/workflows/ci-cd-railway.yml`.
+The project has a CI/CD workflow configured in `.github/workflows/webapi-cicd.yaml` and `.github/workflows/webapp-cicd.yaml`.
 
 *   **CI (Continuous Integration)**: Automatically builds and tests the monorepo (both React and .NET applications) on pushes to the `main` branch and on pull requests.
 *   **Release**: Automatically creates a GitHub Release when a semantic version tag (e.g., `v1.2.3`) is pushed to the repository.

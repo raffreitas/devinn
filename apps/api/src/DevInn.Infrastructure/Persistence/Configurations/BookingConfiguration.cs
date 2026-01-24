@@ -75,7 +75,8 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasMany(b => b.Payments).WithOne().HasForeignKey(b => b.BookingId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Indexes are created at DB migration level using raw SQL to allow INCLUDE and precise control.
-        // See migration scripts for index creation to avoid EF translating owned property expressions.
+        builder.Property<byte[]>("RowVersion")
+            .IsRowVersion()
+            .HasColumnName("row_version");
     }
 }
