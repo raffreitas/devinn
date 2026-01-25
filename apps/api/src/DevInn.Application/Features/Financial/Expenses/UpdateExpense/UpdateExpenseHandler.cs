@@ -1,7 +1,6 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.Validation;
-using DevInn.Domain.Aggregates.Financial;
 using DevInn.Domain.Aggregates.Financial.Abstractions;
 using DevInn.Domain.Shared.ValueObjects;
 

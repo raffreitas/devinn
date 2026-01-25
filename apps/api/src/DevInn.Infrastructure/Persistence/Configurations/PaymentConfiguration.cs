@@ -1,9 +1,7 @@
 ﻿using DevInn.Domain.Aggregates.Bookings.Entities;
-using DevInn.Domain.Shared.ValueObjects;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace DevInn.Infrastructure.Persistence.Configurations;
 

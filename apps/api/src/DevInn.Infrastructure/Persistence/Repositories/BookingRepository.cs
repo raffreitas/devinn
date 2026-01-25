@@ -12,6 +12,12 @@ internal sealed class BookingRepository(ApplicationDbContext dbContext) : IBooki
     public async Task AddAsync(Booking booking, CancellationToken cancellationToken = default)
         => await dbContext.Bookings.AddAsync(booking, cancellationToken);
 
+    public Task RemoveAsync(Booking booking, CancellationToken cancellationToken = default)
+    {
+        dbContext.Bookings.Remove(booking);
+        return Task.CompletedTask;
+    }
+
     public async Task<Booking?> GetByIdAsync(Guid bookingId, CancellationToken cancellationToken = default)
         => await dbContext.Bookings
             .Include(x => x.Payments)
