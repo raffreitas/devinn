@@ -1,4 +1,4 @@
-name: SemVer PR Check
+name: CI PR Check
 
 on:
   pull_request:
@@ -12,7 +12,7 @@ jobs:
   require-bump:
     runs-on: ubuntu-latest
     steps:
-      - name: Check PR for SemVer tag
+      - name: Check PR for semver tag
         uses: actions/github-script@v6
         with:
           script: |

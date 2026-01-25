@@ -1,4 +1,4 @@
-name: SemVer Tagging on PR Merge
+name: CI Tagging on PR Merge
 
 on:
   pull_request:
