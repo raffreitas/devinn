@@ -3,7 +3,6 @@
 using DevInn.Domain.Aggregates.Bookings;
 using DevInn.Domain.Aggregates.Inns;
 using DevInn.Domain.Aggregates.Inventory;
-using DevInn.Domain.Shared.ValueObjects;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

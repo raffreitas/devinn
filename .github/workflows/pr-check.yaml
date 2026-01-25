@@ -1,4 +1,4 @@
-name: SemVer PR Check
+name: CI PR Check
 
 on:
   pull_request:
@@ -12,13 +12,13 @@ jobs:
   require-bump:
     runs-on: ubuntu-latest
     steps:
-      - name: Check PR for SemVer tag
+      - name: Check PR for semver tag
         uses: actions/github-script@v6
         with:
           script: |
             const pr = context.payload.pull_request;
             if (!pr) return;
-            const text = ((pr.title || '') + ' ' + (pr.body || '')).toLowerCase();
+            const text = (pr.title || '').toLowerCase();
             const has = /\[major\]|\[minor\]|\[patch\]/i.test(text);
             if (has) {
               core.info('SemVer bump tag found — OK');

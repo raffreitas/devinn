@@ -1,4 +1,4 @@
-name: SemVer Tagging on PR Merge
+name: CI Tagging on PR Merge
 
 on:
   pull_request:
@@ -22,7 +22,7 @@ jobs:
               return;
             }
 
-            const text = ((pr.title || '') + ' ' + (pr.body || '')).toLowerCase();
+            const text = (pr.title || '').toLowerCase();
             let bump = 'patch';
             if (/\[major\]/i.test(text)) bump = 'major';
             else if (/\[minor\]/i.test(text)) bump = 'minor';
