@@ -9,5 +9,6 @@ public sealed record RoomResponse(
     string CategoryName,
     int Capacity,
     decimal BasePrice,
-    decimal ExtraGuestPrice
+    decimal ExtraGuestPrice,
+    int ActiveIntegrationsCount
 );

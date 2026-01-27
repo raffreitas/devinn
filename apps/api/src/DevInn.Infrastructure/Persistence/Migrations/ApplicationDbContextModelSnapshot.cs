@@ -29,9 +29,18 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid?>("ChannelIntegrationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("channel_integration_id");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<string>("ExternalId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("external_id");
 
                     b.Property<Guid>("InnId")
                         .HasColumnType("uuid")
@@ -88,6 +97,13 @@ namespace DevInn.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_bookings");
+
+                    b.HasIndex("ChannelIntegrationId")
+                        .HasDatabaseName("ix_bookings_channel_integration_id");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_bookings_external_id");
 
                     b.HasIndex("InnId")
                         .HasDatabaseName("ix_bookings_inn_id");
@@ -322,6 +338,61 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasName("pk_inns");
 
                     b.ToTable("inns", (string)null);
+                });
+
+            modelBuilder.Entity("DevInn.Domain.Aggregates.Integrations.ChannelIntegration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ChannelType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("channel_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("ICalUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("ical_url");
+
+                    b.Property<Guid>("InnId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("inn_id");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("room_id");
+
+                    b.Property<string>("SyncStatus")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("sync_status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_channel_integrations");
+
+                    b.HasIndex("RoomId")
+                        .HasDatabaseName("ix_channel_integrations_room_id");
+
+                    b.HasIndex("InnId", "IsActive")
+                        .HasDatabaseName("ix_channel_integrations_inn_id_is_active");
+
+                    b.ToTable("channel_integrations", (string)null);
                 });
 
             modelBuilder.Entity("DevInn.Domain.Aggregates.Inventory.Room", b =>

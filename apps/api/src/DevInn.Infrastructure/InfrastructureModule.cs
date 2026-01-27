@@ -54,6 +54,24 @@ public static class InfrastructureModule
 
     public static WebApplication UseInfrastructureModule(this WebApplication app)
     {
+        // Trigger initial sync on startup (compensates for in-memory Quartz)
+        Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(30)); // Wait for app to be ready
+                using var scope = app.Services.CreateScope();
+                var scheduler = scope.ServiceProvider.GetRequiredService<ISchedulerFactory>();
+                var sched = await scheduler.GetScheduler();
+                var jobKey = new JobKey(nameof(SyncAllChannelsJob));
+                await sched.TriggerJob(jobKey);
+            }
+            catch
+            {
+                // Ignore errors on startup sync
+            }
+        });
+
         if (!app.Environment.IsDevelopment()) return app;
 
         using var scope = app.Services.CreateScope();

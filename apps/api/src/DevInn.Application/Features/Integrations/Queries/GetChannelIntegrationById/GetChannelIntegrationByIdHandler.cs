@@ -26,7 +26,7 @@ internal sealed class GetChannelIntegrationByIdHandler(
         const string sql = """
                            SELECT ci.id                    AS "Id",
                                   ci.channel_type          AS "ChannelType",
-                                  ci.i_cal_url              AS "ICalUrl",
+                                  ci.ical_url              AS "ICalUrl",
                                   ci.room_id               AS "RoomId",
                                   r.number                 AS "RoomName",
                                   ci.is_active             AS "IsActive",
