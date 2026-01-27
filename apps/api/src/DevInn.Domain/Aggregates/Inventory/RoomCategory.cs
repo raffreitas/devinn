@@ -5,10 +5,10 @@ namespace DevInn.Domain.Aggregates.Inventory;
 
 public sealed class RoomCategory : Entity
 {
-    public string Name { get; private set; }
-    public string Description { get; private set; }
+    public string Name { get; private set; } = null!;
+    public string Description { get; private set; } = null!;
     public int MaxCapacity { get; private set; }
-    public PricingPolicy PricingPolicy { get; private set; }
+    public PricingPolicy PricingPolicy { get; private set; } = null!;
 
     private RoomCategory()
     {

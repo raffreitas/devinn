@@ -61,6 +61,7 @@ public static class DependencyInjection
                     })
                     .SetErrorStatusOnException()
                     .AddHttpClientInstrumentation()
+                    .AddQuartzInstrumentation()
                     .AddNpgsql();
             })
             .WithLogging(_ => { }, options =>

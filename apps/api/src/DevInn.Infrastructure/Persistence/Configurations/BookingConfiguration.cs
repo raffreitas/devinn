@@ -24,10 +24,16 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.Property(b => b.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(b => b.Source).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(b => b.TotalValue).HasPrecision(18, 2).IsRequired();
+        builder.Property(b => b.ExternalId).HasMaxLength(255);
+        builder.Property(b => b.ChannelIntegrationId);
         builder.Ignore(b => b.PaidValue); // Calculated from Payments collection
         // Timestamps
         builder.Property(b => b.CreatedAt).IsRequired();
         builder.Property(b => b.UpdatedAt).IsRequired();
+
+        // Indexes
+        builder.HasIndex(b => b.ExternalId).IsUnique();
+        builder.HasIndex(b => b.ChannelIntegrationId);
         // Owned: StayPeriod (complex/owned type)
         builder.ComplexProperty(b => b.StayPeriod, spb =>
         {

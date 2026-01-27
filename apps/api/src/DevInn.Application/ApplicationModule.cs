@@ -1,4 +1,5 @@
 ﻿using DevInn.Application.Common.Tenancy.Abstractions;
+using DevInn.Application.Features.Integrations.Services;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Bookings.Services;
 
@@ -15,6 +16,7 @@ public static class ApplicationModule
         services.AddScoped<ITenantContext, TenantContext>();
 
         services.AddDomainServices();
+        services.AddScoped<IICalSyncService, ICalSyncService>();
 
         return services;
     }

@@ -1,11 +1,15 @@
 ﻿using DevInn.Application.Common.Data.Abstractions;
+using DevInn.Application.Common.ICal.Abstractions;
 using DevInn.Application.Common.Tenancy.Abstractions;
+using DevInn.Application.Features.Integrations.Services;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Financial.Abstractions;
 using DevInn.Domain.Aggregates.Inns.Abstractions;
+using DevInn.Domain.Aggregates.Integrations.Abstractions;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 using DevInn.Infrastructure.Common.Constants;
 using DevInn.Infrastructure.Common.Extensions;
+using DevInn.Infrastructure.Integrations;
 using DevInn.Infrastructure.Persistence.Context;
 using DevInn.Infrastructure.Persistence.Factories;
 using DevInn.Infrastructure.Persistence.Interceptors;
@@ -47,6 +51,11 @@ public static class DependencyInjection
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IExpenseRepository, ExpenseRepository>();
         services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
+        services.AddScoped<IChannelIntegrationRepository, ChannelIntegrationRepository>();
+
+        // External Services
+        services.AddHttpClient();
+        services.AddScoped<IICalService, ICalService>();
 
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentNames.Development)
         {

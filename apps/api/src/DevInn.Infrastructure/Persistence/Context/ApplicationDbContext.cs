@@ -3,6 +3,7 @@ using DevInn.Domain.Aggregates.Bookings;
 using DevInn.Domain.Aggregates.Bookings.Entities;
 using DevInn.Domain.Aggregates.Financial;
 using DevInn.Domain.Aggregates.Inns;
+using DevInn.Domain.Aggregates.Integrations;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Shared.ValueObjects;
 using DevInn.Infrastructure.Persistence.Configurations;
@@ -22,6 +23,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
+    public DbSet<ChannelIntegration> ChannelIntegrations => Set<ChannelIntegration>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +46,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
         modelBuilder.ApplyConfiguration(new ExpenseCategoryConfiguration());
         modelBuilder.Entity<ExpenseCategory>().HasQueryFilter(e => e.InnId == tenantContext.Tenant.Id);
+
+        modelBuilder.ApplyConfiguration(new ChannelIntegrationConfiguration());
+        modelBuilder.Entity<ChannelIntegration>().HasQueryFilter(ci => ci.InnId == tenantContext.Tenant.Id);
 
         base.OnModelCreating(modelBuilder);
     }

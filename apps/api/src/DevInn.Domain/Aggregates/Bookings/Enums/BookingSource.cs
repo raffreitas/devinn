@@ -4,6 +4,7 @@ public enum BookingSource
 {
     Manual = 1,
     BookingApi,
+    BookingIcal,
     AirbnbIcal,
     DirectWebsite
 }
