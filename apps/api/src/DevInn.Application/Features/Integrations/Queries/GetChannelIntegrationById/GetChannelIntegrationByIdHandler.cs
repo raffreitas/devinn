@@ -11,6 +11,7 @@ using FluentResults;
 using Mediator;
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DevInn.Application.Features.Integrations.Queries.GetChannelIntegrationById;
 
@@ -19,6 +20,11 @@ internal sealed class GetChannelIntegrationByIdHandler(
     ITenantContext tenantContext)
     : IQueryHandler<GetChannelIntegrationByIdQuery, Result<ChannelIntegrationDto>>
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     public async ValueTask<Result<ChannelIntegrationDto>> Handle(
         GetChannelIntegrationByIdQuery query,
         CancellationToken cancellationToken)
@@ -47,7 +53,8 @@ internal sealed class GetChannelIntegrationByIdHandler(
         if (result is null)
             return Result.Fail(new NotFoundError("Integração não encontrada"));
 
-        var syncStatusValue = JsonSerializer.Deserialize<SyncStatusJson>(result.SyncStatus) ?? new SyncStatusJson();
+        var syncStatusValue = JsonSerializer.Deserialize<SyncStatusJson>(result.SyncStatus, JsonOptions)
+                              ?? new SyncStatusJson();
         var channelType = Enum.Parse<ChannelType>(result.ChannelType, ignoreCase: true);
 
         var dto = new ChannelIntegrationDto(
@@ -58,7 +65,7 @@ internal sealed class GetChannelIntegrationByIdHandler(
             result.RoomName.ToString(),
             result.IsActive,
             new SyncStatusDto(
-                syncStatusValue.Status ?? "NeverSynced",
+                syncStatusValue.Status.ToString() ?? "NeverSynced",
                 syncStatusValue.LastSyncAt,
                 syncStatusValue.NextSyncAt,
                 syncStatusValue.ErrorMessage,
@@ -81,7 +88,7 @@ internal sealed class GetChannelIntegrationByIdHandler(
         DateTime UpdatedAt);
 
     private sealed record SyncStatusJson(
-        string? Status = null,
+        SyncStatusType? Status = null,
         DateTimeOffset? LastSyncAt = null,
         DateTimeOffset? NextSyncAt = null,
         string? ErrorMessage = null,

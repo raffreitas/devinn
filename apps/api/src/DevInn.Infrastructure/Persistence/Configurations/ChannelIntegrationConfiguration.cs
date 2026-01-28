@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using DevInn.Domain.Aggregates.Integrations;
 using DevInn.Domain.Aggregates.Integrations.ValueObjects;
@@ -11,6 +12,13 @@ namespace DevInn.Infrastructure.Persistence.Configurations;
 
 internal sealed class ChannelIntegrationConfiguration : IEntityTypeConfiguration<ChannelIntegration>
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     public void Configure(EntityTypeBuilder<ChannelIntegration> builder)
     {
         builder.ToTable("channel_integrations");
@@ -29,9 +37,9 @@ internal sealed class ChannelIntegrationConfiguration : IEntityTypeConfiguration
 
         // Store SyncStatus as JSON
         var syncStatusConverter = new ValueConverter<SyncStatus, string>(
-            v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-            s => JsonSerializer.Deserialize<SyncStatus>(s, (JsonSerializerOptions?)null)
-                 ?? SyncStatus.NeverSynced());
+            v => JsonSerializer.Serialize(v, JsonOptions),
+            s => JsonSerializer.Deserialize<SyncStatus>(s, JsonOptions) ?? SyncStatus.NeverSynced()
+        );
 
         builder.Property(ci => ci.SyncStatus)
             .HasColumnName("sync_status")

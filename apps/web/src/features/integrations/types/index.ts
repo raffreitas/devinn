@@ -15,7 +15,7 @@ export interface ChannelIntegration {
   channelType: ChannelType;
   iCalUrl: string;
   roomId: string;
-  roomNumber: string;
+  roomName: string;
   roomCategoryName: string;
   isActive: boolean;
   syncStatus: SyncStatus;

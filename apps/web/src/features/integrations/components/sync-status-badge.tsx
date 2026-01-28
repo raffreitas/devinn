@@ -24,7 +24,7 @@ export function SyncStatusBadge({ syncStatus }: SyncStatusBadgeProps) {
   const getBadgeText = () => {
     switch (status) {
       case "Success":
-        return `Última sync: ${new Date(lastSyncAt!).toLocaleString("pt-BR")} (${importedCount} reservas)`;
+        return `Última sincronização: ${new Date(lastSyncAt!).toLocaleString("pt-BR")} (${importedCount} reservas)`;
       case "Failed":
         return `Falhou: ${errorMessage}`;
       case "Syncing":

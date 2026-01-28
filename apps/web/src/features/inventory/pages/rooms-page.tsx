@@ -206,7 +206,7 @@ export function RoomsPage() {
                         <TableCell className="hidden lg:table-cell">
                           {room.activeIntegrationsCount &&
                           room.activeIntegrationsCount > 0 ? (
-                            <Link to="/integrations">
+                            <Link to={`/integrations?roomId=${room.id}`}>
                               <Badge
                                 variant="secondary"
                                 className="gap-1 cursor-pointer hover:bg-secondary/80"

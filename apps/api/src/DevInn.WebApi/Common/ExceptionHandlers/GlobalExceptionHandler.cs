@@ -12,7 +12,7 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
         Exception exception,
         CancellationToken cancellationToken)
     {
-        logger.LogError(exception, "Houve um erro não tratado ao processar a requisição.");
+        logger.LogError(exception, "An unhandled exception occurred {Message}", exception.Message);
 
         switch (exception)
         {

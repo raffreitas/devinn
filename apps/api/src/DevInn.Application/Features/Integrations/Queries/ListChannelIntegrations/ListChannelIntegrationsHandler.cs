@@ -10,6 +10,7 @@ using FluentResults;
 using Mediator;
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DevInn.Application.Features.Integrations.Queries.ListChannelIntegrations;
 
@@ -18,6 +19,11 @@ internal sealed class ListChannelIntegrationsHandler(
     ITenantContext tenantContext)
     : IQueryHandler<ListChannelIntegrationsQuery, Result<PaginatedResult<ChannelIntegrationDto>>>
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     public async ValueTask<Result<PaginatedResult<ChannelIntegrationDto>>> Handle(
         ListChannelIntegrationsQuery query,
         CancellationToken cancellationToken)
@@ -73,7 +79,8 @@ internal sealed class ListChannelIntegrationsHandler(
 
     private static ChannelIntegrationDto MapToDto(IntegrationRaw raw)
     {
-        var syncStatusValue = JsonSerializer.Deserialize<SyncStatusJson>(raw.SyncStatus) ?? new SyncStatusJson();
+        var syncStatusValue = JsonSerializer.Deserialize<SyncStatusJson>(raw.SyncStatus, JsonOptions)
+                              ?? new SyncStatusJson();
         var channelType = Enum.Parse<ChannelType>(raw.ChannelType, ignoreCase: true);
 
         return new ChannelIntegrationDto(
@@ -105,9 +112,13 @@ internal sealed class ListChannelIntegrationsHandler(
         DateTime UpdatedAt);
 
     private sealed record SyncStatusJson(
-        string? Status = null,
+        [property: JsonPropertyName("status")] string? Status = null,
+        [property: JsonPropertyName("lastSyncAt")]
         DateTimeOffset? LastSyncAt = null,
+        [property: JsonPropertyName("nextSyncAt")]
         DateTimeOffset? NextSyncAt = null,
+        [property: JsonPropertyName("errorMessage")]
         string? ErrorMessage = null,
+        [property: JsonPropertyName("importedBookingsCount")]
         int ImportedBookingsCount = 0);
 }

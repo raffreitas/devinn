@@ -19,5 +19,5 @@ public record SyncStatusDto(
     DateTimeOffset? LastSyncAt,
     DateTimeOffset? NextSyncAt,
     string? ErrorMessage,
-    int ImportedBookingsCount
+    int ImportedCount
 );
