@@ -54,9 +54,12 @@ export function IntegrationsPage() {
   }, [searchParams]);
 
   const { data: integrations, isLoading } = useIntegrations();
-  const createIntegration = useCreateIntegration();
-  const syncIntegration = useSyncIntegration();
-  const deleteIntegration = useDeleteIntegration();
+  const { createIntegration, isPending: createIntegrationIsPending } =
+    useCreateIntegration();
+  const { syncIntegration, isPending: syncIntegrationIsPending } =
+    useSyncIntegration();
+  const { deleteIntegration, isPending: deleteIntegrationIsPending } =
+    useDeleteIntegration();
 
   const filteredIntegrations = integrations?.filter((integration) => {
     if (filterRoomId === "all") return true;
@@ -78,17 +81,17 @@ export function IntegrationsPage() {
   );
 
   const handleCreate = async (data: CreateChannelIntegrationRequest) => {
-    await createIntegration.mutateAsync(data);
+    await createIntegration(data);
     setIsModalOpen(false);
   };
 
-  const handleSync = (integration: ChannelIntegration) => {
-    syncIntegration.mutate(integration.id);
+  const handleSync = async (integration: ChannelIntegration) => {
+    await syncIntegration(integration.id);
   };
 
   const handleDelete = (integration: ChannelIntegration) => {
     if (confirm("Deseja realmente remover esta integração?")) {
-      deleteIntegration.mutate(integration.id);
+      deleteIntegration(integration.id);
     }
   };
 
@@ -229,12 +232,12 @@ export function IntegrationsPage() {
                               size="icon"
                               onClick={() => handleSync(integration)}
                               disabled={
-                                syncIntegration.isPending ||
+                                syncIntegrationIsPending ||
                                 !integration.isActive
                               }
                             >
                               <RefreshCw
-                                className={`h-4 w-4 ${syncIntegration.isPending ? "animate-spin" : ""}`}
+                                className={`h-4 w-4 ${syncIntegrationIsPending ? "animate-spin" : ""}`}
                               />
                               <span className="sr-only">Sincronizar</span>
                             </Button>
@@ -242,7 +245,7 @@ export function IntegrationsPage() {
                               variant="ghost"
                               size="icon"
                               onClick={() => handleDelete(integration)}
-                              disabled={deleteIntegration.isPending}
+                              disabled={deleteIntegrationIsPending}
                             >
                               <Trash2 className="h-4 w-4" />
                               <span className="sr-only">Remover</span>
@@ -274,7 +277,7 @@ export function IntegrationsPage() {
         <IntegrationForm
           onSubmit={handleCreate}
           onCancel={() => setIsModalOpen(false)}
-          isSubmitting={createIntegration.isPending}
+          isSubmitting={createIntegrationIsPending}
         />
       </Modal>
     </div>

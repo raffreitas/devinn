@@ -12,24 +12,27 @@ export const INTEGRATIONS_KEYS = {
 };
 
 export function useIntegrations() {
-  return useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: INTEGRATIONS_KEYS.all,
     queryFn: integrationsService.getAll,
   });
+
+  return { data, isLoading };
 }
 
 export function useIntegration(id: string) {
-  return useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: INTEGRATIONS_KEYS.detail(id),
     queryFn: () => integrationsService.getById(id),
     enabled: !!id,
   });
+  return { data, isLoading };
 }
 
 export function useCreateIntegration() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: (data: CreateChannelIntegrationRequest) =>
       integrationsService.create(data),
     onSuccess: () => {
@@ -40,12 +43,14 @@ export function useCreateIntegration() {
       toast.error("Erro ao criar integração");
     },
   });
+
+  return { createIntegration: mutateAsync, isPending };
 }
 
 export function useUpdateIntegration() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: ({
       id,
       data,
@@ -64,12 +69,14 @@ export function useUpdateIntegration() {
       toast.error("Erro ao atualizar integração");
     },
   });
+
+  return { updateIntegration: mutateAsync, isPending };
 }
 
 export function useDeleteIntegration() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: (id: string) => integrationsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: INTEGRATIONS_KEYS.all });
@@ -79,12 +86,14 @@ export function useDeleteIntegration() {
       toast.error("Erro ao remover integração");
     },
   });
+
+  return { deleteIntegration: mutateAsync, isPending };
 }
 
 export function useSyncIntegration() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: (id: string) => integrationsService.sync(id),
     onSuccess: (data, id) => {
       queryClient.invalidateQueries({ queryKey: INTEGRATIONS_KEYS.all });
@@ -95,4 +104,6 @@ export function useSyncIntegration() {
       toast.error("Erro ao sincronizar integração");
     },
   });
+
+  return { syncIntegration: mutateAsync, isPending };
 }
