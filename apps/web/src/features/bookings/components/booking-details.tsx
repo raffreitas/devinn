@@ -64,23 +64,23 @@ const statusConfig: Record<
   Scheduled: {
     label: "Agendada",
     variant: "default",
-    className: "bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 border-none",
+    className: "bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 border-none dark:bg-blue-500/10 dark:text-blue-400",
   },
   CheckedIn: {
     label: "Hospedado",
     variant: "secondary",
     className:
-      "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 border-none",
+      "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 border-none dark:bg-emerald-500/10 dark:text-emerald-400",
   },
   Completed: {
     label: "Concluída",
     variant: "outline",
-    className: "bg-muted text-muted-foreground border-none",
+    className: "bg-muted text-muted-foreground border-none dark:bg-muted/10 dark:text-muted-foreground/40",
   },
   Canceled: {
     label: "Cancelada",
     variant: "destructive",
-    className: "bg-rose-500/20 text-rose-700 hover:bg-rose-500/30 border-none",
+    className: "bg-rose-500/20 text-rose-700 hover:bg-rose-500/30 border-none dark:bg-rose-500/10 dark:text-rose-400",
   },
 };
 
@@ -97,20 +97,20 @@ const paymentStatusConfig: Record<
     label: "Pago",
     variant: "default",
     className:
-      "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 border-none",
+      "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 border-none dark:bg-emerald-500/10 dark:text-emerald-400",
     icon: <CheckCircle2 className="w-4 h-4" />,
   },
   Partial: {
     label: "Parcial",
     variant: "secondary",
     className:
-      "bg-amber-500/20 text-amber-700 hover:bg-amber-500/30 border-none",
+      "bg-amber-500/20 text-amber-700 hover:bg-amber-500/30 border-none dark:bg-amber-500/10 dark:text-amber-400",
     icon: <AlertTriangle className="w-4 h-4" />,
   },
   Pending: {
     label: "Pendente",
     variant: "destructive",
-    className: "bg-rose-500/20 text-rose-700 hover:bg-rose-500/30 border-none",
+    className: "bg-rose-500/20 text-rose-700 hover:bg-rose-500/30 border-none dark:bg-rose-500/10 dark:text-rose-400",
     icon: <XCircle className="w-4 h-4" />,
   },
 };
@@ -262,7 +262,7 @@ export function BookingDetails({
                     <span className="text-foreground">
                       {formatCurrency(
                         booking.pricing.extraGuestPrice *
-                          booking.pricing.numberOfExtraGuests,
+                        booking.pricing.numberOfExtraGuests,
                       )}
                     </span>
                   </div>
@@ -273,8 +273,8 @@ export function BookingDetails({
                   <span className="text-foreground">
                     {formatCurrency(
                       booking.pricing.basePrice +
-                        booking.pricing.extraGuestPrice *
-                          booking.pricing.numberOfExtraGuests,
+                      booking.pricing.extraGuestPrice *
+                      booking.pricing.numberOfExtraGuests,
                     )}
                   </span>
                 </div>

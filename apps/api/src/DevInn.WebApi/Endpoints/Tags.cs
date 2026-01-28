@@ -9,4 +9,5 @@ public static class Tags
     public const string Bookings = "Bookings";
     public const string ExpenseCategories = "Expense Categories";
     public const string Expenses = "Expenses";
+    public const string Integrations = "Integrations";
 }

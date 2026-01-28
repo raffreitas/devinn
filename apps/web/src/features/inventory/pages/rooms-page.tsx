@@ -1,5 +1,6 @@
-import { Filter, Pencil, Plus } from "lucide-react";
+import { Filter, Link2, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
 import { Badge } from "@/shared/components/ui/badge";
@@ -176,6 +177,9 @@ export function RoomsPage() {
                         Preço Base
                       </TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Integrações
+                      </TableHead>
                       <TableHead className="w-25 text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -198,6 +202,24 @@ export function RoomsPage() {
                           >
                             {statusDisplayConfig[room.status].label}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {room.activeIntegrationsCount &&
+                          room.activeIntegrationsCount > 0 ? (
+                            <Link to={`/integrations?roomId=${room.id}`}>
+                              <Badge
+                                variant="secondary"
+                                className="gap-1 cursor-pointer hover:bg-secondary/80"
+                              >
+                                <Link2 className="h-3 w-3" />
+                                {room.activeIntegrationsCount}
+                              </Badge>
+                            </Link>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              -
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">

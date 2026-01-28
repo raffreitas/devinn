@@ -33,10 +33,17 @@ internal sealed class GetRoomsHandler(IDbConnectionFactory dbConnectionFactory, 
                                    rc.name                   AS "{nameof(RoomResponse.CategoryName)}",
                                    rc.max_capacity           AS "{nameof(RoomResponse.Capacity)}",
                                    rc.base_price             AS "{nameof(RoomResponse.BasePrice)}",
-                                   rc.person_price           AS "{nameof(RoomResponse.ExtraGuestPrice)}"
+                                   rc.person_price           AS "{nameof(RoomResponse.ExtraGuestPrice)}",
+                                   COALESCE(ci_count.total, 0) AS "{nameof(RoomResponse.ActiveIntegrationsCount)}"
                             FROM rooms r
                             JOIN room_categories rc ON r.category_id = rc.Id
                                 AND rc.inn_id = r.inn_id
+                            LEFT JOIN (
+                                SELECT room_id, COUNT(*) as total
+                                FROM channel_integrations
+                                WHERE is_active = true AND inn_id = @TenantId
+                                GROUP BY room_id
+                            ) ci_count ON ci_count.room_id = r.id
                             WHERE r.inn_id = @TenantId
                                 AND (@CategoryId IS NULL OR r.category_id = @CategoryId)
                                 AND (@Status IS NULL OR r.status = @Status)

@@ -19,6 +19,8 @@ public sealed class Booking : Entity
     public Money TotalValue { get; private set; }
     public BookingSource Source { get; private set; }
     public BookingStatus Status { get; private set; }
+    public string? ExternalId { get; private set; }
+    public Guid? ChannelIntegrationId { get; private set; }
     public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
     public int NumberOfNights => StayPeriod.TotalNights();
     public Money PaidValue => new(_payments.Sum(p => p.Amount.Value));
@@ -36,7 +38,9 @@ public sealed class Booking : Entity
         Occupancy occupancy,
         Money totalValue,
         BookingSource source,
-        string? notes = null)
+        string? notes = null,
+        string? externalId = null,
+        Guid? channelIntegrationId = null)
     {
         Guest = guest;
         StayPeriod = stayPeriod;
@@ -46,6 +50,8 @@ public sealed class Booking : Entity
         Source = source;
         RoomId = roomId;
         Status = BookingStatus.Scheduled;
+        ExternalId = externalId;
+        ChannelIntegrationId = channelIntegrationId;
     }
 
     public void Update(

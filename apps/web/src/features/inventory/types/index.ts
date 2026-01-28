@@ -51,6 +51,7 @@ export interface Room {
   description?: string;
   createdAt: string;
   updatedAt: string;
+  activeIntegrationsCount?: number;
 }
 
 export type CreateRoomRequest = {
