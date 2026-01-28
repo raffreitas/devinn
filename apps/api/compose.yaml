@@ -1,6 +1,17 @@
 ﻿name: devinn
 
 services:
+  devinn.webapi:
+    image: devinn.webapi
+    build:
+      context: .
+      dockerfile: src/DevInn.WebApi/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DatabaseConnection=Host=postgres;Database=devinn;Username=postgres;Password=postgres;Pooling=true;
+  
   postgres:
     image: postgres:17
     environment:

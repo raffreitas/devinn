@@ -10,5 +10,5 @@ public sealed record RoomResponse(
     int Capacity,
     decimal BasePrice,
     decimal ExtraGuestPrice,
-    int ActiveIntegrationsCount
+    long ActiveIntegrationsCount
 );

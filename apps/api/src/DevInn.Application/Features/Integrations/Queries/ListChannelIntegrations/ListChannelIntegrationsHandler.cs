@@ -74,13 +74,14 @@ internal sealed class ListChannelIntegrationsHandler(
     private static ChannelIntegrationDto MapToDto(IntegrationRaw raw)
     {
         var syncStatusValue = JsonSerializer.Deserialize<SyncStatusJson>(raw.SyncStatus) ?? new SyncStatusJson();
+        var channelType = Enum.Parse<ChannelType>(raw.ChannelType, ignoreCase: true);
 
         return new ChannelIntegrationDto(
             raw.Id,
-            raw.ChannelType,
+            channelType,
             raw.ICalUrl,
             raw.RoomId,
-            raw.RoomName,
+            raw.RoomName.ToString(),
             raw.IsActive,
             new SyncStatusDto(
                 syncStatusValue.Status ?? "NeverSynced",
@@ -88,20 +89,20 @@ internal sealed class ListChannelIntegrationsHandler(
                 syncStatusValue.NextSyncAt,
                 syncStatusValue.ErrorMessage,
                 syncStatusValue.ImportedBookingsCount),
-            raw.CreatedAt,
-            raw.UpdatedAt);
+            new DateTimeOffset(raw.CreatedAt, TimeSpan.Zero),
+            new DateTimeOffset(raw.UpdatedAt, TimeSpan.Zero));
     }
 
     private sealed record IntegrationRaw(
         Guid Id,
-        ChannelType ChannelType,
+        string ChannelType,
         string ICalUrl,
         Guid RoomId,
-        string RoomName,
+        int RoomName,
         bool IsActive,
         string SyncStatus,
-        DateTimeOffset CreatedAt,
-        DateTimeOffset UpdatedAt);
+        DateTime CreatedAt,
+        DateTime UpdatedAt);
 
     private sealed record SyncStatusJson(
         string? Status = null,
