@@ -97,7 +97,7 @@ export const BookingReceiptTemplate = ({
               NOME
             </p>
             <p style={{ fontSize: "13px", margin: "0", fontWeight: "500" }}>
-              {booking.guest.name}
+              {booking.guest?.name}
             </p>
           </div>
           <div>
@@ -112,10 +112,10 @@ export const BookingReceiptTemplate = ({
               TELEFONE
             </p>
             <p style={{ fontSize: "13px", margin: "0", fontWeight: "500" }}>
-              {booking.guest.phone}
+              {booking.guest?.phone}
             </p>
           </div>
-          {booking.guest.email && (
+          {booking.guest?.email && (
             <div>
               <p
                 style={{
@@ -132,7 +132,7 @@ export const BookingReceiptTemplate = ({
               </p>
             </div>
           )}
-          {booking.guest.document && (
+          {booking.guest?.document && (
             <div>
               <p
                 style={{

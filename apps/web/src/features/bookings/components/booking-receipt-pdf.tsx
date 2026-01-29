@@ -134,40 +134,44 @@ export function BookingReceiptPdf({
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>DADOS DO HÓSPEDE</Text>
-          <View style={styles.grid2}>
-            <View style={styles.col}>
-              <Text style={styles.label}>NOME</Text>
-              <Text style={styles.value}>{booking.guest.name}</Text>
-            </View>
-            <View style={styles.col}>
-              <Text style={styles.label}>TELEFONE</Text>
-              <Text style={styles.value}>{booking.guest.phone}</Text>
-            </View>
-          </View>
-          {booking.guest.email ? (
-            <View style={[styles.grid2, { marginTop: 10 }]}>
-              <View style={styles.col}>
-                <Text style={styles.label}>E-MAIL</Text>
-                <Text style={styles.value}>{booking.guest.email}</Text>
-              </View>
-              {booking.guest.document ? (
+          {booking.guest && (
+            <>
+              <View style={styles.grid2}>
                 <View style={styles.col}>
-                  <Text style={styles.label}>DOCUMENTO</Text>
-                  <Text style={styles.value}>{booking.guest.document}</Text>
+                  <Text style={styles.label}>NOME</Text>
+                  <Text style={styles.value}>{booking.guest.name}</Text>
                 </View>
-              ) : (
-                <View style={styles.col} />
-              )}
-            </View>
-          ) : booking.guest.document ? (
-            <View style={[styles.grid2, { marginTop: 10 }]}>
-              <View style={styles.col}>
-                <Text style={styles.label}>DOCUMENTO</Text>
-                <Text style={styles.value}>{booking.guest.document}</Text>
+                <View style={styles.col}>
+                  <Text style={styles.label}>TELEFONE</Text>
+                  <Text style={styles.value}>{booking.guest.phone}</Text>
+                </View>
               </View>
-              <View style={styles.col} />
-            </View>
-          ) : null}
+              {booking.guest.email ? (
+                <View style={[styles.grid2, { marginTop: 10 }]}>
+                  <View style={styles.col}>
+                    <Text style={styles.label}>E-MAIL</Text>
+                    <Text style={styles.value}>{booking.guest.email}</Text>
+                  </View>
+                  {booking.guest.document ? (
+                    <View style={styles.col}>
+                      <Text style={styles.label}>DOCUMENTO</Text>
+                      <Text style={styles.value}>{booking.guest.document}</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.col} />
+                  )}
+                </View>
+              ) : booking.guest.document ? (
+                <View style={[styles.grid2, { marginTop: 10 }]}>
+                  <View style={styles.col}>
+                    <Text style={styles.label}>DOCUMENTO</Text>
+                    <Text style={styles.value}>{booking.guest.document}</Text>
+                  </View>
+                  <View style={styles.col} />
+                </View>
+              ) : null}
+            </>
+          )}
         </View>
 
         <View style={styles.section}>

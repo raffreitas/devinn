@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { getBlockLabel } from "../utils/booking-helpers";
 import {
   Select,
   SelectContent,
@@ -250,7 +251,7 @@ export function BookingsPage() {
                         <TableCell className="font-medium">
                           {booking.number}
                         </TableCell>
-                        <TableCell>{booking.guest.name}</TableCell>
+                        <TableCell>{booking.guest?.name || getBlockLabel(booking.source)}</TableCell>
                         <TableCell className="hidden md:table-cell">
                           {format(new Date(booking.checkIn), "dd/MM/yyyy")}
                         </TableCell>

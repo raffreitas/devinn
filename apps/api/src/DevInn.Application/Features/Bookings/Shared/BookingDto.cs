@@ -26,7 +26,8 @@ public sealed record BookingDto(
     Guid RoomId,
     string Number,
     string CategoryName,
-    GuestDto Guest,
+    GuestDto? Guest,
+    BookingSource Source,
     DateTimeOffset CheckIn,
     DateTimeOffset CheckOut,
     int Adults,
@@ -49,8 +50,8 @@ internal sealed record BookingProjection
     public string CategoryName { get; init; } = null!;
     public decimal BasePrice { get; init; }
     public decimal ExtraPersonPrice { get; init; }
-    public string GuestName { get; init; } = null!;
-    public string GuestPhone { get; init; } = null!;
+    public string? GuestName { get; init; }
+    public string? GuestPhone { get; init; }
     public string? GuestEmail { get; init; }
     public string? GuestDocument { get; init; }
     public DateOnly? GuestBirthDate { get; init; }
@@ -62,6 +63,7 @@ internal sealed record BookingProjection
     public decimal TotalValue { get; init; }
     public decimal PaidValue { get; init; }
     public string Status { get; init; } = null!;
+    public string Source { get; init; } = null!;
     public string? Payments { get; init; }
     public string? Notes { get; init; }
 }

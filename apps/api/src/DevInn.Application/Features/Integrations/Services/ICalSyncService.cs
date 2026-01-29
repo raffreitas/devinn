@@ -105,30 +105,26 @@ internal sealed class ICalSyncService(
             return;
         }
 
-        // Create booking from iCal event
+        // Create booking from iCal event (blocks, not real bookings)
         var source = integration.ChannelType == Domain.Aggregates.Integrations.Enums.ChannelType.Booking
             ? BookingSource.BookingIcal
             : BookingSource.AirbnbIcal;
 
-        var guest = new Guest(
-            Name: iCalEvent.Summary,
-            Phone: "N/A", // iCal doesn't provide phone
-            Email: null,
-            Document: null,
-            BirthDate: null
-        );
-
         var stay = new StayPeriod(iCalEvent.Start, iCalEvent.End);
-        var occupancy = new Occupancy(1, 0, null); // iCal doesn't provide occupancy details
+
+        // Store iCal summary in notes (e.g., "CLOSED - Not available")
+        var notes = string.IsNullOrWhiteSpace(iCalEvent.Description)
+            ? iCalEvent.Summary
+            : $"{iCalEvent.Summary}\n{iCalEvent.Description}";
 
         var booking = new Booking(
             roomId: integration.RoomId,
-            guest: guest,
+            guest: null, // Blocks don't have guest information
             stayPeriod: stay,
-            occupancy: occupancy,
+            occupancy: null,
             totalValue: new Money(0), // iCal doesn't provide pricing
             source: source,
-            notes: iCalEvent.Description,
+            notes: notes,
             externalId: iCalEvent.Uid,
             channelIntegrationId: integration.Id
         );

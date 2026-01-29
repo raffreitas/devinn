@@ -57,12 +57,16 @@ internal sealed class UpdateBookingCommandHandler(
         var breakdown = pricingCalculatorService.CalculateBreakdown(stay, category, occupancy);
         var total = breakdown.Total.Value;
 
-        var guest = new Guest(
-            command.Guest.Name,
-            command.Guest.Phone,
-            command.Guest.Email,
-            command.Guest.Document,
-            command.Guest.BirthDate);
+        Guest? guest = null;
+        if (command.Guest is not null)
+        {
+            guest = new Guest(
+                command.Guest.Name,
+                command.Guest.Phone,
+                command.Guest.Email,
+                command.Guest.Document,
+                command.Guest.BirthDate);
+        }
 
         booking.Update(
             command.RoomId,

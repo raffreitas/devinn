@@ -14,7 +14,7 @@ namespace DevInn.Application.Features.Bookings.Commands.UpdateBooking;
 
 public sealed record UpdateBookingCommand(
     Guid Id,
-    GuestDto Guest,
+    GuestDto? Guest,
     Guid RoomId,
     DateTimeOffset CheckIn,
     DateTimeOffset CheckOut,
@@ -37,8 +37,16 @@ internal sealed class UpdateBookingCommandValidator : AbstractValidator<UpdateBo
     {
         RuleFor(x => x.Id).NotEmpty().WithMessage("Id da reserva é obrigatório.");
 
-        RuleFor(command => command.Guest).NotNull().WithMessage("Informações do hóspede são obrigatórias.");
-        RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation());
+        When(x => x.Source == BookingSource.Manual, () =>
+        {
+            RuleFor(command => command.Guest).NotNull().WithMessage("Informações do hóspede são obrigatórias para reservas manuais.");
+            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);
+        });
+        
+        When(x => x.Guest != null, () =>
+        {
+            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);
+        });
 
         RuleFor(x => x.RoomId)
             .NotEmpty().WithMessage("Quarto é obrigatório.");
