@@ -1,10 +1,13 @@
 using Dapper;
 
 using DevInn.Application.Common.Data.Abstractions;
+using DevInn.Application.Common.Tenancy;
+using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Application.Features.Integrations.Commands.SyncChannelIntegration;
 
 using Mediator;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Quartz;
@@ -14,21 +17,21 @@ namespace DevInn.Infrastructure.BackgroundJobs;
 [DisallowConcurrentExecution]
 internal sealed class SyncAllChannelsJob(
     IDbConnectionFactory dbConnectionFactory,
-    IMediator mediator,
-    ILogger<SyncAllChannelsJob> logger
+    ILogger<SyncAllChannelsJob> logger,
+    IServiceScopeFactory serviceScopeFactory
 ) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
         logger.LogInformation("Starting SyncAllChannelsJob execution");
 
-        await using var dbConnection = await dbConnectionFactory.OpenConnectionAsync(context.CancellationToken);
         const string query = """
-                             SELECT id AS "Id", room_id as "RoomId"
+                             SELECT id AS "Id", room_id as "RoomId", "inn_id" as "InnId"
                              FROM channel_integrations
                              WHERE is_active = true
                              """;
 
+        await using var dbConnection = await dbConnectionFactory.OpenConnectionAsync(context.CancellationToken);
         var activeIntegrations = await dbConnection.QueryAsync<IntegrationRow>(query, context.CancellationToken);
         var integrationsList = activeIntegrations.ToList();
 
@@ -39,8 +42,14 @@ internal sealed class SyncAllChannelsJob(
                 logger.LogInformation("Syncing integration {IntegrationId} for room {RoomId}",
                     integration.Id, integration.RoomId);
 
+                using var scope = serviceScopeFactory.CreateScope();
+                var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+                var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+
+                tenantContext.SetTenant(new Tenant(integration.Id));
+
                 var command = new SyncChannelIntegrationCommand(integration.Id);
-                var result = await mediator.Send(command, context.CancellationToken);
+                var result = await sender.Send(command, context.CancellationToken);
 
                 if (result.IsSuccess)
                 {
@@ -63,5 +72,5 @@ internal sealed class SyncAllChannelsJob(
         logger.LogInformation("SyncAllChannelsJob execution completed");
     }
 
-    private sealed record IntegrationRow(Guid Id, Guid RoomId);
+    private sealed record IntegrationRow(Guid Id, Guid RoomId, Guid InnId);
 }
