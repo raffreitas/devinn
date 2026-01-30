@@ -39,6 +39,7 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
                                   b.children_ages           AS "ChildrenAges",
                                   b.total_value             AS "TotalValue",
                                   b.status                  AS "Status",
+                                  b.source                  AS "Source",
                                   b.notes                   AS "Notes"
                            FROM bookings b
                            JOIN rooms r ON r.id = b.room_id AND r.inn_id = b.inn_id
@@ -88,7 +89,11 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
         var pricing = new PricingBreakdown(r.BasePrice, r.ExtraPersonPrice, nights, numberOfExtraGuests,
             r.TotalValue, 0m, r.TotalValue);
 
-        var guest = new GuestDto(r.GuestName, r.GuestPhone, r.GuestEmail, r.GuestDocument, r.GuestBirthDate);
+        GuestDto? guest = null;
+        if (!string.IsNullOrWhiteSpace(r.GuestName) && !string.IsNullOrWhiteSpace(r.GuestPhone))
+        {
+            guest = new GuestDto(r.GuestName, r.GuestPhone, r.GuestEmail, r.GuestDocument, r.GuestBirthDate);
+        }
 
         var booking = new BookingDto(
             r.Id,
@@ -96,6 +101,7 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
             r.Number.ToString(),
             r.CategoryName,
             guest,
+            Enum.Parse<BookingSource>(r.Source),
             r.CheckIn,
             r.CheckOut,
             r.Adults,

@@ -12,7 +12,7 @@ using Mediator;
 namespace DevInn.Application.Features.Bookings.Commands.CreateBooking;
 
 public sealed record CreateBookingCommand(
-    GuestDto Guest,
+    GuestDto? Guest,
     Guid RoomId,
     DateTimeOffset CheckIn,
     DateTimeOffset CheckOut,
@@ -33,8 +33,16 @@ internal sealed class CreateBookingInputValidation : AbstractValidator<CreateBoo
 {
     public CreateBookingInputValidation()
     {
-        RuleFor(command => command.Guest).NotNull().WithMessage("Informações do hóspede são obrigatórias.");
-        RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation());
+        When(x => x.Source == BookingSource.Manual, () =>
+        {
+            RuleFor(command => command.Guest).NotNull().WithMessage("Informações do hóspede são obrigatórias para reservas manuais.");
+            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);
+        });
+        
+        When(x => x.Guest != null, () =>
+        {
+            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);
+        });
 
         RuleFor(x => x.RoomId)
             .NotEmpty().WithMessage("Quarto é obrigatório.");

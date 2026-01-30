@@ -40,12 +40,16 @@ internal sealed class CreateBookingHandler(
             return Result.Fail(new ConflictError("Número de hóspedes excede a capacidade do quarto."));
 
         // Map value objects
-        var guest = new Guest(
-            command.Guest.Name,
-            command.Guest.Phone,
-            command.Guest.Email,
-            command.Guest.Document,
-            command.Guest.BirthDate);
+        Guest? guest = null;
+        if (command.Guest is not null)
+        {
+            guest = new Guest(
+                command.Guest.Name,
+                command.Guest.Phone,
+                command.Guest.Email,
+                command.Guest.Document,
+                command.Guest.BirthDate);
+        }
 
         var stay = new StayPeriod(command.CheckIn, command.CheckOut);
         var occupancy = new Occupancy(command.Adults, command.Children, command.ChildrenAges);

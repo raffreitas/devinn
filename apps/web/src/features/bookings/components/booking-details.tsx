@@ -9,6 +9,7 @@ import {
   DollarSign,
   FileText,
   Info,
+  LinkIcon,
   Mail,
   Pencil,
   Phone,
@@ -39,13 +40,16 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/components/ui/tooltip";
 import type {
   Booking,
   BookingStatus,
   PaymentMethod,
   PaymentStatus,
 } from "../types";
+import { getBlockLabel, isBlock } from "../utils/booking-helpers";
 import { BookingReceiptPrinter } from "./booking-receipt-printer";
+import { BookingSourceBadge } from "./booking-source-badge";
 
 interface BookingDetailsProps {
   booking: Booking;
@@ -145,45 +149,81 @@ export function BookingDetails({
   const checkOut = new Date(booking.checkOut);
   const nights = differenceInDays(checkOut, checkIn);
 
+  const bookingIsBlock = isBlock(booking);
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <h3 className="text-2xl font-bold tracking-tight text-foreground">
-            {booking.guest.name}
+            {bookingIsBlock ? getBlockLabel(booking.source) : booking.guest!.name}
           </h3>
           <div className="flex items-center gap-2">
-            <Badge variant={status.variant} className={status.className}>
-              {status.label}
-            </Badge>
-            <Badge
-              variant={paymentStatus.variant}
-              className={paymentStatus.className}
-            >
-              <span className="flex items-center gap-1">
-                {paymentStatus.icon}
-                {paymentStatus.label}
-              </span>
-            </Badge>
+            <BookingSourceBadge source={booking.source} />
+            {!bookingIsBlock && (
+              <>
+                <Badge variant={status.variant} className={status.className}>
+                  {status.label}
+                </Badge>
+                <Badge
+                  variant={paymentStatus.variant}
+                  className={paymentStatus.className}
+                >
+                  <span className="flex items-center gap-1">
+                    {paymentStatus.icon}
+                    {paymentStatus.label}
+                  </span>
+                </Badge>
+              </>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <BookingReceiptPrinter booking={booking} innName={innData?.name} />
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onEdit(booking)}
-            title="Editar reserva"
-          >
-            <Pencil className="w-4 h-4" />
-          </Button>
+          {!bookingIsBlock && (
+            <>
+              <BookingReceiptPrinter booking={booking} innName={innData?.name} />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onEdit(booking)}
+                      title="Editar reserva"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                </Tooltip>
+              </TooltipProvider>
+            </>
+          )}
+          {bookingIsBlock && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    disabled
+                    title="Bloqueios não podem ser editados"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Bloqueios não podem ser editados</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
                 className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                title="Excluir reserva"
+                title={bookingIsBlock ? "Excluir bloqueio" : "Excluir reserva"}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -191,11 +231,13 @@ export function BookingDetails({
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>
-                  Tem certeza que deseja excluir esta reserva?
+                  {bookingIsBlock
+                    ? "Tem certeza que deseja excluir este bloqueio?"
+                    : "Tem certeza que deseja excluir esta reserva?"}
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   Essa ação não pode ser desfeita. Isso excluirá permanentemente
-                  a reserva.
+                  {bookingIsBlock ? " o bloqueio" : " a reserva"}.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -209,9 +251,48 @@ export function BookingDetails({
         </div>
       </div>
 
+      {bookingIsBlock && (
+        <Card className="border-2 border-dashed border-muted-foreground/30">
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
+              <LinkIcon className="w-4 h-4 text-primary" />
+              Bloqueio Externo
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Info className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm">
+                  Este período está bloqueado via sincronização com{" "}
+                  <span className="font-semibold">{getBlockLabel(booking.source)}</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Bloqueios não podem ser editados, apenas excluídos.
+                </p>
+              </div>
+            </div>
+
+            {booking.notes && (
+              <div className="mt-4 p-3 bg-muted/50 rounded-lg border border-dashed">
+                <p className="text-xs text-muted-foreground font-medium mb-1">
+                  Observações:
+                </p>
+                <p className="text-sm">
+                  {booking.notes}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Pagamento e Valores */}
-        <Card className="md:col-span-2 overflow-hidden">
+        {!bookingIsBlock && (
+          <Card className="md:col-span-2 overflow-hidden">
           <CardHeader>
             <CardTitle className="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-primary" />
@@ -332,6 +413,7 @@ export function BookingDetails({
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Informações da Reserva */}
         <div className="space-y-6">
@@ -402,6 +484,7 @@ export function BookingDetails({
         </div>
 
         {/* Dados do Hóspede */}
+        {!bookingIsBlock && (
         <div className="space-y-6">
           <div className="space-y-4">
             <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -418,11 +501,11 @@ export function BookingDetails({
                   <p className="text-xs text-muted-foreground font-medium">
                     Telefone
                   </p>
-                  <p className="text-sm font-semibold">{booking.guest.phone}</p>
+                  <p className="text-sm font-semibold">{booking.guest?.phone}</p>
                 </div>
               </div>
 
-              {booking.guest.email && (
+              {booking.guest?.email && (
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <Mail className="w-4 h-4 text-primary" />
@@ -432,13 +515,13 @@ export function BookingDetails({
                       E-mail
                     </p>
                     <p className="text-sm font-semibold">
-                      {booking.guest.email}
+                      {booking.guest?.email}
                     </p>
                   </div>
                 </div>
               )}
 
-              {booking.guest.birthDate && (
+              {booking.guest?.birthDate && (
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <CakeIcon className="w-4 h-4 text-primary" />
@@ -448,13 +531,13 @@ export function BookingDetails({
                       Data de Nascimento
                     </p>
                     <p className="text-sm font-semibold">
-                      {format(new Date(booking.guest.birthDate), "dd/MM/yyyy")}
+                      {format(new Date(booking.guest.birthDate!), "dd/MM/yyyy")}
                     </p>
                   </div>
                 </div>
               )}
 
-              {booking.guest.document && (
+              {booking.guest?.document && (
                 <div className="flex items-start gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <User className="w-4 h-4 text-primary" />
@@ -464,7 +547,7 @@ export function BookingDetails({
                       Documento (CPF/RG)
                     </p>
                     <p className="text-sm font-semibold">
-                      {booking.guest.document}
+                      {booking.guest?.document}
                     </p>
                   </div>
                 </div>
@@ -472,9 +555,10 @@ export function BookingDetails({
             </div>
           </div>
         </div>
+        )}
 
         {/* Observações */}
-        {booking.notes && (
+        {!bookingIsBlock && booking.notes && (
           <div className="md:col-span-2 mt-4">
             <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
               <FileText className="w-4 h-4" />

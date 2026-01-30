@@ -19,6 +19,13 @@ internal sealed class RoomRepository(ApplicationDbContext dbContext) : IRoomRepo
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
+    public async Task<Room?> GetByICalExportTokenAsync(string token, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Rooms
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.ICalExportToken.Value == token, cancellationToken);
+    }
+
     public async Task<List<Room>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Rooms

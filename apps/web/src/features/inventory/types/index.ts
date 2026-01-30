@@ -52,6 +52,7 @@ export interface Room {
   createdAt: string;
   updatedAt: string;
   activeIntegrationsCount?: number;
+  iCalExportToken: string;
 }
 
 export type CreateRoomRequest = {

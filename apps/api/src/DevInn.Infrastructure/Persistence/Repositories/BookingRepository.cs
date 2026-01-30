@@ -27,6 +27,23 @@ internal sealed class BookingRepository(ApplicationDbContext dbContext) : IBooki
         => await dbContext.Bookings
             .FirstOrDefaultAsync(x => x.ExternalId == externalId, cancellationToken);
 
+    public async Task<IReadOnlyCollection<Booking>> GetByChannelIntegrationIdAsync(
+        Guid channelIntegrationId,
+        DateTimeOffset? checkOutAfter = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = dbContext.Bookings
+            .Where(b => b.ChannelIntegrationId == channelIntegrationId 
+                        && b.Status != BookingStatus.Canceled);
+
+        if (checkOutAfter.HasValue)
+        {
+            query = query.Where(b => b.StayPeriod.CheckOut >= checkOutAfter.Value);
+        }
+        
+        return await query.ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> HasOverlappingAsync(Guid roomId, DateTimeOffset checkIn, DateTimeOffset checkOut,
         Guid? excludeBookingId = null,
         CancellationToken cancellationToken = default)

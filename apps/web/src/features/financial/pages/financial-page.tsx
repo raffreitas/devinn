@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useBookings } from "@/features/bookings/hooks/use-booking";
+import { getBlockLabel } from "@/features/bookings/utils/booking-helpers";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
 import { Badge } from "@/shared/components/ui/badge";
@@ -237,7 +238,7 @@ export function FinancialPage() {
                     {bookings.map((booking) => (
                       <TableRow key={booking.id} className="px-4">
                         <TableCell className="pl-6 font-medium py-4">
-                          {booking.guest.name}
+                          {booking.guest?.name || getBlockLabel(booking.source)}
                         </TableCell>
                         <TableCell className="text-center font-mono text-xs">
                           {booking.number}

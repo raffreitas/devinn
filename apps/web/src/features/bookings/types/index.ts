@@ -12,6 +12,12 @@ export type PaymentMethod =
   | "DebitCard"
   | "CreditCard"
   | "BankTransfer";
+export type BookingSource =
+  | "Manual"
+  | "BookingApi"
+  | "BookingIcal"
+  | "AirbnbIcal"
+  | "DirectWebsite";
 
 export interface Guest {
   name: string;
@@ -45,7 +51,8 @@ export interface Booking {
   roomId: string;
   number: string;
   categoryName: string;
-  guest: Guest;
+  guest: Guest | null;
+  source: BookingSource;
   checkIn: Date;
   checkOut: Date;
   adults: number;
@@ -100,6 +107,8 @@ export interface BookingFilters {
 
 export function mapToFormData(dto?: Booking): BookingFormData | undefined {
   if (!dto) return undefined;
+  if (!dto.guest) return undefined; // Blocks cannot be edited
+  
   return {
     adults: dto.adults,
     children: dto.children,

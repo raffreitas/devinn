@@ -12,13 +12,14 @@ public sealed class Booking : Entity
     private readonly List<Payment> _payments = [];
 
     public Guid RoomId { get; private set; }
-    public Guest Guest { get; private set; } = null!;
+    public Guest? Guest { get; private set; }
     public StayPeriod StayPeriod { get; private set; }
-    public Occupancy Occupancy { get; private set; } = null!;
+    public Occupancy? Occupancy { get; private set; }
     public string? Notes { get; private set; }
     public Money TotalValue { get; private set; }
     public BookingSource Source { get; private set; }
     public BookingStatus Status { get; private set; }
+    public CancellationReason? CancellationReason { get; private set; }
     public string? ExternalId { get; private set; }
     public Guid? ChannelIntegrationId { get; private set; }
     public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
@@ -26,6 +27,9 @@ public sealed class Booking : Entity
     public Money PaidValue => new(_payments.Sum(p => p.Amount.Value));
     public decimal BalanceDue => TotalValue - PaidValue;
     public PaymentStatus PaymentStatus => CalculatePaymentStatus();
+    
+    public bool IsBlock => Guest is null;
+    public bool IsRealBooking => Guest is not null;
 
     private Booking()
     {
@@ -33,9 +37,9 @@ public sealed class Booking : Entity
 
     public Booking(
         Guid roomId,
-        Guest guest,
+        Guest? guest,
         StayPeriod stayPeriod,
-        Occupancy occupancy,
+        Occupancy? occupancy,
         Money totalValue,
         BookingSource source,
         string? notes = null,
@@ -56,14 +60,17 @@ public sealed class Booking : Entity
 
     public void Update(
         Guid roomId,
-        Guest guest,
+        Guest? guest,
         StayPeriod stayPeriod,
-        Occupancy occupancy,
+        Occupancy? occupancy,
         Money totalValue,
         BookingSource source,
         string? notes = null)
     {
-        if (Status == BookingStatus.Canceled || Status == BookingStatus.CheckedIn || Status == BookingStatus.Completed)
+        if (IsBlock)
+            throw new DomainException("Bloqueios não podem ser editados. Apenas exclua e recrie se necessário.");
+        
+        if (Status is BookingStatus.Canceled or BookingStatus.CheckedIn || Status == BookingStatus.Completed)
             throw new DomainException("Não é possível alterar uma reserva que não está em estado agendado.");
 
         RoomId = roomId;
@@ -77,6 +84,9 @@ public sealed class Booking : Entity
 
     public void AddPayment(Money amount, PaymentMethod method, DateTimeOffset paymentDate, string? notes = null)
     {
+        if (IsBlock)
+            throw new DomainException("Não é possível adicionar pagamentos a bloqueios.");
+        
         if (amount <= 0)
             throw new DomainException("O valor do pagamento deve ser maior que zero.");
 
@@ -87,6 +97,18 @@ public sealed class Booking : Entity
     public void ClearPayments()
     {
         _payments.Clear();
+    }
+
+    public void Cancel(CancellationReason reason)
+    {
+        if (Status == BookingStatus.Canceled)
+            return; // Already canceled, idempotent operation
+
+        if (Status == BookingStatus.Completed)
+            throw new DomainException("Não é possível cancelar uma reserva já concluída.");
+
+        Status = BookingStatus.Canceled;
+        CancellationReason = reason;
     }
 
     private PaymentStatus CalculatePaymentStatus()

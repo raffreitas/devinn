@@ -1,6 +1,7 @@
-import { AlertCircle, Check } from "lucide-react";
+import { AlertCircle, Check, Link, Lock } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { Booking, PaymentStatus } from "../types";
+import { getBlockLabel, isBlock } from "../utils/booking-helpers";
 
 const paymentStatusColors: Record<PaymentStatus, string> = {
   Paid: "bg-emerald-500 hover:bg-emerald-600",
@@ -21,13 +22,26 @@ export function ReservationBar({
   left,
   width,
 }: ReservationBarProps) {
-  const remaining = booking.pricing.total - booking.totalPaid;
+  const bookingIsBlock = isBlock(booking);
+  const remaining = bookingIsBlock ? 0 : booking.pricing.total - booking.totalPaid;
+  
+  const barColor = bookingIsBlock
+    ? "bg-gray-400/80 hover:bg-gray-500"
+    : paymentStatusColors[booking.paymentStatus];
+  
+  const label = bookingIsBlock
+    ? getBlockLabel(booking.source)
+    : booking.guest!.name;
+  
+  const tooltip = bookingIsBlock
+    ? `Período bloqueado via ${getBlockLabel(booking.source)}. Não editável.`
+    : `${booking.guest!.name} - ${remaining > 0 ? `Falta: ${remaining.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : "Pago"}`;
 
   return (
     <div
       className={cn(
         "absolute top-2 h-10 text-white rounded-md cursor-pointer transition-all flex items-center justify-between px-2 overflow-hidden shadow-sm group",
-        paymentStatusColors[booking.paymentStatus],
+        barColor,
       )}
       style={{
         left:
@@ -47,13 +61,19 @@ export function ReservationBar({
         e.stopPropagation();
         onClick?.();
       }}
-      title={`${booking.guest.name} - ${remaining > 0 ? `Falta: ${remaining.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : "Pago"}`}
+      title={tooltip}
     >
       <span className="text-xs font-medium truncate flex-1">
-        {booking.guest.name}
+        {label}
       </span>
       <div className="flex items-center gap-0.5 ml-1">
-        {remaining <= 0 ? (
+        {bookingIsBlock ? (
+          booking.source.includes("Ical") ? (
+            <Link className="w-3 h-3" />
+          ) : (
+            <Lock className="w-3 h-3" />
+          )
+        ) : remaining <= 0 ? (
           <Check className="w-3 h-3" />
         ) : (
           <AlertCircle className="w-3 h-3" />

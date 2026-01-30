@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { ICalPopover } from "../components/ical-popover";
 import { RoomForm } from "../components/room-form";
 import { statusDisplayConfig } from "../constants/room-status";
 import {
@@ -222,7 +223,12 @@ export function RoomsPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-end gap-1">
+                            <ICalPopover
+                              roomName={room.description || ""}
+                              roomNumber={room.number}
+                              iCalExportToken={room.iCalExportToken}
+                            />
                             <Button
                               variant="ghost"
                               size="icon"

@@ -56,6 +56,7 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                                   b.total_value             AS "TotalValue",
                                   COALESCE((SELECT SUM(amount) FROM payments WHERE booking_id = b.id), 0) AS "PaidValue",
                                   b.status                  AS "Status",
+                                  b.source                  AS "Source",
                                   b.notes                   AS "Notes"
                            FROM bookings b
                            JOIN rooms r ON r.id = b.room_id AND r.inn_id = b.inn_id
@@ -130,7 +131,11 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
             var pricing = new PricingBreakdown(r.BasePrice, r.ExtraPersonPrice, nights, numberOfExtraGuests,
                 r.TotalValue, 0m, r.TotalValue);
 
-            var guest = new GuestDto(r.GuestName, r.GuestPhone, r.GuestEmail, r.GuestDocument, r.GuestBirthDate);
+            GuestDto? guest = null;
+            if (!string.IsNullOrWhiteSpace(r.GuestName) && !string.IsNullOrWhiteSpace(r.GuestPhone))
+            {
+                guest = new GuestDto(r.GuestName, r.GuestPhone, r.GuestEmail, r.GuestDocument, r.GuestBirthDate);
+            }
 
             itemsList.Add(new BookingDto(
                 r.Id,
@@ -138,6 +143,7 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                 r.Number.ToString(),
                 r.CategoryName,
                 guest,
+                Enum.Parse<BookingSource>(r.Source),
                 r.CheckIn,
                 r.CheckOut,
                 r.Adults,

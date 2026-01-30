@@ -42,8 +42,11 @@ internal sealed class ICalSyncService(
             await uow.CommitAsync(cancellationToken);
 
             var events = await iCalService.ParseICalFeedAsync(integration.ICalUrl, cancellationToken);
+            var iCalEventUids = events.Select(e => e.Uid).ToHashSet();
+
             var importedCount = 0;
 
+            // Process new/existing iCal events
             foreach (var iCalEvent in events)
             {
                 try
@@ -58,12 +61,16 @@ internal sealed class ICalSyncService(
                 }
             }
 
+            // Reconcile: cancel bookings that no longer exist in iCal feed
+            var canceledCount = await ReconcileBookingsAsync(integration.Id, iCalEventUids, cancellationToken);
+
             var nextSync = DateTimeOffset.UtcNow.AddHours(3);
             integration.MarkSyncSuccess(importedCount, nextSync);
             await uow.CommitAsync(cancellationToken);
 
-            logger.LogInformation("Successfully synced {Count} bookings for integration {IntegrationId}",
-                importedCount, integrationId);
+            logger.LogInformation(
+                "Successfully synced integration {IntegrationId}: {ImportedCount} imported, {CanceledCount} canceled",
+                integrationId, importedCount, canceledCount);
 
             return importedCount;
         }
@@ -74,6 +81,39 @@ internal sealed class ICalSyncService(
             await uow.CommitAsync(cancellationToken);
             throw;
         }
+    }
+
+    private async Task<int> ReconcileBookingsAsync(
+        Guid integrationId,
+        HashSet<string> iCalEventUids,
+        CancellationToken cancellationToken)
+    {
+        // Only reconcile bookings from last 30 days + future to optimize performance
+        var cutoffDate = DateTimeOffset.UtcNow.AddDays(-30);
+        var existingBookings = await bookingRepository.GetByChannelIntegrationIdAsync(
+            integrationId,
+            checkOutAfter: cutoffDate,
+            cancellationToken);
+
+        var bookingsToCancel = existingBookings
+            .Where(b => b.ExternalId != null && !iCalEventUids.Contains(b.ExternalId))
+            .ToList();
+
+        foreach (var booking in bookingsToCancel)
+        {
+            booking.Cancel(CancellationReason.ExternalCancellation);
+
+            logger.LogInformation(
+                "Canceled booking {BookingId} (ExternalId: {ExternalId}) for room {RoomId} - no longer in iCal feed",
+                booking.Id, booking.ExternalId, booking.RoomId);
+        }
+
+        if (bookingsToCancel.Count > 0)
+        {
+            await uow.CommitAsync(cancellationToken);
+        }
+
+        return bookingsToCancel.Count;
     }
 
     private async Task ProcessICalEventAsync(
@@ -105,30 +145,26 @@ internal sealed class ICalSyncService(
             return;
         }
 
-        // Create booking from iCal event
+        // Create booking from iCal event (blocks, not real bookings)
         var source = integration.ChannelType == Domain.Aggregates.Integrations.Enums.ChannelType.Booking
             ? BookingSource.BookingIcal
             : BookingSource.AirbnbIcal;
 
-        var guest = new Guest(
-            Name: iCalEvent.Summary,
-            Phone: "N/A", // iCal doesn't provide phone
-            Email: null,
-            Document: null,
-            BirthDate: null
-        );
-
         var stay = new StayPeriod(iCalEvent.Start, iCalEvent.End);
-        var occupancy = new Occupancy(1, 0, null); // iCal doesn't provide occupancy details
+
+        // Store iCal summary in notes (e.g., "CLOSED - Not available")
+        var notes = string.IsNullOrWhiteSpace(iCalEvent.Description)
+            ? iCalEvent.Summary
+            : $"{iCalEvent.Summary}\n{iCalEvent.Description}";
 
         var booking = new Booking(
             roomId: integration.RoomId,
-            guest: guest,
+            guest: null, // Blocks don't have guest information
             stayPeriod: stay,
-            occupancy: occupancy,
+            occupancy: null,
             totalValue: new Money(0), // iCal doesn't provide pricing
             source: source,
-            notes: iCalEvent.Description,
+            notes: notes,
             externalId: iCalEvent.Uid,
             channelIntegrationId: integration.Id
         );
