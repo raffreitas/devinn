@@ -93,9 +93,9 @@ internal sealed class GetRoomICalFeedHandler(
             {
                 InnId = innId,
                 RoomId = roomId,
-                BookingIcal = BookingSource.BookingIcal.ToString(),
-                AirbnbIcal = BookingSource.AirbnbIcal.ToString(),
-                CanceledStatus = BookingStatus.Canceled.ToString(),
+                BookingIcal = nameof(BookingSource.BookingIcal),
+                AirbnbIcal = nameof(BookingSource.AirbnbIcal),
+                CanceledStatus = nameof(BookingStatus.Canceled),
                 StartWindow = startWindow,
                 EndWindow = endWindow
             });
@@ -113,7 +113,7 @@ internal sealed class GetRoomICalFeedHandler(
 
     private sealed record BookingProjection(
         Guid Id,
-        DateTimeOffset CheckIn,
-        DateTimeOffset CheckOut,
+        DateTime CheckIn,
+        DateTime CheckOut,
         string Status);
 }

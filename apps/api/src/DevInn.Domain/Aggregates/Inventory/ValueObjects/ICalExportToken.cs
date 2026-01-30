@@ -6,6 +6,8 @@ namespace DevInn.Domain.Aggregates.Inventory.ValueObjects;
 
 public sealed record ICalExportToken : IValueObject
 {
+    private const int InnIdEncodedLength = 22;
+
     public string Value { get; private init; }
 
     private ICalExportToken(string value)
@@ -22,17 +24,11 @@ public sealed record ICalExportToken : IValueObject
     public static ICalExportToken Generate(Guid innId)
     {
         var randomBytes = RandomNumberGenerator.GetBytes(24);
-        var randomPart = Convert.ToBase64String(randomBytes)
-            .Replace("+", "")
-            .Replace("/", "")
-            .Replace("=", "");
+        var randomPart = Base64UrlEncode(randomBytes);
 
         // Encode innId into the token (first 22 chars = base64url(innId))
         var innIdBytes = innId.ToByteArray();
-        var innIdPart = Convert.ToBase64String(innIdBytes)
-            .Replace("+", "")
-            .Replace("/", "")
-            .Replace("=", "");
+        var innIdPart = Base64UrlEncode(innIdBytes);
 
         var token = $"{innIdPart}{randomPart}";
 
@@ -49,16 +45,18 @@ public sealed record ICalExportToken : IValueObject
         try
         {
             // First 22 chars are the base64url-encoded innId
-            var innIdPart = Value[..22];
+            if (Value.Length < InnIdEncodedLength)
+                throw new DomainException("Token de exportação iCal inválido.");
 
-            // Add padding if needed for base64 decoding
-            var padding = (4 - (innIdPart.Length % 4)) % 4;
-            var base64 = innIdPart + new string('=', padding);
-
-            var innIdBytes = Convert.FromBase64String(base64);
+            var innIdPart = Value[..InnIdEncodedLength];
+            var innIdBytes = Base64UrlDecode(innIdPart);
             return new Guid(innIdBytes);
         }
-        catch
+        catch (FormatException)
+        {
+            throw new DomainException("Token de exportação iCal inválido.");
+        }
+        catch (ArgumentException)
         {
             throw new DomainException("Token de exportação iCal inválido.");
         }
@@ -67,4 +65,22 @@ public sealed record ICalExportToken : IValueObject
     public override string ToString() => Value;
 
     public static implicit operator string(ICalExportToken token) => token.Value;
+
+    private static string Base64UrlEncode(byte[] bytes)
+    {
+        return Convert.ToBase64String(bytes)
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
+    }
+
+    private static byte[] Base64UrlDecode(string value)
+    {
+        var base64 = value.Replace('-', '+').Replace('_', '/');
+        var padding = (4 - (base64.Length % 4)) % 4;
+        if (padding > 0)
+            base64 += new string('=', padding);
+
+        return Convert.FromBase64String(base64);
+    }
 }
