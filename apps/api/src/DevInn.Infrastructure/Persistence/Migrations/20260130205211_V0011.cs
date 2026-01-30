@@ -20,6 +20,10 @@ namespace DevInn.Infrastructure.Persistence.Migrations
 
             migrationBuilder.Sql(
                 """
+                update rooms
+                set ical_export_token = substring(md5(random()::text || clock_timestamp()::text) from 1 for 64)
+                where ical_export_token = '';
+
                 create unique index idx_rooms_ical_export_token
                 on rooms (ical_export_token);
                 """);
