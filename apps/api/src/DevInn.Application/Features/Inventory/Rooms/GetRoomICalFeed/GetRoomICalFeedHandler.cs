@@ -20,26 +20,22 @@ internal sealed class GetRoomICalFeedHandler(
 {
     public async ValueTask<Result<string>> Handle(GetRoomICalFeedQuery query, CancellationToken cancellationToken)
     {
-        // Extract innId from token
-        Guid innId;
+        // Validate token format
         try
         {
-            var token = ICalExportToken.FromString(query.ExportToken);
-            innId = token.ExtractInnId();
+            _ = ICalExportToken.FromString(query.ExportToken);
         }
         catch
         {
-            // Invalid token format
             return Result.Fail(new NotFoundError("Feed iCal não encontrado."));
         }
 
-        // Query room directly without tenant filter (using raw SQL)
-        var room = await GetRoomByTokenAsync(query.ExportToken, innId, cancellationToken);
+        var room = await GetRoomByTokenAsync(query.ExportToken, cancellationToken);
         if (room is null)
             return Result.Fail(new NotFoundError("Feed iCal não encontrado."));
 
         // Query bookings for this room
-        var events = await GetRoomBookingsAsync(room.Id, innId, cancellationToken);
+        var events = await GetRoomBookingsAsync(room.Id, room.InnId, cancellationToken);
         var roomName = room.Name ?? $"Quarto {room.Number}";
 
         return await iCalExportService.GenerateICalFeedAsync(roomName, events, cancellationToken);
@@ -47,21 +43,20 @@ internal sealed class GetRoomICalFeedHandler(
 
     private async Task<RoomProjection?> GetRoomByTokenAsync(
         string token,
-        Guid innId,
         CancellationToken cancellationToken)
     {
         const string sql = """
                            SELECT r.id     AS "Id",
+                                  r.inn_id AS "InnId",
                                   r.number AS "Number",
                                   r.name   AS "Name"
                            FROM rooms r
                            WHERE r.ical_export_token = @Token
-                             AND r.inn_id = @InnId
                            LIMIT 1;
                            """;
 
         await using var connection = await dbConnectionFactory.OpenConnectionAsync(cancellationToken);
-        return await connection.QueryFirstOrDefaultAsync<RoomProjection>(sql, new { Token = token, InnId = innId });
+        return await connection.QueryFirstOrDefaultAsync<RoomProjection>(sql, new { Token = token });
     }
 
     private async Task<IEnumerable<ICalEventDto>> GetRoomBookingsAsync(
@@ -109,7 +104,7 @@ internal sealed class GetRoomICalFeedHandler(
         ));
     }
 
-    private sealed record RoomProjection(Guid Id, int Number, string? Name);
+    private sealed record RoomProjection(Guid Id, Guid InnId, int Number, string? Name);
 
     private sealed record BookingProjection(
         Guid Id,

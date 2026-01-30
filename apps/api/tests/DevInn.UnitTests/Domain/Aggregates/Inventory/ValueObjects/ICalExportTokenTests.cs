@@ -10,25 +10,20 @@ namespace DevInn.UnitTests.Domain.Aggregates.Inventory.ValueObjects;
 public sealed class ICalExportTokenTests
 {
     [Fact]
-    public void ExtractInnId_ShouldReturnInnId_WhenTokenWasGenerated()
+    public void Generate_ShouldReturnTokenWithMinimumLength()
     {
         // Arrange
-        var innId = Guid.CreateVersion7();
-        var token = ICalExportToken.Generate(innId);
-
-        // Act
-        var extracted = token.ExtractInnId();
+        var token = ICalExportToken.Generate();
 
         // Assert
-        extracted.ShouldBe(innId);
+        token.Value.Length.ShouldBeGreaterThanOrEqualTo(32);
     }
 
     [Fact]
-    public void ExtractInnId_ShouldThrow_WhenTokenTooShort()
+    public void Constructor_ShouldThrow_WhenTokenTooShort()
     {
         // Act & Assert
-        var invalidToken = new string('!', 32);
-        Should.Throw<DomainException>(() => ICalExportToken.FromString(invalidToken).ExtractInnId())
-            .Message.ShouldBe("Token de exportação iCal inválido.");
+        Should.Throw<DomainException>(() => ICalExportToken.FromString("short"))
+            .Message.ShouldBe("Token de exportação iCal deve ter pelo menos 32 caracteres.");
     }
 }

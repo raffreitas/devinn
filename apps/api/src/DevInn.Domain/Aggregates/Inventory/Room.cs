@@ -28,18 +28,7 @@ public sealed class Room : Entity
         Number = number;
         Name = name;
         Status = status ?? RoomStatus.Active;
-        ICalExportToken = ICalExportToken.FromString(Guid.Empty.ToString());
-    }
-
-    public override void SetTenantId(Guid innId)
-    {
-        base.SetTenantId(innId);
-
-        // Generate token now that we have InnId
-        if (ICalExportToken.Value == Guid.Empty.ToString())
-        {
-            ICalExportToken = ICalExportToken.Generate(innId);
-        }
+        ICalExportToken = ICalExportToken.Generate();
     }
 
     public void Update(
@@ -61,6 +50,6 @@ public sealed class Room : Entity
         if (InnId == Guid.Empty)
             throw new DomainException("Não é possível regenerar token sem InnId definido.");
 
-        ICalExportToken = ICalExportToken.Generate(InnId);
+        ICalExportToken = ICalExportToken.Generate();
     }
 }
