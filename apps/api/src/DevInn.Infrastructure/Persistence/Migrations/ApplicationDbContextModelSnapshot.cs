@@ -29,6 +29,11 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("cancellation_reason");
+
                     b.Property<Guid?>("ChannelIntegrationId")
                         .HasColumnType("uuid")
                         .HasColumnName("channel_integration_id");
@@ -110,6 +115,9 @@ namespace DevInn.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RoomId")
                         .HasDatabaseName("ix_bookings_room_id");
+
+                    b.HasIndex("Source")
+                        .HasDatabaseName("ix_bookings_source");
 
                     b.ToTable("bookings", (string)null);
                 });
@@ -587,11 +595,9 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                                 .HasConstraintName("fk_bookings_bookings_id");
                         });
 
-                    b.Navigation("Guest")
-                        .IsRequired();
+                    b.Navigation("Guest");
 
-                    b.Navigation("Occupancy")
-                        .IsRequired();
+                    b.Navigation("Occupancy");
                 });
 
             modelBuilder.Entity("DevInn.Domain.Aggregates.Bookings.Entities.Payment", b =>

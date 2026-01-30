@@ -22,6 +22,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.Property(b => b.RoomId).IsRequired();
         builder.Property(b => b.Notes).HasMaxLength(1000);
         builder.Property(b => b.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
+        builder.Property(b => b.CancellationReason).HasConversion<string>().HasMaxLength(30);
         builder.Property(b => b.Source).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(b => b.TotalValue).HasPrecision(18, 2).IsRequired();
         builder.Property(b => b.ExternalId).HasMaxLength(255);

@@ -14,11 +14,12 @@ public sealed class Booking : Entity
     public Guid RoomId { get; private set; }
     public Guest? Guest { get; private set; }
     public StayPeriod StayPeriod { get; private set; }
-    public Occupancy? Occupancy { get; private set; };
+    public Occupancy? Occupancy { get; private set; }
     public string? Notes { get; private set; }
     public Money TotalValue { get; private set; }
     public BookingSource Source { get; private set; }
     public BookingStatus Status { get; private set; }
+    public CancellationReason? CancellationReason { get; private set; }
     public string? ExternalId { get; private set; }
     public Guid? ChannelIntegrationId { get; private set; }
     public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
@@ -96,6 +97,18 @@ public sealed class Booking : Entity
     public void ClearPayments()
     {
         _payments.Clear();
+    }
+
+    public void Cancel(CancellationReason reason)
+    {
+        if (Status == BookingStatus.Canceled)
+            return; // Already canceled, idempotent operation
+
+        if (Status == BookingStatus.Completed)
+            throw new DomainException("Não é possível cancelar uma reserva já concluída.");
+
+        Status = BookingStatus.Canceled;
+        CancellationReason = reason;
     }
 
     private PaymentStatus CalculatePaymentStatus()
