@@ -1,4 +1,4 @@
-import { Filter, Link2, Pencil, Plus } from "lucide-react";
+import { Filter, Link2, Pencil, Plus, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
@@ -29,6 +29,7 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { RoomForm } from "../components/room-form";
+import { ICalExportCard } from "../components/ical-export-card";
 import { statusDisplayConfig } from "../constants/room-status";
 import {
   useCreateRoom,
@@ -41,6 +42,7 @@ import type { Room, RoomFormData, RoomStatus } from "../types";
 export function RoomsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
+  const [expandedRoomId, setExpandedRoomId] = useState<string | null>(null);
 
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<RoomStatus | "all">("all");
@@ -75,6 +77,10 @@ export function RoomsPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedRoom(undefined);
+  };
+
+  const toggleExpand = (roomId: string) => {
+    setExpandedRoomId(expandedRoomId === roomId ? null : roomId);
   };
 
   return (
@@ -168,6 +174,7 @@ export function RoomsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12"></TableHead>
                       <TableHead className="w-20">Nº</TableHead>
                       <TableHead>Categoria</TableHead>
                       <TableHead className="hidden sm:table-cell">
@@ -185,55 +192,82 @@ export function RoomsPage() {
                   </TableHeader>
                   <TableBody>
                     {rooms.items.map((room) => (
-                      <TableRow key={room.id}>
-                        <TableCell className="font-medium">
-                          {room.number}
-                        </TableCell>
-                        <TableCell>{room.categoryName}</TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {room.capacity} pessoas
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          R$ {room.basePrice.toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={statusDisplayConfig[room.status].variant}
-                          >
-                            {statusDisplayConfig[room.status].label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {room.activeIntegrationsCount &&
-                          room.activeIntegrationsCount > 0 ? (
-                            <Link to={`/integrations?roomId=${room.id}`}>
-                              <Badge
-                                variant="secondary"
-                                className="gap-1 cursor-pointer hover:bg-secondary/80"
-                              >
-                                <Link2 className="h-3 w-3" />
-                                {room.activeIntegrationsCount}
-                              </Badge>
-                            </Link>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">
-                              -
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
+                      <>
+                        <TableRow key={room.id}>
+                          <TableCell>
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleEdit(room)}
+                              onClick={() => toggleExpand(room.id)}
+                              className="h-6 w-6"
                             >
-                              <Pencil className="h-4 w-4" />
-                              <span className="sr-only">Editar</span>
+                              {expandedRoomId === room.id ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
                             </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {room.number}
+                          </TableCell>
+                          <TableCell>{room.categoryName}</TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                            {room.capacity} pessoas
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            R$ {room.basePrice.toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={statusDisplayConfig[room.status].variant}
+                            >
+                              {statusDisplayConfig[room.status].label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">
+                            {room.activeIntegrationsCount &&
+                            room.activeIntegrationsCount > 0 ? (
+                              <Link to={`/integrations?roomId=${room.id}`}>
+                                <Badge
+                                  variant="secondary"
+                                  className="gap-1 cursor-pointer hover:bg-secondary/80"
+                                >
+                                  <Link2 className="h-3 w-3" />
+                                  {room.activeIntegrationsCount}
+                                </Badge>
+                              </Link>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                -
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(room)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                                <span className="sr-only">Editar</span>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                        {expandedRoomId === room.id && (
+                          <TableRow>
+                            <TableCell colSpan={8} className="bg-muted/50 p-4">
+                              <ICalExportCard
+                                roomName={room.description || ""}
+                                roomNumber={room.number}
+                                iCalExportToken={room.iCalExportToken}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </>
                     ))}
                   </TableBody>
                 </Table>

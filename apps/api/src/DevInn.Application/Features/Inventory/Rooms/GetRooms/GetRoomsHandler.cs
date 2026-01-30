@@ -34,7 +34,8 @@ internal sealed class GetRoomsHandler(IDbConnectionFactory dbConnectionFactory, 
                                    rc.max_capacity           AS "{nameof(RoomResponse.Capacity)}",
                                    rc.base_price             AS "{nameof(RoomResponse.BasePrice)}",
                                    rc.person_price           AS "{nameof(RoomResponse.ExtraGuestPrice)}",
-                                   COALESCE(ci_count.total, 0) AS "{nameof(RoomResponse.ActiveIntegrationsCount)}"
+                                   COALESCE(ci_count.total, 0) AS "{nameof(RoomResponse.ActiveIntegrationsCount)}",
+                                   r.ical_export_token       AS "{nameof(RoomResponse.ICalExportToken)}"
                             FROM rooms r
                             JOIN room_categories rc ON r.category_id = rc.Id
                                 AND rc.inn_id = r.inn_id

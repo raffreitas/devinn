@@ -18,6 +18,16 @@ internal sealed class RoomConfiguration : IEntityTypeConfiguration<Room>
         builder.Property(r => r.Name).HasMaxLength(100);
         builder.Property(r => r.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
 
+        builder.ComplexProperty(r => r.ICalExportToken, token =>
+        {
+            token.Property(t => t.Value)
+                .HasColumnName("ical_export_token")
+                .IsRequired()
+                .HasMaxLength(64);
+
+            token.Property(t => t.Value);
+        });
+
         builder.HasOne<RoomCategory>()
             .WithMany()
             .HasForeignKey(r => r.CategoryId)

@@ -55,6 +55,7 @@ public static class DependencyInjection
         // External Services
         services.AddHttpClient();
         services.AddScoped<IICalService, ICalService>();
+        services.AddScoped<IICalExportService, ICalExportService>();
 
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentNames.Development)
         {

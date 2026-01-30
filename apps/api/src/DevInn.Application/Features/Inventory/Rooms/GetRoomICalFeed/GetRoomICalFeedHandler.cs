@@ -1,0 +1,119 @@
+using DevInn.Application.Common.Data.Abstractions;
+using DevInn.Application.Common.ICal.Abstractions;
+using DevInn.Domain.Aggregates.Bookings.Enums;
+using DevInn.Domain.Aggregates.Inventory.ValueObjects;
+
+using Dapper;
+
+using DevInn.Application.Common.Errors;
+
+using FluentResults;
+
+using Mediator;
+
+namespace DevInn.Application.Features.Inventory.Rooms.GetRoomICalFeed;
+
+internal sealed class GetRoomICalFeedHandler(
+    IDbConnectionFactory dbConnectionFactory,
+    IICalExportService iCalExportService)
+    : IQueryHandler<GetRoomICalFeedQuery, Result<string>>
+{
+    public async ValueTask<Result<string>> Handle(GetRoomICalFeedQuery query, CancellationToken cancellationToken)
+    {
+        // Extract innId from token
+        Guid innId;
+        try
+        {
+            var token = ICalExportToken.FromString(query.ExportToken);
+            innId = token.ExtractInnId();
+        }
+        catch
+        {
+            // Invalid token format
+            return Result.Fail(new NotFoundError("Feed iCal não encontrado."));
+        }
+
+        // Query room directly without tenant filter (using raw SQL)
+        var room = await GetRoomByTokenAsync(query.ExportToken, innId, cancellationToken);
+        if (room is null)
+            return Result.Fail(new NotFoundError("Feed iCal não encontrado."));
+
+        // Query bookings for this room
+        var events = await GetRoomBookingsAsync(room.Id, innId, cancellationToken);
+        var roomName = room.Name ?? $"Quarto {room.Number}";
+
+        return await iCalExportService.GenerateICalFeedAsync(roomName, events, cancellationToken);
+    }
+
+    private async Task<RoomProjection?> GetRoomByTokenAsync(
+        string token,
+        Guid innId,
+        CancellationToken cancellationToken)
+    {
+        const string sql = """
+                           SELECT r.id     AS "Id",
+                                  r.number AS "Number",
+                                  r.name   AS "Name"
+                           FROM rooms r
+                           WHERE r.ical_export_token = @Token
+                             AND r.inn_id = @InnId
+                           LIMIT 1;
+                           """;
+
+        await using var connection = await dbConnectionFactory.OpenConnectionAsync(cancellationToken);
+        return await connection.QueryFirstOrDefaultAsync<RoomProjection>(sql, new { Token = token, InnId = innId });
+    }
+
+    private async Task<IEnumerable<ICalEventDto>> GetRoomBookingsAsync(
+        Guid roomId,
+        Guid innId,
+        CancellationToken cancellationToken)
+    {
+        const string sql = """
+                           SELECT b.id         AS "Id",
+                                  b.check_in   AS "CheckIn",
+                                  b.check_out  AS "CheckOut",
+                                  b.status     AS "Status"
+                           FROM bookings b
+                           WHERE b.inn_id = @InnId
+                             AND b.room_id = @RoomId
+                             AND b.source NOT IN (@BookingIcal, @AirbnbIcal)
+                             AND b.status != @CanceledStatus
+                             AND b.check_out >= @StartWindow
+                             AND b.check_in <= @EndWindow
+                           ORDER BY b.check_in;
+                           """;
+
+        var startWindow = DateTimeOffset.UtcNow.AddDays(-30);
+        var endWindow = DateTimeOffset.UtcNow.AddDays(365);
+
+        await using var connection = await dbConnectionFactory.OpenConnectionAsync(cancellationToken);
+        var bookings = await connection.QueryAsync<BookingProjection>(sql,
+            new
+            {
+                InnId = innId,
+                RoomId = roomId,
+                BookingIcal = BookingSource.BookingIcal.ToString(),
+                AirbnbIcal = BookingSource.AirbnbIcal.ToString(),
+                CanceledStatus = BookingStatus.Canceled.ToString(),
+                StartWindow = startWindow,
+                EndWindow = endWindow
+            });
+
+        return bookings.Select(b => new ICalEventDto(
+            Uid: b.Id.ToString(),
+            Summary: "Reservado",
+            Start: b.CheckIn,
+            End: b.CheckOut,
+            Description: null
+        ));
+    }
+
+    private sealed record RoomProjection(Guid Id, int Number, string? Name);
+
+    private sealed record BookingProjection(
+        Guid Id,
+        DateTimeOffset CheckIn,
+        DateTimeOffset CheckOut,
+        string Status);
+}

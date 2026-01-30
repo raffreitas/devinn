@@ -19,7 +19,8 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
             "/health",
             "/scalar",
             "/openapi",
-            "/api/v1/auth/login"
+            "/api/v1/auth/login",
+            "/api/ical"
         ];
         if (publicPaths.Any(path => context.Request.Path.StartsWithSegments(path, StringComparison.OrdinalIgnoreCase)))
         {

@@ -440,6 +440,17 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "ICalExportToken", "DevInn.Domain.Aggregates.Inventory.Room.ICalExportToken#ICalExportToken", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(64)
+                                .HasColumnType("character varying(64)")
+                                .HasColumnName("ical_export_token");
+                        });
+
                     b.HasKey("Id")
                         .HasName("pk_rooms");
 
