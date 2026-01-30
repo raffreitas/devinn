@@ -14,7 +14,6 @@ public sealed class Room : Entity
 
     private Room()
     {
-        ICalExportToken = ICalExportToken.FromString(Guid.Empty.ToString());
     }
 
     public Room(
