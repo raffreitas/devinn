@@ -46,7 +46,7 @@ internal sealed class SyncAllChannelsJob(
                 var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
                 var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-                tenantContext.SetTenant(new Tenant(integration.Id));
+                tenantContext.SetTenant(new Tenant(integration.InnId));
 
                 var command = new SyncChannelIntegrationCommand(integration.Id);
                 var result = await sender.Send(command, context.CancellationToken);
