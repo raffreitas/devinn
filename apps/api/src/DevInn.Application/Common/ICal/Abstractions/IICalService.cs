@@ -2,7 +2,7 @@ namespace DevInn.Application.Common.ICal.Abstractions;
 
 public interface IICalService
 {
-    Task<IEnumerable<ICalEventDto>> ParseICalFeedAsync(string iCalUrl, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ICalEventDto>> ParseICalFeedAsync(string iCalUrl, CancellationToken cancellationToken = default);
 }
 
 public sealed record ICalEventDto(
