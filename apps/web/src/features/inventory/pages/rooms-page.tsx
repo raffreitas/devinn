@@ -1,6 +1,5 @@
-import { Filter, Link2, Pencil, Plus } from "lucide-react";
+import { Filter, Eye, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
 import { Badge } from "@/shared/components/ui/badge";
@@ -28,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { ICalPopover } from "../components/ical-popover";
+import { RoomDetailsModal } from "../components/room-details-modal";
 import { RoomForm } from "../components/room-form";
 import { statusDisplayConfig } from "../constants/room-status";
 import {
@@ -41,6 +40,7 @@ import type { Room, RoomFormData, RoomStatus } from "../types";
 
 export function RoomsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
 
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -69,12 +69,24 @@ export function RoomsPage() {
     setSelectedRoom(room);
     setIsModalOpen(true);
   };
+
+  const handleViewDetails = (room: Room) => {
+    setSelectedRoom(room);
+    setIsDetailsModalOpen(true);
+  };
+
   const handleCreate = () => {
     setSelectedRoom(undefined);
     setIsModalOpen(true);
   };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setSelectedRoom(undefined);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
     setSelectedRoom(undefined);
   };
 
@@ -171,12 +183,6 @@ export function RoomsPage() {
                     <TableRow>
                       <TableHead className="w-20">Nº</TableHead>
                       <TableHead>Categoria</TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        Capacidade
-                      </TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Preço Base
-                      </TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="hidden lg:table-cell">
                         Integrações
@@ -191,12 +197,6 @@ export function RoomsPage() {
                           {room.number}
                         </TableCell>
                         <TableCell>{room.categoryName}</TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          {room.capacity} pessoas
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          R$ {room.basePrice.toFixed(2)}
-                        </TableCell>
                         <TableCell>
                           <Badge
                             variant={statusDisplayConfig[room.status].variant}
@@ -207,15 +207,12 @@ export function RoomsPage() {
                         <TableCell className="hidden lg:table-cell">
                           {room.activeIntegrationsCount &&
                           room.activeIntegrationsCount > 0 ? (
-                            <Link to={`/integrations?roomId=${room.id}`}>
-                              <Badge
-                                variant="secondary"
-                                className="gap-1 cursor-pointer hover:bg-secondary/80"
-                              >
-                                <Link2 className="h-3 w-3" />
-                                {room.activeIntegrationsCount}
-                              </Badge>
-                            </Link>
+                            <Badge
+                              variant="secondary"
+                              className="gap-1 cursor-pointer hover:bg-secondary/80"
+                            >
+                              {room.activeIntegrationsCount}
+                            </Badge>
                           ) : (
                             <span className="text-xs text-muted-foreground">
                               -
@@ -224,11 +221,15 @@ export function RoomsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
-                            <ICalPopover
-                              roomName={room.description || ""}
-                              roomNumber={room.number}
-                              iCalExportToken={room.iCalExportToken}
-                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleViewDetails(room)}
+                              title="Ver detalhes"
+                            >
+                              <Eye className="h-4 w-4" />
+                              <span className="sr-only">Ver detalhes</span>
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -272,6 +273,12 @@ export function RoomsPage() {
           isSubmitting={isCreating || isUpdating}
         />
       </Modal>
+
+      <RoomDetailsModal
+        room={selectedRoom}
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+      />
     </div>
   );
 }
