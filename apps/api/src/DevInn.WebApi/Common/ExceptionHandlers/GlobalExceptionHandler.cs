@@ -36,6 +36,16 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
                         Detail = exception.Message
                     }, cancellationToken: cancellationToken);
                 return true;
+            case BadHttpRequestException:
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await httpContext.Response.WriteAsJsonAsync(
+                    new ApiProblemDetails
+                    {
+                        Title = "Requisição inválida",
+                        Status = StatusCodes.Status400BadRequest,
+                        Detail = "Houve um erro na formatação da requisição. Verifique os dados enviados e tente novamente."
+                    }, cancellationToken: cancellationToken);
+                return true;
             default:
                 httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 await httpContext.Response.WriteAsJsonAsync(
