@@ -20,6 +20,8 @@ public sealed class RoomCategory : Entity
         int maxCapacity,
         PricingPolicy pricingPolicy)
     {
+        Validate(name, description, maxCapacity, pricingPolicy);
+
         Name = name;
         Description = description;
         MaxCapacity = maxCapacity;
@@ -28,9 +30,27 @@ public sealed class RoomCategory : Entity
 
     public void Update(string name, int maxCapacity, string description, decimal basePrice, decimal extraPersonPrice)
     {
+        var newPricingPolicy = new PricingPolicy(basePrice, extraPersonPrice);
+        Validate(name, description, maxCapacity, newPricingPolicy);
+
         Name = name;
         Description = description;
         MaxCapacity = maxCapacity;
-        PricingPolicy = new PricingPolicy(basePrice, extraPersonPrice);
+        PricingPolicy = newPricingPolicy;
+    }
+
+    private static void Validate(
+        string name,
+        string description,
+        int maxCapacity,
+        PricingPolicy pricingPolicy
+    )
+    {
+        DomainException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+        DomainException.ThrowIfNullOrWhiteSpace(description, nameof(description));
+        DomainException.ThrowIfNull(pricingPolicy, nameof(pricingPolicy));
+
+        if (maxCapacity <= 0)
+            throw new DomainException("A capacidade máxima deve ser maior que zero.");
     }
 }

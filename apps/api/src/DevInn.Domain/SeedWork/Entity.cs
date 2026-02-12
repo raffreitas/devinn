@@ -7,7 +7,7 @@ public abstract class Entity
     public DateTimeOffset UpdatedAt { get; protected set; } = DateTimeOffset.UtcNow;
     public Guid InnId { get; private set; }
 
-    public virtual void SetTenantId(Guid innId)
+    public void SetTenantId(Guid innId)
     {
         InnId = innId;
     }

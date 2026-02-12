@@ -1,12 +1,12 @@
 ﻿using DevInn.Domain.Aggregates.Bookings.Services;
 using DevInn.Domain.Aggregates.Bookings.ValueObjects;
-using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Aggregates.Inventory.ValueObjects;
 using DevInn.Domain.SeedWork;
+using DevInn.UnitTests.Shared.DataBuilders.Inventory;
 
 using Shouldly;
 
-namespace DevInn.UnitTests.Domain.Aggregates.Bookings;
+namespace DevInn.UnitTests.Domain.Aggregates.Bookings.Services;
 
 [Trait("Category", "Unit")]
 [Trait("Category", "Domain")]
@@ -22,12 +22,12 @@ public sealed class PricingCalculatorServiceTests
             new DateTimeOffset(2026, 1, 24, 0, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 1, 27, 0, 0, 0, TimeSpan.Zero)
         );
-        var roomCategory = new RoomCategory(
-            "Suite",
-            "Desc",
-            2,
-            new PricingPolicy(basePrice: 200m, personPrice: 50m)
-        );
+
+        var roomCategory = new RoomCategoryDataBuilder()
+            .WithMaxCapacity(2)
+            .WithPricingPolicy(new PricingPolicy(basePrice: 200m, personPrice: 50m))
+            .Build();
+
         var occupancy = new Occupancy(2, 0);
 
         // Act
@@ -48,12 +48,11 @@ public sealed class PricingCalculatorServiceTests
             new DateTimeOffset(2026, 1, 24, 0, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 1, 26, 0, 0, 0, TimeSpan.Zero)
         );
-        var roomCategory = new RoomCategory(
-            "Suite",
-            "Desc",
-            3,
-            new PricingPolicy(basePrice: 200m, personPrice: 50m, includedOccupants: 2)
-        );
+        var roomCategory = new RoomCategoryDataBuilder()
+            .WithMaxCapacity(3)
+            .WithPricingPolicy(new PricingPolicy(basePrice: 200m, personPrice: 50m, includedOccupants: 2))
+            .Build();
+
         var occupancy = new Occupancy(3, 0);
 
         // Act
@@ -75,7 +74,10 @@ public sealed class PricingCalculatorServiceTests
         Should.Throw<DomainException>(() =>
         {
             var stayPeriod = new StayPeriod(date, date);
-            var roomCategory = new RoomCategory("Suite", "Desc", 2, new PricingPolicy(200m, 50m));
+            var roomCategory = new RoomCategoryDataBuilder()
+                .WithMaxCapacity(2)
+                .WithPricingPolicy(new PricingPolicy(basePrice: 200m, personPrice: 50m))
+                .Build();
             var occupancy = new Occupancy(1, 0);
             _sut.CalculateBreakdown(stayPeriod, roomCategory, occupancy);
         });
