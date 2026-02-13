@@ -14,6 +14,7 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
 {
     private readonly string[] _publicPaths =
     [
+        "/health",
         "/scalar", "/openapi",
 
         "/api/v1/auth/login",
