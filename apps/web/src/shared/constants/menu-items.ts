@@ -3,7 +3,7 @@ import {
   CalendarIcon,
   HomeIcon,
   LayoutGridIcon,
-  Link2Icon,
+  TrendingDownIcon,
   WalletIcon,
 } from "lucide-react";
 
@@ -13,6 +13,6 @@ export const menuItems = [
   { title: "Quartos", href: "/inventory/rooms", icon: BedDoubleIcon },
   { title: "Reservas", href: "/bookings", icon: CalendarIcon },
   { title: "Financeiro", href: "/financial", icon: WalletIcon },
-  { title: "Integrações", href: "/integrations", icon: Link2Icon },
+  { title: "Despesas", href: "/financial/expenses", icon: TrendingDownIcon },
   // { title: "Configurações", href: "/settings", icon: Settings },
 ];

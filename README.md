@@ -80,6 +80,10 @@ pnpm build:api
 2. Crie uma branch com um nome descritivo: `feature/descricao` ou `fix/descricao`.
 3. Faça commits pequenos e claros.
 4. Abra um Pull Request apontando a branch `main`.
+6. Inclua uma das tags no **título** do PR para indicar o tipo de mudança:
+  - `[Major]` — incrementa a versão major (X.0.0)
+  - `[Minor]` — incrementa a versão minor (X.Y.0)
+  - `[Patch]` — incrementa a versão patch (X.Y.Z)
 
 Considere seguir as convenções de código do projeto descritas em `AGENTS.md`.
 

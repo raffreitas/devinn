@@ -29,6 +29,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-revenue: var(--revenue);
+  --color-expenses: var(--expenses);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -65,11 +67,13 @@
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.841 0.238 128.85);
-  --chart-1: oklch(0.871 0.15 154.449);
-  --chart-2: oklch(0.723 0.219 149.579);
-  --chart-3: oklch(0.627 0.194 149.214);
-  --chart-4: oklch(0.527 0.154 150.069);
-  --chart-5: oklch(0.448 0.119 151.328);
+  --revenue: oklch(0.64 0.22 135); /* Green */
+  --expenses: oklch(0.57 0.24 27); /* Red */
+  --chart-1: oklch(0.64 0.22 135); /* Green */
+  --chart-2: oklch(0.57 0.24 27); /* Red */
+  --chart-3: oklch(0.488 0.243 264.376); /* Blue */
+  --chart-4: oklch(0.696 0.17 162.48); /* Teal */
+  --chart-5: oklch(0.769 0.188 70.08); /* Orange */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.648 0.2 131.684);
@@ -100,11 +104,13 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.405 0.101 131.063);
-  --chart-1: oklch(0.871 0.15 154.449);
-  --chart-2: oklch(0.723 0.219 149.579);
-  --chart-3: oklch(0.627 0.194 149.214);
-  --chart-4: oklch(0.527 0.154 150.069);
-  --chart-5: oklch(0.448 0.119 151.328);
+  --revenue: oklch(0.64 0.22 135);
+  --expenses: oklch(0.704 0.191 22.216);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.21 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.768 0.233 130.85);

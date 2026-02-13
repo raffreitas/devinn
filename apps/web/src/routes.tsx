@@ -3,7 +3,6 @@ import { loginRoutes } from "./features/auth/login-routes";
 import { bookingRoutes } from "./features/bookings/booking-routes";
 import { BookingCalendar } from "./features/bookings/components/booking-calendar";
 import { financialRoutes } from "./features/financial/financial-routes";
-import { integrationsRoutes } from "./features/integrations/integrations-routes";
 import { inventoryRoutes } from "./features/inventory/inventory-routes";
 import { AppLayout } from "./shared/components/app-layout";
 import { RequireAuth } from "./shared/components/auth-guard";
@@ -38,10 +37,6 @@ export const router = createBrowserRouter([
           {
             path: "/financial",
             children: financialRoutes,
-          },
-          {
-            path: "/integrations",
-            children: integrationsRoutes,
           },
         ],
       },

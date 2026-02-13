@@ -18,6 +18,8 @@ namespace DevInn.Infrastructure.Observability;
 
 public static class DependencyInjection
 {
+    private static readonly string[] PathsToIgnore = ["/health", "/alive", "/scalar", "/openapi"];
+
     public static IServiceCollection ConfigureObservability(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -52,10 +54,8 @@ public static class DependencyInjection
                 tracing.AddAspNetCoreInstrumentation(options =>
                     {
                         options.Filter = context =>
-                            !context.Request.Path.StartsWithSegments("/health") &&
-                            !context.Request.Path.StartsWithSegments("/alive") &&
-                            !context.Request.Path.StartsWithSegments("/scalar") &&
-                            !context.Request.Path.StartsWithSegments("/openapi");
+                            !PathsToIgnore.Any(path => context.Request.Path.StartsWithSegments(path)) &&
+                            context.Request.Method != HttpMethod.Options.Method;
 
                         options.RecordException = true;
                     })

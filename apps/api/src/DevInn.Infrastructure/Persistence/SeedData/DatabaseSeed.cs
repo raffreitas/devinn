@@ -24,48 +24,25 @@ internal sealed class DatabaseSeed(
     ITenantContext tenantContext
 )
 {
+    const int InnsToSeed = 10;
+    const int CategoriesPerInn = 4;
+    const int RoomsPerCategory = 8;
+    const int BookingsPerRoom = 30;
+
     const string SuperAdminEmail = "superadmin@devinn.local";
     const string SuperAdminRole = nameof(UserRole.SuperAdmin);
     const string SuperAdminName = "SuperAdmin";
-    const string InnAdminEmail = "innadmin@pousada.local";
     const string InnAdminRole = nameof(UserRole.InnAdmin);
-    const string InnAdminName = "InnAdmin";
     const string Password = "ChangeIt123!";
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        // Create roles
         if (!await roleManager.RoleExistsAsync(SuperAdminRole))
             await roleManager.CreateAsync(new IdentityRole<Guid>(SuperAdminRole));
+
         if (!await roleManager.RoleExistsAsync(InnAdminRole))
             await roleManager.CreateAsync(new IdentityRole<Guid>(InnAdminRole));
 
-        // Create a single Inn using constructor so no reflection
-        var inn = new Inn(
-            "Pousada Exemplo",
-            "Rua das Flores, 123",
-            "São Roque de Minas",
-            "Brasil",
-            "MG",
-            "+55 12 3456-7890",
-            "contato@pousadaexemplo.com"
-        );
-
-        Guid innId = inn.Id;
-
-        // Add inn if not exists
-        if (!await appDb.Inns.AnyAsync(i => i.Name == inn.Name, cancellationToken))
-        {
-            await appDb.Inns.AddAsync(inn, cancellationToken);
-            await appDb.SaveChangesAsync(cancellationToken);
-        }
-        else
-        {
-            var innDb = await appDb.Inns.FirstAsync(i => i.Name == inn.Name, cancellationToken);
-            innId = innDb.Id;
-        }
-
-        // Create users
         if (await userManager.FindByEmailAsync(SuperAdminEmail) is null)
         {
             var superUser = new ApplicationUser(SuperAdminName, SuperAdminEmail);
@@ -76,9 +53,40 @@ internal sealed class DatabaseSeed(
             await userManager.AddToRoleAsync(superUser, SuperAdminRole);
         }
 
-        if (await userManager.FindByEmailAsync(InnAdminEmail) is null)
+        for (int index = 1; index <= InnsToSeed; index++)
         {
-            var innUser = new ApplicationUser(InnAdminName, InnAdminEmail, innId);
+            await SeedDatabaseAsync(index, cancellationToken);
+        }
+    }
+
+    private async Task SeedDatabaseAsync(int index, CancellationToken cancellationToken = default)
+    {
+        var innName = $"Pousada Exemplo - {index}";
+        var inn = await appDb.Inns.FirstOrDefaultAsync(i => i.Name == innName, cancellationToken);
+
+        if (inn is null)
+        {
+            inn = new Inn(
+                innName,
+                "Rua das Flores, 123",
+                "São Roque de Minas",
+                "Brasil",
+                "MG",
+                $"+55 31 90000-{index:0000}",
+                $"contato{index}@pousadaexemplo.com"
+            );
+
+            await appDb.Inns.AddAsync(inn, cancellationToken);
+            await appDb.SaveChangesAsync(cancellationToken);
+        }
+
+        var innId = inn.Id;
+        var innAdminEmail = $"innadmin{index}@pousada.local";
+        var innAdminName = $"InnAdmin-{index}";
+
+        if (await userManager.FindByEmailAsync(innAdminEmail) is null)
+        {
+            var innUser = new ApplicationUser(innAdminName, innAdminEmail, innId);
             var createResult = await userManager.CreateAsync(innUser, Password);
             if (!createResult.Succeeded)
                 throw new InvalidOperationException(createResult.Errors.First().Description);
@@ -86,43 +94,66 @@ internal sealed class DatabaseSeed(
             await userManager.AddToRoleAsync(innUser, InnAdminRole);
         }
 
-        // Set tenant context to the created inn
         tenantContext.SetTenant(new Tenant(innId));
 
-        // Create a room category and room
-        if (!await appDb.RoomCategories.AnyAsync(c => c.Name == "Standard", cancellationToken))
+        if (await appDb.RoomCategories.AnyAsync(cancellationToken))
+            return;
+
+        var random = new Random(index * 1_000);
+        var seedStartDate = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero).AddDays(15);
+
+        for (int i = 1; i <= CategoriesPerInn; i++)
         {
-            var category = new RoomCategory("Standard", "Quarto padrão", 2, new PricingPolicy(200m, 50m));
+            var category = new RoomCategory(
+                $"Standard-{index}-{i:00}",
+                $"Quarto padrão categoria {i}",
+                i % 2 == 0 ? 3 : 2,
+                new PricingPolicy(160m + (i * 25), 45m + (i * 5))
+            );
+
             await appDb.RoomCategories.AddAsync(category, cancellationToken);
-            await appDb.SaveChangesAsync(cancellationToken);
 
-            var room = new Room(category.Id, 101, "101");
-            room.Activate();
-            await appDb.Rooms.AddAsync(room, cancellationToken);
-            await appDb.SaveChangesAsync(cancellationToken);
+            for (int j = 1; j <= RoomsPerCategory; j++)
+            {
+                var roomNumber = i * 100 + j;
+                var room = new Room(category.Id, roomNumber, $"Q-{index:00}-{i:00}-{j:00}");
+                room.Activate();
+                await appDb.Rooms.AddAsync(room, cancellationToken);
 
-            // Create bookings for the created room
-            var booking1 = new Booking(
-                room.Id,
-                new Guest("Fulano", "+55 12 98765-4321", "fulano@example.com"),
-                new StayPeriod(DateTimeOffset.UtcNow.AddDays(7), DateTimeOffset.UtcNow.AddDays(10)),
-                new Occupancy(2, 0, []),
-                new Money(600m),
-                BookingSource.Manual
-            );
-            booking1.AddPayment(new Money(200m), PaymentMethod.Pix, DateTimeOffset.UtcNow, "Pagamento inicial");
+                for (int k = 1; k <= BookingsPerRoom; k++)
+                {
+                    var offsetDays = ((i - 1) * RoomsPerCategory * BookingsPerRoom) + ((j - 1) * BookingsPerRoom) + (k - 1);
+                    var checkIn = seedStartDate.AddDays(offsetDays * 2);
+                    var totalValue = random.Next(minValue: 350, maxValue: 1_200);
 
-            var booking2 = new Booking(
-                room.Id,
-                new Guest("Sicrano", "+55 12 91234-5678", "sicrano@example.com"),
-                new StayPeriod(DateTimeOffset.UtcNow.AddDays(15), DateTimeOffset.UtcNow.AddDays(17)),
-                new Occupancy(1, 0, []),
-                new Money(400m),
-                BookingSource.Manual
-            );
+                    var booking = new Booking(
+                        room.Id,
+                        new Guest(
+                            $"Hóspede {index}-{i}-{j}-{k}",
+                            $"+55 31 9{index:00}{i:00}{j:00}{k:00}",
+                            $"hospede-{index}-{i}-{j}-{k}@devinn.local"
+                        ),
+                        new StayPeriod(checkIn, checkIn.AddDays(2)),
+                        new Occupancy(2, 0, []),
+                        new Money(totalValue),
+                        BookingSource.Manual
+                    );
 
-            await appDb.Bookings.AddRangeAsync([booking1, booking2], cancellationToken);
-            await appDb.SaveChangesAsync(cancellationToken);
+                    var paymentMethod = (PaymentMethod)random.Next(0, Enum.GetValues<PaymentMethod>().Length);
+                    var paymentValue = Math.Round(totalValue * random.Next(30, 80) / 100m, 2);
+
+                    booking.AddPayment(
+                        new Money(paymentValue),
+                        paymentMethod,
+                        checkIn.AddDays(-random.Next(1, 10)),
+                        "Pagamento inicial"
+                    );
+
+                    await appDb.Bookings.AddAsync(booking, cancellationToken);
+                }
+            }
         }
+
+        await appDb.SaveChangesAsync(cancellationToken);
     }
 }

@@ -13,6 +13,10 @@ on:
 env:
   DOTNET_VERSION: "10.0.x"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-api
+  cancel-in-progress: true
+
 jobs:
   ci:
     name: Build & Test .NET
@@ -47,7 +51,7 @@ jobs:
 
       - name: Run .NET tests
         working-directory: apps/api
-        run: dotnet test --no-build --configuration Release --verbosity normal
+        run: dotnet test --no-restore --no-build --configuration Release --verbosity normal
 
   apply-migrations:
     name: Apply DB migrations

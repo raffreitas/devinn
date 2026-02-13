@@ -7,7 +7,7 @@ namespace DevInn.Infrastructure.Integrations;
 
 internal sealed class ICalService(IHttpClientFactory httpClientFactory) : IICalService
 {
-    public async Task<IEnumerable<ICalEventDto>> ParseICalFeedAsync(string iCalUrl,
+    public async Task<IReadOnlyList<ICalEventDto>> ParseICalFeedAsync(string iCalUrl,
         CancellationToken cancellationToken = default)
     {
         try
