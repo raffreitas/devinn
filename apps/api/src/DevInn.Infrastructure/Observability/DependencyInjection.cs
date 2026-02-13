@@ -18,7 +18,7 @@ namespace DevInn.Infrastructure.Observability;
 
 public static class DependencyInjection
 {
-    private static string[] PathsToIgnore = ["/health", "/alive", "/scalar", "/openapi"];
+    private static readonly string[] PathsToIgnore = ["/health", "/alive", "/scalar", "/openapi"];
 
     public static IServiceCollection ConfigureObservability(
         this IServiceCollection services,
