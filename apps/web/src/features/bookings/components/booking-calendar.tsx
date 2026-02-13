@@ -172,7 +172,7 @@ export function BookingCalendar() {
   ): Booking | undefined => {
     if (!bookings) return undefined;
 
-    return bookings.find((booking) => {
+    return bookings.items.find((booking: Booking) => {
       if (booking.roomId !== roomId) return false;
       if (booking.status === "Canceled") return false;
 
@@ -249,8 +249,8 @@ export function BookingCalendar() {
 
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
-                    ? bookings.filter(
-                        (b) => b.roomId === room.id && b.status !== "Canceled",
+                    ? bookings.items.filter(
+                        (b: Booking) => b.roomId === room.id && b.status !== "Canceled",
                       )
                     : [];
                   return (

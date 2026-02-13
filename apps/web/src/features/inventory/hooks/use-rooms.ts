@@ -7,17 +7,26 @@ import type { CreateRoomRequest, RoomStatus } from "../types";
 type RoomsFilters = {
   categoryId?: string;
   status?: RoomStatus;
+  page?: number;
+  pageSize?: number;
 };
 
-export function useRooms({ categoryId, status }: RoomsFilters = {}) {
+export function useRooms({
+  categoryId,
+  status,
+  page = 1,
+  pageSize = 10,
+}: RoomsFilters = {}) {
   const { innId } = useAuth();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["rooms", innId, categoryId, status],
+    queryKey: ["rooms", innId, categoryId, status, page, pageSize],
     queryFn: () =>
       roomService.getAll({
         categoryId,
         status,
+        page,
+        pageSize,
       }),
     enabled: !!innId,
     staleTime: 30_000,

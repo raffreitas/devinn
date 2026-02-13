@@ -13,6 +13,8 @@ type UseBookingsParams = {
   paymentStatus?: PaymentStatus;
   startDate?: string;
   endDate?: string;
+  page?: number;
+  pageSize?: number;
 };
 
 export function useBookings({
@@ -20,17 +22,30 @@ export function useBookings({
   paymentStatus,
   startDate,
   endDate,
+  page = 1,
+  pageSize = 20,
 }: UseBookingsParams = {}) {
   const { innId } = useAuth();
 
   const { data, refetch, isLoading } = useQuery({
-    queryKey: ["bookings", innId, status, paymentStatus, startDate, endDate],
+    queryKey: [
+      "bookings",
+      innId,
+      status,
+      paymentStatus,
+      startDate,
+      endDate,
+      page,
+      pageSize,
+    ],
     queryFn: () => {
       return bookingService.getAll({
         status: status,
         paymentStatus: paymentStatus,
         startDate,
         endDate,
+        page,
+        pageSize,
       });
     },
     enabled: !!innId,

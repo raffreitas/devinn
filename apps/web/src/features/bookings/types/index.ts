@@ -103,12 +103,14 @@ export interface BookingFilters {
   endDate?: string;
   status?: BookingStatus;
   paymentStatus?: PaymentStatus;
+  page?: number;
+  pageSize?: number;
 }
 
 export function mapToFormData(dto?: Booking): BookingFormData | undefined {
   if (!dto) return undefined;
   if (!dto.guest) return undefined; // Blocks cannot be edited
-  
+
   return {
     adults: dto.adults,
     children: dto.children,

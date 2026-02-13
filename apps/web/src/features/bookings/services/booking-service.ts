@@ -1,6 +1,6 @@
 import type { PriceBreakdownResponse } from "@/features/bookings/hooks/use-calculate-price-breakdown.ts";
 import { api } from "@/shared/lib/http-client";
-import type { ApiResponse } from "@/shared/types";
+import type { ApiResponse, PaginatedResponse } from "@/shared/types";
 import type {
   Booking,
   BookingFilters,
@@ -10,7 +10,7 @@ import type {
 } from "../types";
 
 export const bookingService = {
-  getAll: async (filters?: BookingFilters): Promise<Booking[]> => {
+  getAll: async (filters?: BookingFilters): Promise<PaginatedResponse<Booking>> => {
     const params = new URLSearchParams();
 
     if (filters?.startDate) params.append("startDate", filters.startDate);
@@ -19,16 +19,34 @@ export const bookingService = {
     if (filters?.paymentStatus)
       params.append("paymentStatus", filters.paymentStatus);
 
+    // Mapear 'page' para 'pageNumber' conforme esperado pela API
+    params.append("pageNumber", (filters?.page ?? 1).toString());
+    params.append("pageSize", (filters?.pageSize ?? 10).toString());
+
     const response = await api.get<ApiResponse<Booking[]>>("/api/v1/bookings", {
       params,
     });
-    return response.data.data.map((booking) => {
+
+    const items = response.data.data.map((booking) => {
       return {
         ...booking,
         checkIn: new Date(booking.checkIn),
         checkOut: new Date(booking.checkOut),
       };
     });
+
+    const totalCount = response.data.meta?.totalCount ?? 0;
+    const page = response.data.meta?.page ?? 1;
+    const pageSize = response.data.meta?.pageSize ?? 10;
+    const totalPages = response.data.meta?.totalPages ?? 1;
+
+    return {
+      items,
+      totalCount,
+      page,
+      pageSize,
+      totalPages,
+    };
   },
 
   getById: async (id: string): Promise<Booking | null> => {
