@@ -13,6 +13,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddCorsConfiguration();
+builder.Services.AddHealthCheckConfiguration();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
@@ -37,11 +38,13 @@ if (app.Environment.IsDevelopment())
 app.UseCorsConfiguration();
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
+app.UseHealthCheckConfiguration();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseInfrastructureModule();
+
 
 // Middlewares
 app.UseMiddleware<RequestLoggingMiddleware>();
