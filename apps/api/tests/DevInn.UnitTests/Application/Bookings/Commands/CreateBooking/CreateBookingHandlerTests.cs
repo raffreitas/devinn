@@ -54,10 +54,10 @@ public sealed class CreateBookingHandlerTests
             ChildrenAges: []
         );
 
-        _roomRepository.GetByIdAsync(command.RoomId).ReturnsNull();
+        _roomRepository.GetByIdAsync(command.RoomId, TestContext.Current.CancellationToken).ReturnsNull();
 
         // Act
-        var result = await _sut.Handle(command, CancellationToken.None);
+        var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsFailed.ShouldBeTrue();

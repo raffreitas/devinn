@@ -38,7 +38,7 @@ public sealed class CalculatePriceBreakdownHandlerTests
             new PricingPolicy(200m, 50m)
         );
 
-        _roomCategoryRepository.GetByIdAsync(roomId).Returns(category);
+        _roomCategoryRepository.GetByIdAsync(roomId, TestContext.Current.CancellationToken).Returns(category);
 
         var query = new CalculatePriceBreakdownQuery(
             roomId,
@@ -50,7 +50,7 @@ public sealed class CalculatePriceBreakdownHandlerTests
         );
 
         // Act
-        var result = await _sut.Handle(query, CancellationToken.None);
+        var result = await _sut.Handle(query, TestContext.Current.CancellationToken);
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
@@ -62,7 +62,7 @@ public sealed class CalculatePriceBreakdownHandlerTests
     public async Task Handle_ShouldReturnsFailed_WhenRoomNotFound()
     {
         // Arrange
-        _roomCategoryRepository.GetByIdAsync(Arg.Any<Guid>())
+        _roomCategoryRepository.GetByIdAsync(Arg.Any<Guid>(), TestContext.Current.CancellationToken)
             .ReturnsNull();
 
         var query = new CalculatePriceBreakdownQuery(
