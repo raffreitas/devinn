@@ -8,6 +8,10 @@ export function isRealBooking(booking: Booking): boolean {
   return booking.guest !== null;
 }
 
+export function isICalSource(source: BookingSource): boolean {
+  return source === "BookingIcal" || source === "AirbnbIcal";
+}
+
 export function getBookingSourceLabel(source: BookingSource): string {
   const labels: Record<BookingSource, string> = {
     Manual: "Manual",

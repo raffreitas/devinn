@@ -47,7 +47,7 @@ import type {
   PaymentMethod,
   PaymentStatus,
 } from "../types";
-import { getBlockLabel, isBlock } from "../utils/booking-helpers";
+import { getBlockLabel, isBlock, isICalSource } from "../utils/booking-helpers";
 import { BookingReceiptPrinter } from "./booking-receipt-printer";
 import { BookingSourceBadge } from "./booking-source-badge";
 
@@ -180,43 +180,27 @@ export function BookingDetails({
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end sm:justify-start shrink-0">
           {!bookingIsBlock && (
-            <>
-              <BookingReceiptPrinter booking={booking} innName={innData?.name} />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => onEdit(booking)}
-                      title="Editar reserva"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                </Tooltip>
-              </TooltipProvider>
-            </>
+            <BookingReceiptPrinter booking={booking} innName={innData?.name} />
           )}
-          {bookingIsBlock && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    disabled
-                    title="Bloqueios não podem ser editados"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onEdit(booking)}
+                  title={bookingIsBlock ? "Adicionar dados ao bloqueio iCAL" : "Editar reserva"}
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              {bookingIsBlock && (
                 <TooltipContent>
-                  <p>Bloqueios não podem ser editados</p>
+                  <p>Adicionar dados do hóspede</p>
                 </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+              )}
+            </Tooltip>
+          </TooltipProvider>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -269,9 +253,11 @@ export function BookingDetails({
                   Este período está bloqueado via sincronização com{" "}
                   <span className="font-semibold">{getBlockLabel(booking.source)}</span>
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Bloqueios não podem ser editados, apenas excluídos.
-                </p>
+                {isICalSource(booking.source) && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Clique em editar para adicionar dados do hóspede, pagamento e observações.
+                  </p>
+                )}
               </div>
             </div>
 

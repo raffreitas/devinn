@@ -5,6 +5,7 @@ import {
   CalculatorIcon,
   CalendarIcon,
   InfoIcon,
+  LinkIcon,
   UsersIcon,
 } from "lucide-react";
 import { useEffect } from "react";
@@ -42,6 +43,7 @@ import { type BookingFormData, bookingSchema } from "../types";
 type BookingFormProps = {
   initialData?: BookingFormData & { id?: string };
   isSubmitting?: boolean;
+  isICalBlock?: boolean;
   onSubmit: (data: BookingFormData) => void | Promise<void>;
   onCancel: () => void;
   preSelectedRoom?: string;
@@ -51,6 +53,7 @@ type BookingFormProps = {
 export function BookingForm({
   initialData,
   isSubmitting,
+  isICalBlock = false,
   onCancel,
   onSubmit,
   preSelectedRoom,
@@ -167,6 +170,19 @@ export function BookingForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Banner de aviso para blocos iCAL */}
+        {isICalBlock && (
+          <div className="flex items-start gap-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3">
+            <LinkIcon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-primary">Reserva via sincronização iCAL</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Quarto e datas são controlados pela sincronização externa e não podem ser alterados. Preencha os dados do hóspede para enriquecer esta reserva.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Quarto e Datas */}
         <div className="space-y-3">
           <h3 className="text-sm font-medium border-b pb-2">
@@ -183,6 +199,7 @@ export function BookingForm({
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    disabled={isICalBlock}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -226,6 +243,7 @@ export function BookingForm({
                       <FormControl>
                         <Button
                           variant="outline"
+                          disabled={isICalBlock}
                           className={cn(
                             "w-full pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground",
@@ -266,6 +284,7 @@ export function BookingForm({
                       <FormControl>
                         <Button
                           variant="outline"
+                          disabled={isICalBlock}
                           className={cn(
                             "w-full pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground",

@@ -27,7 +27,7 @@ public sealed class Booking : Entity
     public Money PaidValue => new(_payments.Sum(p => p.Amount.Value));
     public decimal BalanceDue => TotalValue - PaidValue;
     public PaymentStatus PaymentStatus => CalculatePaymentStatus();
-    
+
     public bool IsBlock => Guest is null;
     public bool IsRealBooking => Guest is not null;
 
@@ -69,7 +69,7 @@ public sealed class Booking : Entity
     {
         if (IsBlock)
             throw new DomainException("Bloqueios não podem ser editados. Apenas exclua e recrie se necessário.");
-        
+
         if (Status is BookingStatus.Canceled or BookingStatus.CheckedIn || Status == BookingStatus.Completed)
             throw new DomainException("Não é possível alterar uma reserva que não está em estado agendado.");
 
@@ -82,11 +82,23 @@ public sealed class Booking : Entity
         Source = source;
     }
 
+    public void Enrich(Guest guest, Occupancy? occupancy, string? notes, Money totalValue)
+    {
+        if (!IsBlock)
+            throw new DomainException(
+                "Enriquecimento de dados só é permitido para blocos criados via integração externa.");
+
+        Guest = guest;
+        Occupancy = occupancy;
+        Notes = notes;
+        TotalValue = totalValue;
+    }
+
     public void AddPayment(Money amount, PaymentMethod method, DateTimeOffset paymentDate, string? notes = null)
     {
         if (IsBlock)
             throw new DomainException("Não é possível adicionar pagamentos a bloqueios.");
-        
+
         if (amount <= 0)
             throw new DomainException("O valor do pagamento deve ser maior que zero.");
 

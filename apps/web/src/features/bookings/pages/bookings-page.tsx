@@ -55,6 +55,7 @@ import {
   mapToFormData,
   type PaymentStatus,
 } from "../types";
+import { isBlock, isICalSource } from "../utils/booking-helpers";
 
 const statusConfig: Record<
   BookingStatus,
@@ -353,6 +354,7 @@ export function BookingsPage() {
           onCancel={handleCloseModal}
           onSubmit={handleCreateOrUpdate}
           isSubmitting={isCreating || isUpdating}
+          isICalBlock={selectedBooking ? isBlock(selectedBooking) && isICalSource(selectedBooking.source) : false}
         />
       </Modal>
 

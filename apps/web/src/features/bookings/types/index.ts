@@ -107,19 +107,18 @@ export interface BookingFilters {
 
 export function mapToFormData(dto?: Booking): BookingFormData | undefined {
   if (!dto) return undefined;
-  if (!dto.guest) return undefined; // Blocks cannot be edited
-  
+
   return {
     adults: dto.adults,
     children: dto.children,
     childrenAges: dto.childrenAges?.map((age) => ({ age })) || [],
     checkIn: dto.checkIn,
     checkOut: dto.checkOut,
-    guestName: dto.guest.name,
-    guestEmail: dto.guest.email || "",
-    guestPhone: dto.guest.phone,
-    guestBirthDate: dto.guest.birthDate,
-    guestDocument: dto.guest.document,
+    guestName: dto.guest?.name || "",
+    guestEmail: dto.guest?.email || "",
+    guestPhone: dto.guest?.phone || "",
+    guestBirthDate: dto.guest?.birthDate,
+    guestDocument: dto.guest?.document,
     paidAmount: dto.totalPaid,
     paymentMethod: dto.payments[0]?.method,
     paymentNotes: dto.payments[0]?.notes,

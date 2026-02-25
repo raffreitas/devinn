@@ -32,6 +32,7 @@ import {
   mapToFormData,
   type UpdateBookingRequest,
 } from "../types";
+import { isBlock, isICalSource } from "../utils/booking-helpers";
 import { BookingDetails } from "./booking-details";
 import { BookingForm } from "./booking-form";
 
@@ -366,6 +367,7 @@ export function BookingCalendar() {
           onCancel={handleCancel}
           onSubmit={handleFormSubmit}
           isSubmitting={false}
+          isICalBlock={editingBooking ? isBlock(editingBooking) && isICalSource(editingBooking.source) : false}
         />
       </Modal>
 
