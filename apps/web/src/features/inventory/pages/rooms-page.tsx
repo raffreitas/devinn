@@ -1,7 +1,6 @@
 import { Filter, Eye, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
-import { Modal } from "@/shared/components/modal";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -27,20 +26,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { RoomDetailsModal } from "../components/room-details-modal";
-import { RoomForm } from "../components/room-form";
+import { RoomDetailsSheet } from "../components/room-details-sheet";
+import { RoomFormSheet } from "../components/room-form-sheet";
 import { statusDisplayConfig } from "../constants/room-status";
-import {
-  useCreateRoom,
-  useRoomCategories,
-  useRooms,
-  useUpdateRoom,
-} from "../hooks";
-import type { Room, RoomFormData, RoomStatus } from "../types";
+import { useRoomCategories, useRooms } from "../hooks";
+import type { Room, RoomStatus } from "../types";
 
 export function RoomsPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isFormSheetOpen, setIsFormSheetOpen] = useState(false);
+  const [isDetailsSheetOpen, setIsDetailsSheetOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>();
 
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -52,42 +46,35 @@ export function RoomsPage() {
     status: filterStatus === "all" ? undefined : filterStatus,
   });
 
-  const { createRoom, isLoading: isCreating } = useCreateRoom();
-  const { updateRoom, isLoading: isUpdating } = useUpdateRoom();
-
-  const handleCreateOrUpdate = (data: RoomFormData) => {
-    if (selectedRoom) {
-      updateRoom({ id: selectedRoom.id, data });
-    } else {
-      createRoom(data);
-    }
-    setIsModalOpen(false);
-    setSelectedRoom(undefined);
-  };
-
   const handleEdit = (room: Room) => {
     setSelectedRoom(room);
-    setIsModalOpen(true);
+    setIsFormSheetOpen(true);
   };
 
   const handleViewDetails = (room: Room) => {
     setSelectedRoom(room);
-    setIsDetailsModalOpen(true);
+    setIsDetailsSheetOpen(true);
   };
 
   const handleCreate = () => {
     setSelectedRoom(undefined);
-    setIsModalOpen(true);
+    setIsFormSheetOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseFormSheet = () => {
+    setIsFormSheetOpen(false);
     setSelectedRoom(undefined);
   };
 
-  const handleCloseDetailsModal = () => {
-    setIsDetailsModalOpen(false);
+  const handleCloseDetailsSheet = () => {
+    setIsDetailsSheetOpen(false);
     setSelectedRoom(undefined);
+  };
+
+  const handleEditFromDetails = (room: Room) => {
+    setIsDetailsSheetOpen(false);
+    setSelectedRoom(room);
+    setIsFormSheetOpen(true);
   };
 
   return (
@@ -256,28 +243,17 @@ export function RoomsPage() {
         </CardContent>
       </Card>
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title="Novo Quarto"
-        description={
-          selectedRoom
-            ? "Edite os detalhes do quarto."
-            : "Preencha os detalhes para criar uma novo quarto."
-        }
-      >
-        <RoomForm
-          initialData={selectedRoom}
-          onCancel={handleCloseModal}
-          onSubmit={handleCreateOrUpdate}
-          isSubmitting={isCreating || isUpdating}
-        />
-      </Modal>
+      <RoomFormSheet
+        isOpen={isFormSheetOpen}
+        onClose={handleCloseFormSheet}
+        editRoom={selectedRoom}
+      />
 
-      <RoomDetailsModal
+      <RoomDetailsSheet
         room={selectedRoom}
-        isOpen={isDetailsModalOpen}
-        onClose={handleCloseDetailsModal}
+        isOpen={isDetailsSheetOpen}
+        onClose={handleCloseDetailsSheet}
+        onEdit={handleEditFromDetails}
       />
     </div>
   );
