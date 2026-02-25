@@ -133,7 +133,7 @@ export function RoomDetailsSheet({
           />
 
           {/* Integrations Section */}
-          <RoomIntegrationsStep roomId={room.id} />
+          <RoomIntegrationsStep mode="api" roomId={room.id} />
         </div>
       </SheetContent>
     </Sheet>

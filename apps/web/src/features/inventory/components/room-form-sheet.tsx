@@ -9,10 +9,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/shared/components/ui/sheet";
+import { useCreateIntegration } from "@/features/integrations/hooks/use-integrations";
 import { useCreateRoom, useUpdateRoom } from "../hooks";
 import type { Room, RoomFormData } from "../types";
 import { RoomForm, type RoomFormRef } from "./room-form";
-import { RoomIntegrationsStep } from "./room-integrations-step";
+import {
+  RoomIntegrationsStep,
+  type PendingIntegration,
+} from "./room-integrations-step";
 import { RoomStepper } from "./room-stepper";
 
 const STEPS = [
@@ -32,55 +36,86 @@ export function RoomFormSheet({
   editRoom,
 }: RoomFormSheetProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [createdRoomId, setCreatedRoomId] = useState<string | null>(null);
+  const [roomFormData, setRoomFormData] = useState<RoomFormData | null>(null);
+  const [pendingIntegrations, setPendingIntegrations] = useState<
+    PendingIntegration[]
+  >([]);
+  const [isSaving, setIsSaving] = useState(false);
   const roomFormRef = useRef<RoomFormRef>(null);
 
-  const { createRoom, isLoading: isCreating } = useCreateRoom();
-  const { updateRoom, isLoading: isUpdating } = useUpdateRoom();
+  const { createRoom } = useCreateRoom();
+  const { updateRoom } = useUpdateRoom();
+  const { createIntegration } = useCreateIntegration();
 
   const isEditMode = !!editRoom;
-  const roomId = editRoom?.id || createdRoomId;
 
   const handleClose = () => {
     setCurrentStep(0);
-    setCreatedRoomId(null);
+    setRoomFormData(null);
+    setPendingIntegrations([]);
+    setIsSaving(false);
     onClose();
   };
 
   const handleNext = async () => {
     if (currentStep === 0) {
-      const success = await roomFormRef.current?.submit();
-      if (!success) return;
+      // Validate only — store data in memory, don't call API
+      const valid = await roomFormRef.current?.submit();
+      if (!valid) return;
+      // Data is stored via handleRoomValidated callback
     }
   };
 
-  const handleRoomSubmit = async (data: RoomFormData) => {
-    if (isEditMode && editRoom) {
-      await updateRoom({ id: editRoom.id, data });
-      setCurrentStep(1);
-    } else {
-      const room = await createRoom(data);
-      setCreatedRoomId(room.id);
-      setCurrentStep(1);
-    }
+  const handleRoomValidated = async (data: RoomFormData) => {
+    setRoomFormData(data);
+    setCurrentStep(1);
   };
 
   const handleStepClick = (index: number) => {
-    if (index < currentStep || (index === 1 && roomId)) {
-      setCurrentStep(index);
+    if (index === 0) {
+      setCurrentStep(0);
+    }
+    if (index === 1 && roomFormData) {
+      setCurrentStep(1);
     }
   };
 
-  const handleFinish = () => {
-    handleClose();
+  const handleAddPending = (integration: PendingIntegration) => {
+    setPendingIntegrations((prev) => [...prev, integration]);
+  };
+
+  const handleRemovePending = (id: string) => {
+    setPendingIntegrations((prev) => prev.filter((i) => i.id !== id));
+  };
+
+  const handleFinish = async () => {
+    setIsSaving(true);
+    try {
+      if (isEditMode && editRoom) {
+        // Edit mode: update room, integrations are managed via API mode
+        if (roomFormData) {
+          await updateRoom({ id: editRoom.id, data: roomFormData });
+        }
+      } else if (roomFormData) {
+        // Create mode: create room, then create all pending integrations
+        const room = await createRoom(roomFormData);
+        for (const integration of pendingIntegrations) {
+          await createIntegration({
+            roomId: room.id,
+            channelType: integration.channelType,
+            iCalUrl: integration.iCalUrl,
+          });
+        }
+      }
+      handleClose();
+    } catch {
+      setIsSaving(false);
+    }
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={handleClose}>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-lg flex flex-col"
-      >
+      <SheetContent side="right" className="w-full sm:max-w-lg flex flex-col">
         <SheetHeader>
           <SheetTitle>
             {isEditMode ? `Editar Quarto ${editRoom.number}` : "Novo Quarto"}
@@ -104,15 +139,23 @@ export function RoomFormSheet({
           {currentStep === 0 && (
             <RoomForm
               ref={roomFormRef}
-              initialData={editRoom}
-              onSubmit={handleRoomSubmit}
+              initialData={editRoom || (roomFormData ?? undefined)}
+              onSubmit={handleRoomValidated}
               showActions={false}
             />
           )}
 
-          {currentStep === 1 && roomId && (
-            <RoomIntegrationsStep roomId={roomId} />
-          )}
+          {currentStep === 1 &&
+            (isEditMode ? (
+              <RoomIntegrationsStep mode="api" roomId={editRoom.id} />
+            ) : (
+              <RoomIntegrationsStep
+                mode="local"
+                pendingIntegrations={pendingIntegrations}
+                onAdd={handleAddPending}
+                onRemove={handleRemovePending}
+              />
+            ))}
         </div>
 
         <SheetFooter className="border-t pt-4">
@@ -126,19 +169,9 @@ export function RoomFormSheet({
                 >
                   Cancelar
                 </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={isCreating || isUpdating}
-                  className="flex-1"
-                >
-                  {isCreating || isUpdating ? (
-                    "Salvando..."
-                  ) : (
-                    <>
-                      Próximo
-                      <ChevronRight className="ml-1.5 h-4 w-4" />
-                    </>
-                  )}
+                <Button onClick={handleNext} className="flex-1">
+                  Próximo
+                  <ChevronRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </>
             ) : (
@@ -151,8 +184,12 @@ export function RoomFormSheet({
                   <ChevronLeft className="mr-1.5 h-4 w-4" />
                   Voltar
                 </Button>
-                <Button onClick={handleFinish} className="flex-1">
-                  Concluir
+                <Button
+                  onClick={handleFinish}
+                  disabled={isSaving}
+                  className="flex-1"
+                >
+                  {isSaving ? "Salvando..." : "Concluir"}
                 </Button>
               </>
             )}
