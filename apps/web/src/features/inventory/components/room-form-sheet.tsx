@@ -59,16 +59,11 @@ export function RoomFormSheet({
 
   const handleNext = async () => {
     if (currentStep === 0) {
-      // Validate only — store data in memory, don't call API
-      const valid = await roomFormRef.current?.submit();
-      if (!valid) return;
-      // Data is stored via handleRoomValidated callback
+      const data = await roomFormRef.current?.validate();
+      if (!data) return;
+      setRoomFormData(data);
+      setCurrentStep(1);
     }
-  };
-
-  const handleRoomValidated = async (data: RoomFormData) => {
-    setRoomFormData(data);
-    setCurrentStep(1);
   };
 
   const handleStepClick = (index: number) => {
@@ -140,7 +135,7 @@ export function RoomFormSheet({
             <RoomForm
               ref={roomFormRef}
               initialData={editRoom || (roomFormData ?? undefined)}
-              onSubmit={handleRoomValidated}
+              onSubmit={() => {}}
               showActions={false}
             />
           )}
@@ -163,13 +158,18 @@ export function RoomFormSheet({
             {currentStep === 0 ? (
               <>
                 <Button
+                  type="button"
                   variant="outline"
                   onClick={handleClose}
                   className="flex-1"
                 >
                   Cancelar
                 </Button>
-                <Button onClick={handleNext} className="flex-1">
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  className="flex-1"
+                >
                   Próximo
                   <ChevronRight className="ml-1.5 h-4 w-4" />
                 </Button>
@@ -177,6 +177,7 @@ export function RoomFormSheet({
             ) : (
               <>
                 <Button
+                  type="button"
                   variant="outline"
                   onClick={() => setCurrentStep(0)}
                   className="flex-1"
@@ -185,6 +186,7 @@ export function RoomFormSheet({
                   Voltar
                 </Button>
                 <Button
+                  type="button"
                   onClick={handleFinish}
                   disabled={isSaving}
                   className="flex-1"

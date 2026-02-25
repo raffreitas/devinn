@@ -31,8 +31,7 @@ type RoomFormProps = {
 };
 
 export interface RoomFormRef {
-  submit: () => Promise<boolean>;
-  getValues: () => RoomFormData;
+  validate: () => Promise<RoomFormData | null>;
 }
 
 export const RoomForm = forwardRef<RoomFormRef, RoomFormProps>(
@@ -53,23 +52,21 @@ export const RoomForm = forwardRef<RoomFormRef, RoomFormProps>(
     });
 
     useImperativeHandle(ref, () => ({
-      submit: () =>
-        new Promise<boolean>((resolve) => {
-          form.handleSubmit(
-            async (data) => {
-              await onSubmit(data);
-              resolve(true);
-            },
-            () => resolve(false),
-          )();
-        }),
-      getValues: () => form.getValues(),
+      validate: async () => {
+        const isValid = await form.trigger();
+        return isValid ? form.getValues() : null;
+      },
     }));
 
     return (
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (showActions) {
+              form.handleSubmit(onSubmit)(e);
+            }
+          }}
           className="space-y-4"
           id="room-form"
         >
