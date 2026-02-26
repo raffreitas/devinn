@@ -1,17 +1,5 @@
 import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Modal } from "@/shared/components/modal";
-import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/components/ui/table";
-import { Skeleton } from "@/shared/components/ui/skeleton";
 import { IntegrationForm } from "@/features/integrations/components/integration-form";
 import { SyncStatusBadge } from "@/features/integrations/components/sync-status-badge";
 import {
@@ -24,8 +12,20 @@ import type {
   ChannelIntegration,
   CreateChannelIntegrationRequest,
 } from "@/features/integrations/types";
-import { ICalExportCard } from "./ical-export-card";
+import { Modal } from "@/shared/components/modal";
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/components/ui/table";
 import type { Room } from "../types";
+import { ICalExportCard } from "./ical-export-card";
 
 interface RoomIntegrationsTabProps {
   room: Room;
@@ -42,9 +42,8 @@ export function RoomIntegrationsTab({ room }: RoomIntegrationsTabProps) {
   const { deleteIntegration, isPending: deleteIntegrationIsPending } =
     useDeleteIntegration();
 
-  const roomIntegrations = integrations?.filter(
-    (integration) => integration.roomId === room.id
-  ) ?? [];
+  const roomIntegrations =
+    integrations?.filter((integration) => integration.roomId === room.id) ?? [];
 
   const handleCreate = async (data: CreateChannelIntegrationRequest) => {
     await createIntegration(data);
@@ -125,9 +124,7 @@ export function RoomIntegrationsTab({ room }: RoomIntegrationsTabProps) {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={
-                          integration.isActive ? "default" : "secondary"
-                        }
+                        variant={integration.isActive ? "default" : "secondary"}
                       >
                         {integration.isActive ? "Ativo" : "Inativo"}
                       </Badge>

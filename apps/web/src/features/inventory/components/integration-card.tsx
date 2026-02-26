@@ -1,9 +1,9 @@
 import { RefreshCw, Trash2 } from "lucide-react";
+import { SyncStatusBadge } from "@/features/integrations/components/sync-status-badge";
+import type { ChannelIntegration } from "@/features/integrations/types";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { SyncStatusBadge } from "@/features/integrations/components/sync-status-badge";
-import type { ChannelIntegration } from "@/features/integrations/types";
 
 interface IntegrationCardProps {
   integration: ChannelIntegration;

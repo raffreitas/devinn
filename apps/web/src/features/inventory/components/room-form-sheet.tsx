@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState } from "react";
+import { useCreateIntegration } from "@/features/integrations/hooks/use-integrations";
 import { Button } from "@/shared/components/ui/button";
 import {
   Sheet,
@@ -9,13 +10,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/shared/components/ui/sheet";
-import { useCreateIntegration } from "@/features/integrations/hooks/use-integrations";
 import { useCreateRoom, useUpdateRoom } from "../hooks";
 import type { Room, RoomFormData } from "../types";
 import { RoomForm, type RoomFormRef } from "./room-form";
 import {
-  RoomIntegrationsStep,
   type PendingIntegration,
+  RoomIntegrationsStep,
 } from "./room-integrations-step";
 import { RoomStepper } from "./room-stepper";
 
@@ -165,11 +165,7 @@ export function RoomFormSheet({
                 >
                   Cancelar
                 </Button>
-                <Button
-                  type="button"
-                  onClick={handleNext}
-                  className="flex-1"
-                >
+                <Button type="button" onClick={handleNext} className="flex-1">
                   Próximo
                   <ChevronRight className="ml-1.5 h-4 w-4" />
                 </Button>

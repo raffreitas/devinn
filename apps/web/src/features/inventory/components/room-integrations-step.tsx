@@ -1,7 +1,5 @@
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
 import { IntegrationForm } from "@/features/integrations/components/integration-form";
 import {
   useCreateIntegration,
@@ -13,6 +11,8 @@ import type {
   ChannelIntegration,
   CreateChannelIntegrationRequest,
 } from "@/features/integrations/types";
+import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent } from "@/shared/components/ui/card";
 import { IntegrationCard } from "./integration-card";
 
 export interface PendingIntegration {
