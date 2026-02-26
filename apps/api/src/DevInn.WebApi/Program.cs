@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text.Json.Serialization;
 
 using DevInn.Application;
@@ -7,10 +8,19 @@ using DevInn.WebApi.Configuration;
 using DevInn.WebApi.Endpoints;
 using DevInn.WebApi.Middlewares;
 
+using Microsoft.AspNetCore.ResponseCompression;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<GzipCompressionProvider>();
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
 
 builder.Services.AddCorsConfiguration();
 builder.Services.AddHealthCheckConfiguration();
