@@ -33,6 +33,7 @@ public static class DependencyInjection
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
+                    ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtOptions.SecretKey)),
                     ValidateIssuer = true,
