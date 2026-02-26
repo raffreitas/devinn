@@ -20,7 +20,7 @@ builder.Services.AddResponseCompression(options =>
     options.EnableForHttps = true;
     options.Providers.Add<GzipCompressionProvider>();
 });
-builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
 
 builder.Services.AddCorsConfiguration();
 builder.Services.AddHealthCheckConfiguration();
@@ -47,6 +47,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCorsConfiguration();
 app.UseHttpsRedirection();
+app.UseResponseCompression();
 app.UseExceptionHandler();
 app.UseHealthCheckConfiguration();
 
