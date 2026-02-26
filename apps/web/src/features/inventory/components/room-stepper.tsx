@@ -31,8 +31,7 @@ export function RoomStepper({
             disabled={!isClickable}
             className={cn(
               "flex items-center gap-2 flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              isActive &&
-                "bg-primary/10 text-primary border border-primary/20",
+              isActive && "bg-primary/10 text-primary border border-primary/20",
               isCompleted &&
                 "bg-muted text-muted-foreground hover:bg-muted/80 cursor-pointer",
               !isActive &&
