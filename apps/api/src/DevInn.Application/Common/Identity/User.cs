@@ -6,3 +6,9 @@ public sealed record User(
     string Name,
     string Email,
     UserRole[] Roles);
+
+public enum UserRole
+{
+    SuperAdmin = 1,
+    InnAdmin
+}
