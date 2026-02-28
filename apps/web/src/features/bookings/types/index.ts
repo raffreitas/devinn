@@ -103,6 +103,8 @@ export interface BookingFilters {
   endDate?: string;
   status?: BookingStatus;
   paymentStatus?: PaymentStatus;
+  page?: number;
+  pageSize?: number;
 }
 
 export function mapToFormData(dto?: Booking): BookingFormData | undefined {

@@ -72,7 +72,7 @@ export function FinancialPage() {
           </div>
         ) : (
           <FinancialSummaryCards
-            bookings={bookings || []}
+            bookings={bookings?.items || []}
             expenses={expenses || []}
           />
         )}
@@ -81,7 +81,7 @@ export function FinancialPage() {
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <RevenueExpensesChart
-          bookings={bookings || []}
+          bookings={bookings?.items || []}
           expenses={expenses || []}
           isLoading={isLoading}
         />

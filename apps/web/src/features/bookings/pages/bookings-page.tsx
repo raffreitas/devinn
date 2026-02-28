@@ -8,6 +8,16 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
+import { usePagination } from "@/shared/hooks/use-pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/shared/components/ui/pagination";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
 import {
@@ -67,6 +77,39 @@ import {
   mapToFormData,
   type PaymentStatus,
 } from "../types";
+
+function generatePaginationPages(currentPage: number, totalPages: number) {
+  const pages: (number | string)[] = [];
+  const maxPagesToShow = 5;
+  const halfWindow = Math.floor(maxPagesToShow / 2);
+
+  let startPage = Math.max(1, currentPage - halfWindow);
+  const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+  if (endPage - startPage + 1 < maxPagesToShow) {
+    startPage = Math.max(1, endPage - maxPagesToShow + 1);
+  }
+
+  if (startPage > 1) {
+    pages.push(1);
+    if (startPage > 2) {
+      pages.push("...");
+    }
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      pages.push("...");
+    }
+    pages.push(totalPages);
+  }
+
+  return pages;
+}
 import { getBlockLabel, isBlock, isICalSource } from "../utils/booking-helpers";
 
 const statusConfig: Record<
@@ -104,10 +147,18 @@ export function BookingsPage() {
     PaymentStatus | "all"
   >("all");
 
+  // Gerenciar paginação sincronizada com URL
+  const { page, pageSize, goToPage } = usePagination({
+    defaultPageSize: 10,
+    dependencies: [filterStatus, filterPaymentStatus],
+  });
+
   const { data: bookings, isLoading } = useBookings({
     status: filterStatus === "all" ? undefined : filterStatus,
     paymentStatus:
       filterPaymentStatus === "all" ? undefined : filterPaymentStatus,
+    page,
+    pageSize,
   });
   const { createBooking, isLoading: isCreating } = useCreateBooking();
   const { updateBooking, isLoading: isUpdating } = useUpdateBooking();
@@ -238,54 +289,53 @@ export function BookingsPage() {
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
-          ) : bookings && bookings.length > 0 ? (
-            <div className="overflow-x-auto -mx-6 sm:mx-0">
-              <div className="inline-block min-w-full align-middle">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-20">Quarto</TableHead>
-                      <TableHead>Hóspede</TableHead>
-                      <TableHead>Check-in</TableHead>
-                      <TableHead>Check-out</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="hidden sm:table-cell">
-                        Pagamento
-                      </TableHead>
-                      <TableHead className="w-10 text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {bookings.map((booking) => (
-                      <TableRow key={booking.id}>
-                        <TableCell className="font-medium">
-                          {booking.number}
-                        </TableCell>
-                        <TableCell>
-                          {booking.guest?.name || getBlockLabel(booking.source)}
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(booking.checkIn), "dd/MM/yyyy")}
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(booking.checkOut), "dd/MM/yyyy")}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={statusConfig[booking.status].variant}>
-                            {statusConfig[booking.status].label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <Badge
-                            variant={
-                              paymentStatusConfig[booking.paymentStatus].variant
-                            }
-                          >
-                            {paymentStatusConfig[booking.paymentStatus].label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
+          ) : bookings && bookings.items.length > 0 ? (
+            <>
+              <div className="overflow-x-auto -mx-6 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-20">Quarto</TableHead>
+                        <TableHead>Hóspede</TableHead>
+                        <TableHead>Check-in</TableHead>
+                        <TableHead>Check-out</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="hidden sm:table-cell">
+                          Pagamento
+                        </TableHead>
+                        <TableHead className="w-10 text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {bookings.items.map((booking) => (
+                        <TableRow key={booking.id}>
+                          <TableCell className="font-medium">
+                            {booking.number}
+                          </TableCell>
+                          <TableCell>{booking.guest?.name || getBlockLabel(booking.source)}</TableCell>
+                          <TableCell>
+                            {format(new Date(booking.checkIn), "dd/MM/yyyy")}
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(booking.checkOut), "dd/MM/yyyy")}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={statusConfig[booking.status].variant}>
+                              {statusConfig[booking.status].label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                            <Badge
+                              variant={
+                                paymentStatusConfig[booking.paymentStatus].variant
+                              }
+                            >
+                              {paymentStatusConfig[booking.paymentStatus].label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                              <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">
                                 <EllipsisVerticalIcon className="h-4 w-4" />
@@ -316,12 +366,67 @@ export function BookingsPage() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
-            </div>
+
+              {/* Pagination */}
+              {bookings.totalPages > 1 && (
+                <div className="mt-6 flex justify-center">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => page > 1 && goToPage(page - 1)}
+                          className={
+                            page <= 1
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                          aria-disabled={page <= 1}
+                        />
+                      </PaginationItem>
+
+                      {generatePaginationPages(page, bookings.totalPages).map(
+                        (pageNum, idx) =>
+                          pageNum === "..." ? (
+                            <PaginationItem key={`ellipsis-${idx}`}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          ) : (
+                            <PaginationItem key={pageNum}>
+                              <PaginationLink
+                                onClick={() => goToPage(Number(pageNum))}
+                                isActive={Number(pageNum) === page}
+                                className="cursor-pointer"
+                              >
+                                {pageNum}
+                              </PaginationLink>
+                            </PaginationItem>
+                          )
+                      )}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() =>
+                            page < bookings.totalPages && goToPage(page + 1)
+                          }
+                          className={
+                            page >= bookings.totalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                          aria-disabled={page >= bookings.totalPages}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground mb-4">

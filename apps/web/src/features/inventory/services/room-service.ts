@@ -11,14 +11,22 @@ interface GetRoomsParams {
 
 export const roomService = {
   getAll: async (params?: GetRoomsParams): Promise<PaginatedResponse<Room>> => {
+    // Mapear 'page' para 'pageNumber' conforme esperado pela API
+    const apiParams = {
+      pageNumber: params?.page ?? 1,
+      pageSize: params?.pageSize ?? 10,
+      categoryId: params?.categoryId,
+      status: params?.status,
+    };
+
     const response = await api.get<ApiResponse<Room[]>>("/api/v1/rooms", {
-      params,
+      params: apiParams,
     });
 
     const items = response.data.data;
     const totalCount = response.data.meta?.totalCount ?? 0;
     const page = response.data.meta?.page ?? 1;
-    const pageSize = response.data.meta?.pageSize ?? 10;
+    const pageSize = response.data.meta?.pageSize ?? 20;
     const totalPages = response.data.meta?.totalPages ?? 1;
 
     return {
