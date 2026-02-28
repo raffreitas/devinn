@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useRooms } from "@/features/inventory/hooks";
 import { Button } from "@/shared/components/ui/button";
 import {
   Form,
@@ -18,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { useRooms } from "@/features/inventory/hooks";
 
 const integrationSchema = z.object({
   channelType: z.enum(["Booking", "Airbnb"]),
@@ -57,14 +57,21 @@ export function IntegrationForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className={inline ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-4"}>
+        <div
+          className={
+            inline ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-4"
+          }
+        >
           <FormField
             control={form.control}
             name="channelType"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Canal</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full h-9" data-size="default">
                       <SelectValue placeholder="Selecione o canal" />
@@ -87,7 +94,10 @@ export function IntegrationForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Quarto</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full h-9" data-size="default">
                         <SelectValue placeholder="Selecione o quarto" />
@@ -111,7 +121,9 @@ export function IntegrationForm({
             control={form.control}
             name="iCalUrl"
             render={({ field }) => (
-              <FormItem className={inline && fixedRoomId ? "sm:col-span-2" : ""}>
+              <FormItem
+                className={inline && fixedRoomId ? "sm:col-span-2" : ""}
+              >
                 <FormLabel>URL do iCal</FormLabel>
                 <FormControl>
                   <Input placeholder="https://..." {...field} className="h-9" />
@@ -132,7 +144,11 @@ export function IntegrationForm({
           >
             Cancelar
           </Button>
-          <Button type="submit" size={inline ? "sm" : "default"} disabled={isSubmitting}>
+          <Button
+            type="submit"
+            size={inline ? "sm" : "default"}
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Criando..." : "Adicionar"}
           </Button>
         </div>

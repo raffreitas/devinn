@@ -93,9 +93,7 @@ export function ICalExportCard({
               Cole na plataforma desejada (geralmente em "Calendário" ou
               "Sincronização")
             </li>
-            <li>
-              As reservas deste quarto serão exportadas automaticamente
-            </li>
+            <li>As reservas deste quarto serão exportadas automaticamente</li>
             <li>
               Reservas importadas de outros iCals não são reexportadas (evita
               loops)

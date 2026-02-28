@@ -82,10 +82,7 @@ export const RoomForm = forwardRef<RoomFormRef, RoomFormProps>(
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger
-                        className="w-full h-9"
-                        data-size="default"
-                      >
+                      <SelectTrigger className="w-full h-9" data-size="default">
                         <SelectValue placeholder="Selecione uma categoria" />
                       </SelectTrigger>
                     </FormControl>
