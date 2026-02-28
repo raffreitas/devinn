@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   require-bump:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Check PR for semver tag

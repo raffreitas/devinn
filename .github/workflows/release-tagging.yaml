@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   semver-tag:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Create semver tag and release
