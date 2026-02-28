@@ -47,7 +47,7 @@ import type {
   PaymentMethod,
   PaymentStatus,
 } from "../types";
-import { getBlockLabel, isBlock } from "../utils/booking-helpers";
+import { getBlockLabel, isBlock, isICalSource } from "../utils/booking-helpers";
 import { BookingReceiptPrinter } from "./booking-receipt-printer";
 import { BookingSourceBadge } from "./booking-source-badge";
 
@@ -153,12 +153,12 @@ export function BookingDetails({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <h3 className="text-2xl font-bold tracking-tight text-foreground">
-            {bookingIsBlock ? getBlockLabel(booking.source) : booking.guest!.name}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2 min-w-0">
+          <h3 className="text-2xl font-bold tracking-tight text-foreground wrap-break-word">
+            {bookingIsBlock ? getBlockLabel(booking.source) : booking.guest?.name}
           </h3>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <BookingSourceBadge source={booking.source} />
             {!bookingIsBlock && (
               <>
@@ -178,45 +178,29 @@ export function BookingDetails({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end sm:justify-start shrink-0">
           {!bookingIsBlock && (
-            <>
-              <BookingReceiptPrinter booking={booking} innName={innData?.name} />
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => onEdit(booking)}
-                      title="Editar reserva"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                </Tooltip>
-              </TooltipProvider>
-            </>
+            <BookingReceiptPrinter booking={booking} innName={innData?.name} />
           )}
-          {bookingIsBlock && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    disabled
-                    title="Bloqueios não podem ser editados"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => onEdit(booking)}
+                  title={bookingIsBlock ? "Adicionar dados ao bloqueio iCAL" : "Editar reserva"}
+                >
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              {bookingIsBlock && (
                 <TooltipContent>
-                  <p>Bloqueios não podem ser editados</p>
+                  <p>Adicionar dados do hóspede</p>
                 </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+              )}
+            </Tooltip>
+          </TooltipProvider>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -261,7 +245,7 @@ export function BookingDetails({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
+              <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                 <Info className="w-4 h-4 text-primary" />
               </div>
               <div>
@@ -269,9 +253,11 @@ export function BookingDetails({
                   Este período está bloqueado via sincronização com{" "}
                   <span className="font-semibold">{getBlockLabel(booking.source)}</span>
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Bloqueios não podem ser editados, apenas excluídos.
-                </p>
+                {isICalSource(booking.source) && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Clique em editar para adicionar dados do hóspede, pagamento e observações.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -293,126 +279,126 @@ export function BookingDetails({
         {/* Pagamento e Valores */}
         {!bookingIsBlock && (
           <Card className="md:col-span-2 overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-primary" />
-              Financeiro
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-background border rounded-xl space-y-1">
-                <p className="text-xs text-muted-foreground">Valor Total</p>
-                <p className="text-xl font-bold">
-                  {formatCurrency(booking.pricing.total)}
-                </p>
-              </div>
-              <div className="p-4 bg-background border rounded-xl space-y-1">
-                <p className="text-xs text-muted-foreground">Valor Pago</p>
-                <p className="text-xl font-bold text-emerald-600">
-                  {formatCurrency(booking.totalPaid)}
-                </p>
-              </div>
-              <div className="p-4 bg-background border rounded-xl space-y-1">
-                <p className="text-xs text-muted-foreground">Saldo Devedor</p>
-                <p
-                  className={`text-xl font-bold ${booking.balanceDue > 0 ? "text-rose-600" : "text-emerald-600"}`}
-                >
-                  {formatCurrency(booking.balanceDue)}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-lg p-4 space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <Info className="w-4 h-4 text-primary" />
-                Detalhamento do Cálculo
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center text-muted-foreground">
-                  <span>Diária base ({booking.categoryName})</span>
-                  <span className="text-foreground">
-                    {formatCurrency(booking.pricing.basePrice)}
-                  </span>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-primary" />
+                Financeiro
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div className="p-4 bg-background border rounded-xl space-y-1 min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">Valor Total</p>
+                  <p className="text-xl font-bold break-words">
+                    {formatCurrency(booking.pricing.total)}
+                  </p>
                 </div>
-                {booking.pricing.numberOfExtraGuests > 0 && (
-                  <div className="flex justify-between items-center text-muted-foreground">
-                    <span>
-                      {booking.pricing.numberOfExtraGuests} hóspede(s) extra(s)
+                <div className="p-4 bg-background border rounded-xl space-y-1 min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">Valor Pago</p>
+                  <p className="text-xl font-bold text-emerald-600 break-words">
+                    {formatCurrency(booking.totalPaid)}
+                  </p>
+                </div>
+                <div className="p-4 bg-background border rounded-xl space-y-1 min-w-0">
+                  <p className="text-xs text-muted-foreground truncate">Saldo Devedor</p>
+                  <p
+                    className={`text-xl font-bold break-words ${booking.balanceDue > 0 ? "text-rose-600" : "text-emerald-600"}`}
+                  >
+                    {formatCurrency(booking.balanceDue)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Info className="w-4 h-4 text-primary" />
+                  Detalhamento do Cálculo
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between items-start gap-4 text-muted-foreground">
+                    <span className="break-words">Diária base ({booking.categoryName})</span>
+                    <span className="text-foreground whitespace-nowrap shrink-0">
+                      {formatCurrency(booking.pricing.basePrice)}
                     </span>
-                    <span className="text-foreground">
+                  </div>
+                  {booking.pricing.numberOfExtraGuests > 0 && (
+                    <div className="flex justify-between items-start gap-4 text-muted-foreground">
+                      <span className="break-words">
+                        {booking.pricing.numberOfExtraGuests} hóspede(s) extra(s)
+                      </span>
+                      <span className="text-foreground whitespace-nowrap shrink-0">
+                        {formatCurrency(
+                          booking.pricing.extraGuestPrice *
+                          booking.pricing.numberOfExtraGuests,
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  <Separator className="my-2" />
+                  <div className="flex justify-between items-start gap-4 text-muted-foreground">
+                    <span className="break-words">Subtotal por diária</span>
+                    <span className="text-foreground whitespace-nowrap shrink-0">
                       {formatCurrency(
+                        booking.pricing.basePrice +
                         booking.pricing.extraGuestPrice *
                         booking.pricing.numberOfExtraGuests,
                       )}
                     </span>
                   </div>
-                )}
-                <Separator className="my-2" />
-                <div className="flex justify-between items-center text-muted-foreground">
-                  <span>Subtotal por diária</span>
-                  <span className="text-foreground">
-                    {formatCurrency(
-                      booking.pricing.basePrice +
-                      booking.pricing.extraGuestPrice *
-                      booking.pricing.numberOfExtraGuests,
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-muted-foreground">
-                  <span>Total por {booking.pricing.numberOfNights} noites</span>
-                  <span className="text-foreground font-semibold">
-                    {formatCurrency(booking.pricing.subtotal)}
-                  </span>
-                </div>
-                {booking.pricing.discounts > 0 && (
-                  <div className="flex justify-between items-center text-rose-600">
-                    <span>Descontos</span>
-                    <span>- {formatCurrency(booking.pricing.discounts)}</span>
+                  <div className="flex justify-between items-start gap-4 text-muted-foreground">
+                    <span className="break-words">Total por {booking.pricing.numberOfNights} noites</span>
+                    <span className="text-foreground font-semibold whitespace-nowrap shrink-0">
+                      {formatCurrency(booking.pricing.subtotal)}
+                    </span>
                   </div>
-                )}
-                <Separator className="my-2" />
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">Total da Reserva</span>
-                  <span className="font-bold text-primary text-lg">
-                    {formatCurrency(booking.pricing.total)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {booking.payments.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="text-sm font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  Histórico de Pagamentos
-                </h4>
-                <div className="space-y-2">
-                  {booking.payments.map((payment) => (
-                    <div
-                      key={payment.id}
-                      className="flex items-center justify-between p-3 bg-background border rounded-lg text-sm"
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {paymentMethodLabels[payment.method]}
-                        </span>
-                        {payment.date && (
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(payment.date), "dd/MM/yyyy HH:mm")}
-                          </span>
-                        )}
-                      </div>
-                      <span className="font-bold text-emerald-600">
-                        {formatCurrency(payment.amount)}
-                      </span>
+                  {booking.pricing.discounts > 0 && (
+                    <div className="flex justify-between items-start gap-4 text-rose-600">
+                      <span className="break-words">Descontos</span>
+                      <span className="whitespace-nowrap shrink-0">- {formatCurrency(booking.pricing.discounts)}</span>
                     </div>
-                  ))}
+                  )}
+                  <Separator className="my-2" />
+                  <div className="flex justify-between items-start gap-4">
+                    <span className="font-bold break-words">Total da Reserva</span>
+                    <span className="font-bold text-primary text-lg whitespace-nowrap shrink-0">
+                      {formatCurrency(booking.pricing.total)}
+                    </span>
+                  </div>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              {booking.payments.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    Histórico de Pagamentos
+                  </h4>
+                  <div className="space-y-2">
+                    {booking.payments.map((payment) => (
+                      <div
+                        key={payment.id}
+                        className="flex items-center justify-between gap-4 p-3 bg-background border rounded-lg text-sm"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-medium truncate">
+                            {paymentMethodLabels[payment.method]}
+                          </span>
+                          {payment.date && (
+                            <span className="text-xs text-muted-foreground truncate">
+                              {format(new Date(payment.date), "dd/MM/yyyy HH:mm")}
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-bold text-emerald-600 whitespace-nowrap shrink-0">
+                          {formatCurrency(payment.amount)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Informações da Reserva */}
@@ -425,7 +411,7 @@ export function BookingDetails({
 
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
+                <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                   <Bed className="w-4 h-4 text-primary" />
                 </div>
                 <div>
@@ -442,7 +428,7 @@ export function BookingDetails({
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
+                <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                   <CalendarDays className="w-4 h-4 text-primary" />
                 </div>
                 <div>
@@ -460,7 +446,7 @@ export function BookingDetails({
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
+                <div className="p-2 bg-primary/10 rounded-lg shrink-0">
                   <Users className="w-4 h-4 text-primary" />
                 </div>
                 <div>
@@ -485,76 +471,76 @@ export function BookingDetails({
 
         {/* Dados do Hóspede */}
         {!bookingIsBlock && (
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Hóspede Responsável
-            </h4>
-
+          <div className="space-y-6">
             <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Phone className="w-4 h-4 text-primary" />
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Hóspede Responsável
+              </h4>
+
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                    <Phone className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium">
+                      Telefone
+                    </p>
+                    <p className="text-sm font-semibold">{booking.guest?.phone}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">
-                    Telefone
-                  </p>
-                  <p className="text-sm font-semibold">{booking.guest?.phone}</p>
-                </div>
+
+                {booking.guest?.email && (
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                      <Mail className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground font-medium">
+                        E-mail
+                      </p>
+                      <p className="text-sm font-semibold">
+                        {booking.guest?.email}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {booking.guest?.birthDate && (
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                      <CakeIcon className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground font-medium">
+                        Data de Nascimento
+                      </p>
+                      <p className="text-sm font-semibold">
+                        {format(new Date(booking.guest.birthDate!), "dd/MM/yyyy")}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {booking.guest?.document && (
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground font-medium">
+                        Documento (CPF/RG)
+                      </p>
+                      <p className="text-sm font-semibold">
+                        {booking.guest?.document}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-
-              {booking.guest?.email && (
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Mail className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">
-                      E-mail
-                    </p>
-                    <p className="text-sm font-semibold">
-                      {booking.guest?.email}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {booking.guest?.birthDate && (
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <CakeIcon className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">
-                      Data de Nascimento
-                    </p>
-                    <p className="text-sm font-semibold">
-                      {format(new Date(booking.guest.birthDate!), "dd/MM/yyyy")}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {booking.guest?.document && (
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <User className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium">
-                      Documento (CPF/RG)
-                    </p>
-                    <p className="text-sm font-semibold">
-                      {booking.guest?.document}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
-        </div>
         )}
 
         {/* Observações */}
@@ -564,7 +550,7 @@ export function BookingDetails({
               <FileText className="w-4 h-4" />
               Observações
             </h4>
-            <div className="p-4 bg-muted/50 rounded-xl border border-dashed border-muted-foreground/20 text-sm text-foreground italic">
+            <div className="p-4 bg-muted/50 rounded-xl border border-dashed border-muted-foreground/20 text-sm text-foreground italic break-words">
               "{booking.notes}"
             </div>
           </div>

@@ -9,7 +9,7 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useRooms } from "@/features/inventory/hooks";
 import { Modal } from "@/shared/components/modal";
@@ -32,10 +32,12 @@ import {
   mapToFormData,
   type UpdateBookingRequest,
 } from "../types";
+import { isBlock, isICalSource } from "../utils/booking-helpers";
 import { BookingDetails } from "./booking-details";
 import { BookingForm } from "./booking-form";
 
 export function BookingCalendar() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [preselectedRoom, setPreselectedRoom] = useState<string | undefined>();
@@ -172,7 +174,7 @@ export function BookingCalendar() {
   ): Booking | undefined => {
     if (!bookings) return undefined;
 
-    return bookings.find((booking) => {
+    return bookings.items.find((booking: Booking) => {
       if (booking.roomId !== roomId) return false;
       if (booking.status === "Canceled") return false;
 
@@ -182,6 +184,27 @@ export function BookingCalendar() {
       return date >= checkIn && date < checkOut;
     });
   };
+
+  const DAY_COLUMN_WIDTH = 60;
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const today = new Date();
+    const isCurrentMonth =
+      today.getMonth() === currentMonth.getMonth() &&
+      today.getFullYear() === currentMonth.getFullYear();
+
+    if (isCurrentMonth) {
+      const todayPosition = (today.getDate() - 1) * DAY_COLUMN_WIDTH;
+      const centeredScroll =
+        todayPosition - container.clientWidth / 2 + DAY_COLUMN_WIDTH / 2;
+      container.scrollTo({ left: Math.max(0, centeredScroll), behavior: "smooth" });
+    } else {
+      container.scrollTo({ left: 0 });
+    }
+  }, [currentMonth]);
 
   const activeRooms =
     roomsData?.items.filter((room) => room.status === "Active") || [];
@@ -223,10 +246,13 @@ export function BookingCalendar() {
         </CardHeader>
         <CardContent>
           <div className="overflow-hidden">
-            <div className="overflow-x-auto">
+            <div
+              ref={scrollContainerRef}
+              className="overflow-auto max-h-[68.8vh]"
+            >
               <div className="inline-block min-w-full">
-                <div className="flex">
-                  <div className="w-28 shrink-0 p-3 font-semibold text-sm text-foreground border-r border-border border-b bg-muted sticky top-0 z-10 left-0">
+                <div className="flex sticky top-0 z-20">
+                  <div className="w-28 shrink-0 p-3 font-semibold text-sm text-foreground border-r border-border border-b bg-muted sticky top-0 z-30 left-0">
                     Quartos
                   </div>
                   <div className="flex">
@@ -234,7 +260,7 @@ export function BookingCalendar() {
                       <div
                         key={day.toISOString()}
                         className={cn(
-                          "border-r p-2 text-center text-xs font-medium w-15 border-b border-border bg-muted/30",
+                          "border-r p-2 text-center text-xs font-medium w-15 border-b border-border bg-muted",
                           isToday(day) && "bg-primary/10",
                         )}
                       >
@@ -249,13 +275,13 @@ export function BookingCalendar() {
 
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
-                    ? bookings.filter(
-                        (b) => b.roomId === room.id && b.status !== "Canceled",
+                    ? bookings.items.filter(
+                        (b: Booking) => b.roomId === room.id && b.status !== "Canceled",
                       )
                     : [];
                   return (
                     <div key={room.id} className="flex border-border">
-                      <div className="w-28 shrink-0 p-3 flex items-center border-r border-border sticky top-0 z-10 left-0 bg-muted">
+                      <div className="w-28 shrink-0 p-3 flex items-center border-r border-border sticky left-0 z-10 bg-muted">
                         <div>
                           <div className="font-medium text-sm">
                             {room.number}
@@ -366,6 +392,7 @@ export function BookingCalendar() {
           onCancel={handleCancel}
           onSubmit={handleFormSubmit}
           isSubmitting={false}
+          isICalBlock={editingBooking ? isBlock(editingBooking) && isICalSource(editingBooking.source) : false}
         />
       </Modal>
 

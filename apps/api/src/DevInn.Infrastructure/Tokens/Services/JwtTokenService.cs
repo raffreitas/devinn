@@ -14,12 +14,13 @@ namespace DevInn.Infrastructure.Tokens.Services;
 
 internal sealed class JwtTokenService(IOptions<JwtTokenOptions> options) : ITokenService
 {
+    public const string JwtAlgorithm = SecurityAlgorithms.HmacSha256;
     private readonly JwtTokenOptions _options = options.Value;
 
     public Task<TokenResponse> GenerateTokenAsync(TokenRequest request, CancellationToken cancellationToken = default)
     {
         var signinKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_options.SecretKey));
-        var credentials = new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256);
+        var credentials = new SigningCredentials(signinKey, JwtAlgorithm);
 
         var roleClaims = request.Roles
             .Select(role => new Claim("role", role));

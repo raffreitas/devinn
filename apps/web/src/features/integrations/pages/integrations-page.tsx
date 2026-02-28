@@ -20,14 +20,6 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/components/ui/table";
 import { IntegrationForm } from "../components/integration-form";
 import { SyncStatusBadge } from "../components/sync-status-badge";
 import {
@@ -40,6 +32,93 @@ import type {
   ChannelIntegration,
   CreateChannelIntegrationRequest,
 } from "../types";
+
+function getChannelName(channelType: string) {
+  return channelType === "Booking" ? "Booking.com" : "Airbnb";
+}
+
+function getChannelEmoji(channelType: string) {
+  return channelType === "Booking" ? "🅱️" : "🏠";
+}
+
+function IntegrationListCard({
+  integration,
+  onSync,
+  onDelete,
+  isSyncing,
+  isDeleting,
+}: {
+  integration: ChannelIntegration;
+  onSync: () => void;
+  onDelete: () => void;
+  isSyncing: boolean;
+  isDeleting: boolean;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <span className="text-xl shrink-0 mt-0.5" aria-hidden>
+              {getChannelEmoji(integration.channelType)}
+            </span>
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-medium text-sm">
+                  {getChannelName(integration.channelType)}
+                </span>
+                <Badge
+                  variant={integration.isActive ? "default" : "secondary"}
+                  className="text-xs"
+                >
+                  {integration.isActive ? "Ativo" : "Inativo"}
+                </Badge>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">
+                  Quarto {integration.roomName}
+                </span>
+                {" · "}
+                {integration.roomCategoryName}
+              </div>
+              <p className="text-xs text-muted-foreground truncate">
+                {integration.iCalUrl}
+              </p>
+              <SyncStatusBadge syncStatus={integration.syncStatus} />
+            </div>
+          </div>
+
+          <div className="flex gap-1 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={onSync}
+              disabled={isSyncing || !integration.isActive}
+              title="Sincronizar"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`}
+              />
+              <span className="sr-only">Sincronizar</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive"
+              onClick={onDelete}
+              disabled={isDeleting}
+              title="Remover"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="sr-only">Remover</span>
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export function IntegrationsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -105,10 +184,6 @@ export function IntegrationsPage() {
     setSearchParams(searchParams);
   };
 
-  const getChannelName = (channelType: string) => {
-    return channelType === "Booking" ? "Booking.com" : "Airbnb";
-  };
-
   return (
     <div className="space-y-4">
       <LoadingOverlay isFetching={isLoading} position="top-bar" />
@@ -167,96 +242,23 @@ export function IntegrationsPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
+                <Skeleton key={i} className="h-24 w-full rounded-lg" />
               ))}
             </div>
           ) : filteredIntegrations && filteredIntegrations.length > 0 ? (
-            <div className="overflow-x-auto -mx-6 sm:mx-0">
-              <div className="inline-block min-w-full align-middle">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Canal</TableHead>
-                      <TableHead>Quarto</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        URL iCal
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        Status Sync
-                      </TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="w-24 text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredIntegrations.map((integration) => (
-                      <TableRow key={integration.id}>
-                        <TableCell className="font-medium">
-                          {getChannelName(integration.channelType)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-0.5">
-                            <p className="font-medium text-sm">
-                              {integration.roomName}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {integration.roomCategoryName}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <span className="text-xs text-muted-foreground truncate block max-w-xs">
-                            {integration.iCalUrl}
-                          </span>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          <SyncStatusBadge
-                            syncStatus={integration.syncStatus}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              integration.isActive ? "default" : "secondary"
-                            }
-                          >
-                            {integration.isActive ? "Ativo" : "Inativo"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleSync(integration)}
-                              disabled={
-                                syncIntegrationIsPending ||
-                                !integration.isActive
-                              }
-                            >
-                              <RefreshCw
-                                className={`h-4 w-4 ${syncIntegrationIsPending ? "animate-spin" : ""}`}
-                              />
-                              <span className="sr-only">Sincronizar</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(integration)}
-                              disabled={deleteIntegrationIsPending}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Remover</span>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+            <div className="space-y-3">
+              {filteredIntegrations.map((integration) => (
+                <IntegrationListCard
+                  key={integration.id}
+                  integration={integration}
+                  onSync={() => handleSync(integration)}
+                  onDelete={() => handleDelete(integration)}
+                  isSyncing={syncIntegrationIsPending}
+                  isDeleting={deleteIntegrationIsPending}
+                />
+              ))}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
