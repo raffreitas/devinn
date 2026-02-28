@@ -18,7 +18,7 @@ internal sealed class DeleteBookingHandler(IBookingRepository bookingRepository,
             return Result.Fail(new NotFoundError("Reserva não encontrada."));
 
         await bookingRepository.RemoveAsync(booking, cancellationToken);
-        
+
         await uow.CommitAsync(cancellationToken);
 
         return Result.Ok();

@@ -68,7 +68,8 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             await context.Response.WriteAsJsonAsync(new ProblemDetails
             {
-                Title = "Erro interno do servidor", Status = StatusCodes.Status500InternalServerError,
+                Title = "Erro interno do servidor",
+                Status = StatusCodes.Status500InternalServerError,
             });
             return;
         }

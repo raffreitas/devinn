@@ -1,11 +1,10 @@
+using Dapper;
+
 using DevInn.Application.Common.Data.Abstractions;
+using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.ICal.Abstractions;
 using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Aggregates.Inventory.ValueObjects;
-
-using Dapper;
-
-using DevInn.Application.Common.Errors;
 
 using FluentResults;
 

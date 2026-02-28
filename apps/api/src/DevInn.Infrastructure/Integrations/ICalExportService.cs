@@ -16,7 +16,9 @@ internal sealed class ICalExportService : IICalExportService
     {
         var calendar = new Calendar
         {
-            ProductId = "-//DevInn//Booking Calendar//PT", Version = "2.0", Scale = "GREGORIAN"
+            ProductId = "-//DevInn//Booking Calendar//PT",
+            Version = "2.0",
+            Scale = "GREGORIAN"
         };
 
         calendar.AddProperty("X-WR-CALNAME", $"DevInn - {roomName}");

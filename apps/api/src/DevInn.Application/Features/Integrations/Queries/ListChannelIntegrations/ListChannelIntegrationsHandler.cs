@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 using Dapper;
 
 using DevInn.Application.Common.Data.Abstractions;
@@ -8,9 +11,6 @@ using DevInn.Domain.Aggregates.Integrations.Enums;
 using FluentResults;
 
 using Mediator;
-
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace DevInn.Application.Features.Integrations.Queries.ListChannelIntegrations;
 

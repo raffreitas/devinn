@@ -15,7 +15,7 @@ internal sealed class ExpenseCategoryConfiguration : IEntityTypeConfiguration<Ex
         builder.Property(c => c.Name).IsRequired().HasMaxLength(100);
         builder.Property(c => c.CreatedAt).IsRequired();
         builder.Property(c => c.UpdatedAt).IsRequired();
-        
+
         builder.Property<byte[]>("RowVersion")
             .IsRowVersion()
             .HasColumnName("row_version");
