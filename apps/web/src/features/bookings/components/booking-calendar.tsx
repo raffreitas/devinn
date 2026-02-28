@@ -248,7 +248,7 @@ export function BookingCalendar() {
           <div className="overflow-hidden">
             <div
               ref={scrollContainerRef}
-              className="overflow-auto max-h-[65vh]"
+              className="overflow-auto max-h-[68.8vh]"
             >
               <div className="inline-block min-w-full">
                 <div className="flex sticky top-0 z-20">
