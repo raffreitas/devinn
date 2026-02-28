@@ -141,7 +141,7 @@ export const bookingSchema = z
       .optional(),
     guestName: z.string().min(1, "Nome do hóspede é obrigatório"),
     guestEmail: z.email("E-mail inválido").optional().or(z.literal("")),
-    guestPhone: z.string().min(10, "Telefone deve ter no mínimo 10 dígitos"),
+    guestPhone: z.string().optional().or(z.literal("")),
     guestDocument: z.string().optional(),
     guestBirthDate: z.string().optional(),
     notes: z.string().optional(),

@@ -96,9 +96,12 @@ internal sealed class GuestDtoValidation : AbstractValidator<GuestDto>
             .NotEmpty().WithMessage("Nome do hóspede é obrigatório.")
             .MaximumLength(200).WithMessage("Nome do hóspede deve ter no máximo 200 caracteres.");
 
-        RuleFor(guest => guest.Phone)
-            .NotEmpty().WithMessage("Telefone é obrigatório.")
-            .MaximumLength(15).WithMessage("Telefone deve ter no máximo 15 caracteres.");
+        When(guest => !string.IsNullOrWhiteSpace(guest.Phone), () =>
+        {
+            RuleFor(guest => guest.Phone)
+                .NotEmpty().WithMessage("Telefone é obrigatório.")
+                .MaximumLength(15).WithMessage("Telefone deve ter no máximo 15 caracteres.");
+        });
 
         When(guest => !string.IsNullOrWhiteSpace(guest.Email), () =>
         {
