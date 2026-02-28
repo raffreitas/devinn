@@ -22,7 +22,7 @@ export type BookingSource =
 export interface Guest {
   name: string;
   email?: string;
-  phone: string;
+  phone?: string;
   document?: string;
   birthDate?: string;
 }
