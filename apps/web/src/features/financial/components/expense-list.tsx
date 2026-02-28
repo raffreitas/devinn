@@ -1,5 +1,12 @@
 import { format } from "date-fns";
-import { Calendar, Check, Edit2, Trash2, Wallet, X } from "lucide-react";
+import {
+  Check,
+  Edit2,
+  EllipsisVerticalIcon,
+  Trash2,
+  Wallet,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { InputMoney } from "@/shared/components/input-money";
 import {
@@ -11,10 +18,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/shared/components/ui/alert-dialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
 import { Input } from "@/shared/components/ui/input";
 import {
   Select,
@@ -57,6 +70,7 @@ export function ExpenseList({
 }: ExpenseListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<EditExpenseData | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString("pt-BR", {
@@ -107,154 +121,13 @@ export function ExpenseList({
 
   return (
     <>
-      {/* Mobile View: Cards */}
-      <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-        {expenses.map((expense) => (
-          <div
-            key={expense.id}
-            className="bg-card border border-border rounded-xl p-4 shadow-sm space-y-3"
-          >
-            {editingId === expense.id && editData ? (
-              <div className="space-y-3">
-                <Input
-                  value={editData.description}
-                  onChange={(e) =>
-                    setEditData({ ...editData, description: e.target.value })
-                  }
-                  placeholder="Descrição"
-                  className="h-9"
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  <Select
-                    value={editData.categoryId}
-                    onValueChange={(v) =>
-                      setEditData({ ...editData, categoryId: v })
-                    }
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    type="date"
-                    value={editData.date}
-                    onChange={(e) =>
-                      setEditData({ ...editData, date: e.target.value })
-                    }
-                    className="h-9"
-                  />
-                </div>
-                <InputMoney
-                  value={editData.amount}
-                  onChange={(v) => setEditData({ ...editData, amount: v })}
-                  className="h-9"
-                />
-                <div className="flex gap-2">
-                  <Button className="flex-1" onClick={handleSaveEdit}>
-                    <Check className="w-4 h-4 mr-2" />
-                    Salvar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={handleCancelEdit}
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold text-foreground">
-                      {expense.description}
-                    </h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge
-                        variant="secondary"
-                        className="text-[10px] uppercase font-bold tracking-wider py-0 px-1.5 h-auto"
-                      >
-                        {expense.categoryName}
-                      </Badge>
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {format(
-                          new Date(expense.paymentDate || expense.dueDate),
-                          "dd/MM/yyyy",
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-destructive">
-                      {formatCurrency(expense.amount)}
-                    </p>
-                    <span className="text-[10px] text-muted-foreground uppercase font-medium">
-                      {paymentMethodLabels[expense.paymentMethod]}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2 pt-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 h-8"
-                    onClick={() => handleStartEdit(expense)}
-                  >
-                    <Edit2 className="w-3.5 h-3.5 mr-2" /> Editar
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-8 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 mr-2" /> Excluir
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Tem certeza que deseja excluir esta despesa?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Essa ação não pode ser desfeita. Isso excluirá
-                          permanentemente a despesa.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onDelete(expense.id)}>
-                          Excluir
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Desktop View: Table */}
-      <div className="hidden md:block">
+      <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent px-4">
               <TableHead className="pl-6">Lançamento</TableHead>
               <TableHead>Categoria</TableHead>
-              <TableHead>Pagamento</TableHead>
+              <TableHead className="hidden sm:table-cell">Pagamento</TableHead>
               <TableHead className="text-center">Data</TableHead>
               <TableHead className="text-right">Valor</TableHead>
               <TableHead className="text-right pr-6">Ações</TableHead>
@@ -262,7 +135,7 @@ export function ExpenseList({
           </TableHeader>
           <TableBody>
             {expenses.map((expense) => (
-              <TableRow key={expense.id} className="group px-4">
+              <TableRow key={expense.id} className="px-4">
                 {editingId === expense.id && editData ? (
                   <>
                     <TableCell className="pl-6">
@@ -299,7 +172,7 @@ export function ExpenseList({
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       <Select
                         value={editData.paymentMethod.toString()}
                         onValueChange={(v) =>
@@ -379,7 +252,7 @@ export function ExpenseList({
                         {expense.categoryName}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       <span className="text-sm text-muted-foreground">
                         {paymentMethodLabels[expense.paymentMethod]}
                       </span>
@@ -394,46 +267,34 @@ export function ExpenseList({
                       {formatCurrency(expense.amount)}
                     </TableCell>
                     <TableCell className="text-right pr-6">
-                      <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:text-primary"
-                          onClick={() => handleStartEdit(expense)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Tem certeza que deseja excluir esta despesa?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Essa ação não pode ser desfeita. Isso excluirá
-                                permanentemente a despesa.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => onDelete(expense.id)}
-                              >
-                                Excluir
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                          >
+                            <EllipsisVerticalIcon className="h-4 w-4" />
+                            <span className="sr-only">Ações</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleStartEdit(expense)}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setDeleteConfirmId(expense.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </>
                 )}
@@ -442,6 +303,34 @@ export function ExpenseList({
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog
+        open={!!deleteConfirmId}
+        onOpenChange={(open) => !open && setDeleteConfirmId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Tem certeza que deseja excluir esta despesa?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação não pode ser desfeita. Isso excluirá permanentemente a
+              despesa.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirmId) onDelete(deleteConfirmId);
+                setDeleteConfirmId(null);
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

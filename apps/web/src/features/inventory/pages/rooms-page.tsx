@@ -1,4 +1,4 @@
-import { Filter, Eye, Pencil, Plus } from "lucide-react";
+import { EllipsisVerticalIcon, Eye, Filter, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Badge } from "@/shared/components/ui/badge";
@@ -10,6 +10,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -174,7 +180,7 @@ export function RoomsPage() {
                       <TableHead className="hidden lg:table-cell">
                         Integrações
                       </TableHead>
-                      <TableHead className="w-25 text-right">Ações</TableHead>
+                      <TableHead className="w-10 text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -207,25 +213,28 @@ export function RoomsPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleViewDetails(room)}
-                              title="Ver detalhes"
-                            >
-                              <Eye className="h-4 w-4" />
-                              <span className="sr-only">Ver detalhes</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(room)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                              <span className="sr-only">Editar</span>
-                            </Button>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <EllipsisVerticalIcon className="h-4 w-4" />
+                                <span className="sr-only">Ações</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => handleViewDetails(room)}
+                              >
+                                <Eye className="h-4 w-4" />
+                                Ver detalhes
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleEdit(room)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}

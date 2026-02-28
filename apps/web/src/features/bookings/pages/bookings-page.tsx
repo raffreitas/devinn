@@ -1,5 +1,12 @@
 import { format } from "date-fns";
-import { EyeIcon, Filter, PenBoxIcon, Plus, Trash2Icon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  EyeIcon,
+  Filter,
+  PenBoxIcon,
+  Plus,
+  Trash2Icon,
+} from "lucide-react";
 import { useState } from "react";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
@@ -12,7 +19,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/shared/components/ui/alert-dialog";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -23,7 +29,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { getBlockLabel } from "../utils/booking-helpers";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -55,7 +67,7 @@ import {
   mapToFormData,
   type PaymentStatus,
 } from "../types";
-import { isBlock, isICalSource } from "../utils/booking-helpers";
+import { getBlockLabel, isBlock, isICalSource } from "../utils/booking-helpers";
 
 const statusConfig: Record<
   BookingStatus,
@@ -83,6 +95,7 @@ export function BookingsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | undefined>();
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const [filterStatus, setFilterStatus] = useState<BookingStatus | "all">(
     "all",
@@ -233,17 +246,13 @@ export function BookingsPage() {
                     <TableRow>
                       <TableHead className="w-20">Quarto</TableHead>
                       <TableHead>Hóspede</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Check-in
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        Check-out
-                      </TableHead>
+                      <TableHead>Check-in</TableHead>
+                      <TableHead>Check-out</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="hidden sm:table-cell">
                         Pagamento
                       </TableHead>
-                      <TableHead className="w-30 text-right">Ações</TableHead>
+                      <TableHead className="w-10 text-right">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -252,11 +261,13 @@ export function BookingsPage() {
                         <TableCell className="font-medium">
                           {booking.number}
                         </TableCell>
-                        <TableCell>{booking.guest?.name || getBlockLabel(booking.source)}</TableCell>
-                        <TableCell className="hidden md:table-cell">
+                        <TableCell>
+                          {booking.guest?.name || getBlockLabel(booking.source)}
+                        </TableCell>
+                        <TableCell>
                           {format(new Date(booking.checkIn), "dd/MM/yyyy")}
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell">
+                        <TableCell>
                           {format(new Date(booking.checkOut), "dd/MM/yyyy")}
                         </TableCell>
                         <TableCell>
@@ -274,52 +285,37 @@ export function BookingsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleViewDetails(booking)}
-                            >
-                              <EyeIcon className="h-4 w-4" />
-                              <span className="sr-only">Ver detalhes</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(booking)}
-                            >
-                              <PenBoxIcon className="h-4 w-4" />
-                              <span className="sr-only">Editar</span>
-                            </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon">
-                                <Trash2Icon className="h-4 w-4" />
-                                <span className="sr-only">Excluir</span>
+                                <EllipsisVerticalIcon className="h-4 w-4" />
+                                <span className="sr-only">Ações</span>
                               </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Tem certeza que deseja excluir esta reserva?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Essa ação não pode ser desfeita. Isso
-                                  excluirá permanentemente a reserva.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDelete(booking.id)}
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => handleViewDetails(booking)}
+                              >
+                                <EyeIcon className="h-4 w-4" />
+                                Ver detalhes
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleEdit(booking)}
+                              >
+                                <PenBoxIcon className="h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onClick={() => setDeleteConfirmId(booking.id)}
+                              >
+                                <Trash2Icon className="h-4 w-4" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -354,7 +350,11 @@ export function BookingsPage() {
           onCancel={handleCloseModal}
           onSubmit={handleCreateOrUpdate}
           isSubmitting={isCreating || isUpdating}
-          isICalBlock={selectedBooking ? isBlock(selectedBooking) && isICalSource(selectedBooking.source) : false}
+          isICalBlock={
+            selectedBooking
+              ? isBlock(selectedBooking) && isICalSource(selectedBooking.source)
+              : false
+          }
         />
       </Modal>
 
@@ -373,6 +373,34 @@ export function BookingsPage() {
           />
         )}
       </Modal>
+
+      <AlertDialog
+        open={!!deleteConfirmId}
+        onOpenChange={(open) => !open && setDeleteConfirmId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Tem certeza que deseja excluir esta reserva?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Essa ação não pode ser desfeita. Isso excluirá permanentemente a
+              reserva.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirmId) handleDelete(deleteConfirmId);
+                setDeleteConfirmId(null);
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
