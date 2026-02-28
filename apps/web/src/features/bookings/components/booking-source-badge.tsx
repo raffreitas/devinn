@@ -1,5 +1,5 @@
-import { Badge } from "@/shared/components/ui/badge";
 import { Globe, Home, User } from "lucide-react";
+import { Badge } from "@/shared/components/ui/badge";
 import type { BookingSource } from "../types";
 import { getBookingSourceLabel } from "../utils/booking-helpers";
 

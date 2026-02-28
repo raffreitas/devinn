@@ -8,16 +8,6 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
-import { usePagination } from "@/shared/hooks/use-pagination";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/shared/components/ui/pagination";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
 import {
@@ -47,6 +37,15 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/shared/components/ui/pagination";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -62,6 +61,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { usePagination } from "@/shared/hooks/use-pagination";
 import { BookingDetails } from "../components/booking-details";
 import { BookingForm } from "../components/booking-form";
 import {
@@ -110,6 +110,7 @@ function generatePaginationPages(currentPage: number, totalPages: number) {
 
   return pages;
 }
+
 import { getBlockLabel, isBlock, isICalSource } from "../utils/booking-helpers";
 
 const statusConfig: Record<
@@ -313,7 +314,10 @@ export function BookingsPage() {
                           <TableCell className="font-medium">
                             {booking.number}
                           </TableCell>
-                          <TableCell>{booking.guest?.name || getBlockLabel(booking.source)}</TableCell>
+                          <TableCell>
+                            {booking.guest?.name ||
+                              getBlockLabel(booking.source)}
+                          </TableCell>
                           <TableCell>
                             {format(new Date(booking.checkIn), "dd/MM/yyyy")}
                           </TableCell>
@@ -321,51 +325,54 @@ export function BookingsPage() {
                             {format(new Date(booking.checkOut), "dd/MM/yyyy")}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={statusConfig[booking.status].variant}>
+                            <Badge
+                              variant={statusConfig[booking.status].variant}
+                            >
                               {statusConfig[booking.status].label}
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">
                             <Badge
                               variant={
-                                paymentStatusConfig[booking.paymentStatus].variant
+                                paymentStatusConfig[booking.paymentStatus]
+                                  .variant
                               }
                             >
                               {paymentStatusConfig[booking.paymentStatus].label}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                              <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <EllipsisVerticalIcon className="h-4 w-4" />
-                                <span className="sr-only">Ações</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleViewDetails(booking)}
-                              >
-                                <EyeIcon className="h-4 w-4" />
-                                Ver detalhes
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleEdit(booking)}
-                              >
-                                <PenBoxIcon className="h-4 w-4" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                variant="destructive"
-                                onClick={() => setDeleteConfirmId(booking.id)}
-                              >
-                                <Trash2Icon className="h-4 w-4" />
-                                Excluir
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <EllipsisVerticalIcon className="h-4 w-4" />
+                                  <span className="sr-only">Ações</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleViewDetails(booking)}
+                                >
+                                  <EyeIcon className="h-4 w-4" />
+                                  Ver detalhes
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleEdit(booking)}
+                                >
+                                  <PenBoxIcon className="h-4 w-4" />
+                                  Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onClick={() => setDeleteConfirmId(booking.id)}
+                                >
+                                  <Trash2Icon className="h-4 w-4" />
+                                  Excluir
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -406,7 +413,7 @@ export function BookingsPage() {
                                 {pageNum}
                               </PaginationLink>
                             </PaginationItem>
-                          )
+                          ),
                       )}
 
                       <PaginationItem>

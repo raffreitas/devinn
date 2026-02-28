@@ -23,16 +23,18 @@ export function ReservationBar({
   width,
 }: ReservationBarProps) {
   const bookingIsBlock = isBlock(booking);
-  const remaining = bookingIsBlock ? 0 : booking.pricing.total - booking.totalPaid;
-  
+  const remaining = bookingIsBlock
+    ? 0
+    : booking.pricing.total - booking.totalPaid;
+
   const barColor = bookingIsBlock
     ? "bg-gray-400/80 hover:bg-gray-500"
     : paymentStatusColors[booking.paymentStatus];
-  
+
   const label = bookingIsBlock
     ? getBlockLabel(booking.source)
     : booking.guest!.name;
-  
+
   const tooltip = bookingIsBlock
     ? `Período bloqueado via ${getBlockLabel(booking.source)}. Não editável.`
     : `${booking.guest!.name} - ${remaining > 0 ? `Falta: ${remaining.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : "Pago"}`;
@@ -63,9 +65,7 @@ export function ReservationBar({
       }}
       title={tooltip}
     >
-      <span className="text-xs font-medium truncate flex-1">
-        {label}
-      </span>
+      <span className="text-xs font-medium truncate flex-1">{label}</span>
       <div className="flex items-center gap-0.5 ml-1">
         {bookingIsBlock ? (
           booking.source.includes("Ical") ? (
