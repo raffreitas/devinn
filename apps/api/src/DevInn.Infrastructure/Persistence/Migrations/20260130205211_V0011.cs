@@ -33,7 +33,7 @@ namespace DevInn.Infrastructure.Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql("drop index idx_rooms_ical_export_token;");
-            
+
             migrationBuilder.DropColumn(
                 name: "ical_export_token",
                 table: "rooms");

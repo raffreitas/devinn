@@ -43,7 +43,7 @@ export function usePagination({
           prev.set("page", "1");
           return prev;
         },
-        { replace: true }
+        { replace: true },
       );
     }
   }, dependencies);

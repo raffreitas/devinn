@@ -200,7 +200,10 @@ export function BookingCalendar() {
       const todayPosition = (today.getDate() - 1) * DAY_COLUMN_WIDTH;
       const centeredScroll =
         todayPosition - container.clientWidth / 2 + DAY_COLUMN_WIDTH / 2;
-      container.scrollTo({ left: Math.max(0, centeredScroll), behavior: "smooth" });
+      container.scrollTo({
+        left: Math.max(0, centeredScroll),
+        behavior: "smooth",
+      });
     } else {
       container.scrollTo({ left: 0 });
     }
@@ -276,7 +279,8 @@ export function BookingCalendar() {
                 {activeRooms.map((room) => {
                   const roomBookings = bookings
                     ? bookings.items.filter(
-                        (b: Booking) => b.roomId === room.id && b.status !== "Canceled",
+                        (b: Booking) =>
+                          b.roomId === room.id && b.status !== "Canceled",
                       )
                     : [];
                   return (
@@ -392,7 +396,11 @@ export function BookingCalendar() {
           onCancel={handleCancel}
           onSubmit={handleFormSubmit}
           isSubmitting={false}
-          isICalBlock={editingBooking ? isBlock(editingBooking) && isICalSource(editingBooking.source) : false}
+          isICalBlock={
+            editingBooking
+              ? isBlock(editingBooking) && isICalSource(editingBooking.source)
+              : false
+          }
         />
       </Modal>
 

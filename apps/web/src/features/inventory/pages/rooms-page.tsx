@@ -1,15 +1,5 @@
 import { EllipsisVerticalIcon, Eye, Filter, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
-import { usePagination } from "@/shared/hooks/use-pagination";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/shared/components/ui/pagination";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -27,6 +17,15 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/shared/components/ui/pagination";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -42,6 +41,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { usePagination } from "@/shared/hooks/use-pagination";
 import { RoomDetailsSheet } from "../components/room-details-sheet";
 import { RoomFormSheet } from "../components/room-form-sheet";
 import { statusDisplayConfig } from "../constants/room-status";
@@ -221,80 +221,80 @@ export function RoomsPage() {
             </div>
           ) : rooms && rooms.items.length > 0 ? (
             <>
-            <div className="overflow-x-auto -mx-6 sm:mx-0">
-              <div className="inline-block min-w-full align-middle">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-20">Nº</TableHead>
-                      <TableHead>Categoria</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        Integrações
-                      </TableHead>
-                      <TableHead className="w-10 text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rooms.items.map((room) => (
-                      <TableRow key={room.id}>
-                        <TableCell className="font-medium">
-                          {room.number}
-                        </TableCell>
-                        <TableCell>{room.categoryName}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={statusDisplayConfig[room.status].variant}
-                          >
-                            {statusDisplayConfig[room.status].label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {room.activeIntegrationsCount &&
-                          room.activeIntegrationsCount > 0 ? (
-                            <Badge
-                              variant="secondary"
-                              className="gap-1 cursor-pointer hover:bg-secondary/80"
-                            >
-                              {room.activeIntegrationsCount}
-                            </Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">
-                              -
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <EllipsisVerticalIcon className="h-4 w-4" />
-                                <span className="sr-only">Ações</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleViewDetails(room)}
-                              >
-                                <Eye className="h-4 w-4" />
-                                Ver detalhes
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleEdit(room)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                                Editar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+              <div className="overflow-x-auto -mx-6 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-20">Nº</TableHead>
+                        <TableHead>Categoria</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="hidden lg:table-cell">
+                          Integrações
+                        </TableHead>
+                        <TableHead className="w-10 text-right">Ações</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {rooms.items.map((room) => (
+                        <TableRow key={room.id}>
+                          <TableCell className="font-medium">
+                            {room.number}
+                          </TableCell>
+                          <TableCell>{room.categoryName}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={statusDisplayConfig[room.status].variant}
+                            >
+                              {statusDisplayConfig[room.status].label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">
+                            {room.activeIntegrationsCount &&
+                            room.activeIntegrationsCount > 0 ? (
+                              <Badge
+                                variant="secondary"
+                                className="gap-1 cursor-pointer hover:bg-secondary/80"
+                              >
+                                {room.activeIntegrationsCount}
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                -
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <EllipsisVerticalIcon className="h-4 w-4" />
+                                  <span className="sr-only">Ações</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleViewDetails(room)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  Ver detalhes
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleEdit(room)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                  Editar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
-            </div>
-            {/* Pagination */}
+              {/* Pagination */}
               {rooms.totalPages > 1 && (
                 <div className="mt-6 flex justify-center">
                   <Pagination>
@@ -327,7 +327,7 @@ export function RoomsPage() {
                                 {pageNum}
                               </PaginationLink>
                             </PaginationItem>
-                          )
+                          ),
                       )}
 
                       <PaginationItem>
@@ -347,7 +347,7 @@ export function RoomsPage() {
                   </Pagination>
                 </div>
               )}
-              </>
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground mb-4">

@@ -33,14 +33,14 @@ internal sealed class BookingRepository(ApplicationDbContext dbContext) : IBooki
         CancellationToken cancellationToken = default)
     {
         var query = dbContext.Bookings
-            .Where(b => b.ChannelIntegrationId == channelIntegrationId 
+            .Where(b => b.ChannelIntegrationId == channelIntegrationId
                         && b.Status != BookingStatus.Canceled);
 
         if (checkOutAfter.HasValue)
         {
             query = query.Where(b => b.StayPeriod.CheckOut >= checkOutAfter.Value);
         }
-        
+
         return await query.ToListAsync(cancellationToken);
     }
 

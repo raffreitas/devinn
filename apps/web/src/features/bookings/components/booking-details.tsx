@@ -40,7 +40,12 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
 import type {
   Booking,
   BookingStatus,
@@ -68,7 +73,8 @@ const statusConfig: Record<
   Scheduled: {
     label: "Agendada",
     variant: "default",
-    className: "bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 border-none dark:bg-blue-500/10 dark:text-blue-400",
+    className:
+      "bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 border-none dark:bg-blue-500/10 dark:text-blue-400",
   },
   CheckedIn: {
     label: "Hospedado",
@@ -79,12 +85,14 @@ const statusConfig: Record<
   Completed: {
     label: "Concluída",
     variant: "outline",
-    className: "bg-muted text-muted-foreground border-none dark:bg-muted/10 dark:text-muted-foreground/40",
+    className:
+      "bg-muted text-muted-foreground border-none dark:bg-muted/10 dark:text-muted-foreground/40",
   },
   Canceled: {
     label: "Cancelada",
     variant: "destructive",
-    className: "bg-rose-500/20 text-rose-700 hover:bg-rose-500/30 border-none dark:bg-rose-500/10 dark:text-rose-400",
+    className:
+      "bg-rose-500/20 text-rose-700 hover:bg-rose-500/30 border-none dark:bg-rose-500/10 dark:text-rose-400",
   },
 };
 
@@ -114,7 +122,8 @@ const paymentStatusConfig: Record<
   Pending: {
     label: "Pendente",
     variant: "destructive",
-    className: "bg-rose-500/20 text-rose-700 hover:bg-rose-500/30 border-none dark:bg-rose-500/10 dark:text-rose-400",
+    className:
+      "bg-rose-500/20 text-rose-700 hover:bg-rose-500/30 border-none dark:bg-rose-500/10 dark:text-rose-400",
     icon: <XCircle className="w-4 h-4" />,
   },
 };
@@ -156,7 +165,9 @@ export function BookingDetails({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2 min-w-0">
           <h3 className="text-2xl font-bold tracking-tight text-foreground wrap-break-word">
-            {bookingIsBlock ? getBlockLabel(booking.source) : booking.guest?.name}
+            {bookingIsBlock
+              ? getBlockLabel(booking.source)
+              : booking.guest?.name}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
             <BookingSourceBadge source={booking.source} />
@@ -189,7 +200,11 @@ export function BookingDetails({
                   variant="outline"
                   size="icon"
                   onClick={() => onEdit(booking)}
-                  title={bookingIsBlock ? "Adicionar dados ao bloqueio iCAL" : "Editar reserva"}
+                  title={
+                    bookingIsBlock
+                      ? "Adicionar dados ao bloqueio iCAL"
+                      : "Editar reserva"
+                  }
                 >
                   <Pencil className="w-4 h-4" />
                 </Button>
@@ -251,11 +266,14 @@ export function BookingDetails({
               <div>
                 <p className="text-sm">
                   Este período está bloqueado via sincronização com{" "}
-                  <span className="font-semibold">{getBlockLabel(booking.source)}</span>
+                  <span className="font-semibold">
+                    {getBlockLabel(booking.source)}
+                  </span>
                 </p>
                 {isICalSource(booking.source) && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Clique em editar para adicionar dados do hóspede, pagamento e observações.
+                    Clique em editar para adicionar dados do hóspede, pagamento
+                    e observações.
                   </p>
                 )}
               </div>
@@ -266,9 +284,7 @@ export function BookingDetails({
                 <p className="text-xs text-muted-foreground font-medium mb-1">
                   Observações:
                 </p>
-                <p className="text-sm">
-                  {booking.notes}
-                </p>
+                <p className="text-sm">{booking.notes}</p>
               </div>
             )}
           </CardContent>
@@ -288,19 +304,25 @@ export function BookingDetails({
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <div className="p-4 bg-background border rounded-xl space-y-1 min-w-0">
-                  <p className="text-xs text-muted-foreground truncate">Valor Total</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    Valor Total
+                  </p>
                   <p className="text-xl font-bold break-words">
                     {formatCurrency(booking.pricing.total)}
                   </p>
                 </div>
                 <div className="p-4 bg-background border rounded-xl space-y-1 min-w-0">
-                  <p className="text-xs text-muted-foreground truncate">Valor Pago</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    Valor Pago
+                  </p>
                   <p className="text-xl font-bold text-emerald-600 break-words">
                     {formatCurrency(booking.totalPaid)}
                   </p>
                 </div>
                 <div className="p-4 bg-background border rounded-xl space-y-1 min-w-0">
-                  <p className="text-xs text-muted-foreground truncate">Saldo Devedor</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    Saldo Devedor
+                  </p>
                   <p
                     className={`text-xl font-bold break-words ${booking.balanceDue > 0 ? "text-rose-600" : "text-emerald-600"}`}
                   >
@@ -316,7 +338,9 @@ export function BookingDetails({
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between items-start gap-4 text-muted-foreground">
-                    <span className="break-words">Diária base ({booking.categoryName})</span>
+                    <span className="break-words">
+                      Diária base ({booking.categoryName})
+                    </span>
                     <span className="text-foreground whitespace-nowrap shrink-0">
                       {formatCurrency(booking.pricing.basePrice)}
                     </span>
@@ -324,12 +348,13 @@ export function BookingDetails({
                   {booking.pricing.numberOfExtraGuests > 0 && (
                     <div className="flex justify-between items-start gap-4 text-muted-foreground">
                       <span className="break-words">
-                        {booking.pricing.numberOfExtraGuests} hóspede(s) extra(s)
+                        {booking.pricing.numberOfExtraGuests} hóspede(s)
+                        extra(s)
                       </span>
                       <span className="text-foreground whitespace-nowrap shrink-0">
                         {formatCurrency(
                           booking.pricing.extraGuestPrice *
-                          booking.pricing.numberOfExtraGuests,
+                            booking.pricing.numberOfExtraGuests,
                         )}
                       </span>
                     </div>
@@ -340,13 +365,15 @@ export function BookingDetails({
                     <span className="text-foreground whitespace-nowrap shrink-0">
                       {formatCurrency(
                         booking.pricing.basePrice +
-                        booking.pricing.extraGuestPrice *
-                        booking.pricing.numberOfExtraGuests,
+                          booking.pricing.extraGuestPrice *
+                            booking.pricing.numberOfExtraGuests,
                       )}
                     </span>
                   </div>
                   <div className="flex justify-between items-start gap-4 text-muted-foreground">
-                    <span className="break-words">Total por {booking.pricing.numberOfNights} noites</span>
+                    <span className="break-words">
+                      Total por {booking.pricing.numberOfNights} noites
+                    </span>
                     <span className="text-foreground font-semibold whitespace-nowrap shrink-0">
                       {formatCurrency(booking.pricing.subtotal)}
                     </span>
@@ -354,12 +381,16 @@ export function BookingDetails({
                   {booking.pricing.discounts > 0 && (
                     <div className="flex justify-between items-start gap-4 text-rose-600">
                       <span className="break-words">Descontos</span>
-                      <span className="whitespace-nowrap shrink-0">- {formatCurrency(booking.pricing.discounts)}</span>
+                      <span className="whitespace-nowrap shrink-0">
+                        - {formatCurrency(booking.pricing.discounts)}
+                      </span>
                     </div>
                   )}
                   <Separator className="my-2" />
                   <div className="flex justify-between items-start gap-4">
-                    <span className="font-bold break-words">Total da Reserva</span>
+                    <span className="font-bold break-words">
+                      Total da Reserva
+                    </span>
                     <span className="font-bold text-primary text-lg whitespace-nowrap shrink-0">
                       {formatCurrency(booking.pricing.total)}
                     </span>
@@ -385,7 +416,10 @@ export function BookingDetails({
                           </span>
                           {payment.date && (
                             <span className="text-xs text-muted-foreground truncate">
-                              {format(new Date(payment.date), "dd/MM/yyyy HH:mm")}
+                              {format(
+                                new Date(payment.date),
+                                "dd/MM/yyyy HH:mm",
+                              )}
                             </span>
                           )}
                         </div>
@@ -487,7 +521,9 @@ export function BookingDetails({
                     <p className="text-xs text-muted-foreground font-medium">
                       Telefone
                     </p>
-                    <p className="text-sm font-semibold">{booking.guest?.phone}</p>
+                    <p className="text-sm font-semibold">
+                      {booking.guest?.phone}
+                    </p>
                   </div>
                 </div>
 
@@ -517,7 +553,10 @@ export function BookingDetails({
                         Data de Nascimento
                       </p>
                       <p className="text-sm font-semibold">
-                        {format(new Date(booking.guest.birthDate!), "dd/MM/yyyy")}
+                        {format(
+                          new Date(booking.guest.birthDate!),
+                          "dd/MM/yyyy",
+                        )}
                       </p>
                     </div>
                   </div>

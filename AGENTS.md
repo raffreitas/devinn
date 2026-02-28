@@ -118,24 +118,6 @@ The project has a CI/CD workflow configured in `.github/workflows/webapi-cicd.ya
 
 The CI pipeline is optimized with caching for both pnpm and NuGet packages to speed up builds. The deployment process includes running database migrations before deploying the application to Railway.
 
-For more details, see the [CI/CD documentation](docs/ci-cd.md).
-
-## Issues Planning
-
-The project's development is organized into epics and issues, which are planned in detail in the [ISSUES-PLANNING.md](docs/ISSUES-PLANNING.md) document. This document outlines the project's roadmap, feature breakdown, and technical implementation details for each issue.
-
-The main epics for the project include:
-
-*   **Épico 1: Setup Inicial e Infraestrutura**: Covers multi-tenancy, authentication, and CI/CD setup.
-*   **Épico 2: Gestão de Inventário**: Includes features for managing room categories and rooms.
-*   **Épico 3: Mapa de Disponibilidade e Reservas**: Focuses on the Gantt chart for visualizing and managing bookings.
-*   **Épico 4: Integrações (Channel Manager)**: Deals with integrating with external services like Booking.com.
-*   **Épico 5: Módulo Financeiro**: Covers features related to financial management, such as expenses and payments.
-*   **Épico 6: Módulo de Precificação**: Includes features for defining and calculating prices.
-*   **Épico 7: Gestão do Ciclo de Vida da Reserva**: Covers the different stages of a booking.
-
-This planning document provides a clear structure for the project's development and is a valuable resource for understanding the project's goals and progress.
-
 ## Development Conventions
 
 ### Frontend

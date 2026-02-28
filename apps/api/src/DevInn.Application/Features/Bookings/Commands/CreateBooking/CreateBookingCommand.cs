@@ -38,7 +38,7 @@ internal sealed class CreateBookingInputValidation : AbstractValidator<CreateBoo
             RuleFor(command => command.Guest).NotNull().WithMessage("Informações do hóspede são obrigatórias para reservas manuais.");
             RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);
         });
-        
+
         When(x => x.Guest != null, () =>
         {
             RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);

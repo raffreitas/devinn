@@ -175,9 +175,13 @@ export function BookingForm({
           <div className="flex items-start gap-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3">
             <LinkIcon className="w-4 h-4 text-primary mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-primary">Reserva via sincronização iCAL</p>
+              <p className="text-sm font-medium text-primary">
+                Reserva via sincronização iCAL
+              </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Quarto e datas são controlados pela sincronização externa e não podem ser alterados. Preencha os dados do hóspede para enriquecer esta reserva.
+                Quarto e datas são controlados pela sincronização externa e não
+                podem ser alterados. Preencha os dados do hóspede para
+                enriquecer esta reserva.
               </p>
             </div>
           </div>

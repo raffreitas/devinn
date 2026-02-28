@@ -10,7 +10,9 @@ import type {
 } from "../types";
 
 export const bookingService = {
-  getAll: async (filters?: BookingFilters): Promise<PaginatedResponse<Booking>> => {
+  getAll: async (
+    filters?: BookingFilters,
+  ): Promise<PaginatedResponse<Booking>> => {
     const params = new URLSearchParams();
 
     if (filters?.startDate) params.append("startDate", filters.startDate);
