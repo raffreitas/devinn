@@ -53,9 +53,9 @@ jobs:
         working-directory: apps/api
         run: dotnet test --no-restore --no-build --configuration Release --verbosity normal
 
-      - name: Run code coverage & generate HTML
+      - name: Run code coverage
         working-directory: apps/api
-        run: make coverage-html
+        run: make test-coverage
 
       - name: Upload coverage results
         uses: actions/upload-artifact@v3
