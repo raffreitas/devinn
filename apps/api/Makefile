@@ -4,7 +4,7 @@
 
 PROJECT_NAME = DevInn
 PROJECT_DIR  = src/DevInn.WebApi
-TEST_PROJECT = test/DevInn.Tests/DevInn.Tests.csproj
+UNIT_TEST_PROJECT = tests/DevInn.UnitTests/DevInn.UnitTests.csproj
 
 # --- New: explicit startup and migrations project ---
 STARTUP_PROJECT = src/DevInn.WebApi
@@ -93,11 +93,11 @@ id-update:
 # --- Testing ---
 
 test:
-	$(DOTNET_CMD) test $(TEST_PROJECT) --logger "console;verbosity=normal"
+	$(DOTNET_CMD) test $(UNIT_TEST_PROJECT) --logger "console;verbosity=normal"
 
 test-unit:
-	$(DOTNET_CMD) test $(TEST_PROJECT) --filter "Category=Unit Tests"
+	$(DOTNET_CMD) test $(UNIT_TEST_PROJECT) --filter "Category=Unit"
 
 test-coverage:
-	$(DOTNET_CMD) test $(TEST_PROJECT) --collect:"XPlat Code Coverage" --results-directory ./TestResults
+	$(DOTNET_CMD) test $(UNIT_TEST_PROJECT) --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
