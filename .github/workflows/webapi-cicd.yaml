@@ -53,16 +53,6 @@ jobs:
         working-directory: apps/api
         run: dotnet test --no-restore --no-build --configuration Release --verbosity normal
 
-      - name: Run code coverage
-        working-directory: apps/api
-        run: make test-coverage
-
-      - name: Upload coverage results
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-report
-          path: apps/api/TestResults/**/*.cobertura.xml
-
   apply-migrations:
     name: Apply DB migrations
     runs-on: ubuntu-latest
