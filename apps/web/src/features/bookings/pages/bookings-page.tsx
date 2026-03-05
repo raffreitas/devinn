@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { endOfMonth, format, startOfMonth } from "date-fns";
 import {
   EllipsisVerticalIcon,
   EyeIcon,
@@ -8,6 +8,8 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
+import type { DateRange } from "react-day-picker";
+import { DateRangePicker } from "@/shared/components/date-range-picker";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
 import {
@@ -141,23 +143,44 @@ export function BookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | undefined>();
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  // Estado inicial com filtros padrão: mês atual e status ativos (Scheduled + CheckedIn)
+  const today = new Date();
+  const defaultDateRange: DateRange = {
+    from: startOfMonth(today),
+    to: endOfMonth(today),
+  };
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(
+    defaultDateRange,
+  );
+
+  // filterStatus: quando "Scheduled", mostra ativas; quando "all", mostra tudo
   const [filterStatus, setFilterStatus] = useState<BookingStatus | "all">(
-    "all",
+    "Scheduled",
   );
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<
     PaymentStatus | "all"
   >("all");
 
+  // Serializar datas para formato YYYY-MM-DD esperado pela API
+  const startDate = dateRange?.from
+    ? format(dateRange.from, "yyyy-MM-dd")
+    : undefined;
+  const endDate = dateRange?.to
+    ? format(dateRange.to, "yyyy-MM-dd")
+    : undefined;
+
   // Gerenciar paginação sincronizada com URL
   const { page, pageSize, goToPage } = usePagination({
     defaultPageSize: 10,
-    dependencies: [filterStatus, filterPaymentStatus],
+    dependencies: [filterStatus, filterPaymentStatus, startDate, endDate],
   });
 
   const { data: bookings, isLoading } = useBookings({
     status: filterStatus === "all" ? undefined : filterStatus,
     paymentStatus:
       filterPaymentStatus === "all" ? undefined : filterPaymentStatus,
+    startDate,
+    endDate,
     page,
     pageSize,
   });
@@ -218,6 +241,18 @@ export function BookingsPage() {
     setSelectedBooking(undefined);
   };
 
+  const handleClearFilters = () => {
+    // Reset to default: current month + active status (Scheduled)
+    const today = new Date();
+    setDateRange({
+      from: startOfMonth(today),
+      to: endOfMonth(today),
+    });
+    setFilterStatus("Scheduled");
+    setFilterPaymentStatus("all");
+    goToPage(1);
+  };
+
   return (
     <div className="space-y-4">
       <LoadingOverlay isFetching={isLoading} position="top-bar" />
@@ -241,9 +276,16 @@ export function BookingsPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <CardTitle>Lista de Reservas</CardTitle>
-              <CardDescription>Todas as reservas cadastradas</CardDescription>
+              <CardDescription>
+                Filtre por período, status e pagamento
+              </CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
+              <DateRangePicker
+                date={dateRange}
+                onDateChange={setDateRange}
+                className="w-full sm:w-auto"
+              />
               <Select
                 value={filterStatus}
                 onValueChange={(v) =>
@@ -256,9 +298,9 @@ export function BookingsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos Status</SelectItem>
-                  <SelectItem value="scheduled">Agendada</SelectItem>
-                  <SelectItem value="hosting">Hospedando</SelectItem>
-                  <SelectItem value="completed">Concluída</SelectItem>
+                  <SelectItem value="Scheduled">Agendada</SelectItem>
+                  <SelectItem value="CheckedIn">Hospedando</SelectItem>
+                  <SelectItem value="Completed">Concluída</SelectItem>
                   <SelectItem value="Canceled">Cancelada</SelectItem>
                 </SelectContent>
               </Select>
@@ -280,6 +322,14 @@ export function BookingsPage() {
                   <SelectItem value="Pending">Pendente</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Button
+                variant="outline"
+                onClick={handleClearFilters}
+                className="w-full sm:w-auto"
+              >
+                Limpar Filtros
+              </Button>
             </div>
           </div>
         </CardHeader>
