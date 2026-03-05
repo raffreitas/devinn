@@ -6,13 +6,26 @@ import {
   subMonths,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Filter, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ExpenseForm, type ExpenseFormData } from "../components/expense-form";
 import { type EditExpenseData, ExpenseList } from "../components/expense-list";
@@ -23,12 +36,14 @@ import {
   useExpenses,
   useUpdateExpense,
 } from "../hooks/use-expenses";
-import type { PaymentMethod } from "../types";
+import { type PaymentMethod, paymentMethodLabels } from "../types";
 
 export function ExpensesPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterPaymentMethod, setFilterPaymentMethod] = useState("all");
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -86,13 +101,18 @@ export function ExpensesPage() {
     await deleteExpense(id);
   };
 
-  // Filter expenses based on search term
+  // Filter expenses based on search term, category and payment method
   const filteredExpenses = expenses?.filter((expense) => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch =
       expense.description.toLowerCase().includes(searchLower) ||
-      expense.categoryName.toLowerCase().includes(searchLower)
-    );
+      expense.categoryName.toLowerCase().includes(searchLower);
+    const matchesCategory =
+      filterCategory === "all" || expense.categoryId === filterCategory;
+    const matchesPaymentMethod =
+      filterPaymentMethod === "all" ||
+      expense.paymentMethod === filterPaymentMethod;
+    return matchesSearch && matchesCategory && matchesPaymentMethod;
   });
 
   return (
@@ -128,30 +148,71 @@ export function ExpensesPage() {
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
+          <Button onClick={() => setIsExpenseModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Despesa
+          </Button>
         </div>
       </div>
 
       <Card className="border-none shadow-sm ring-1 ring-border overflow-hidden bg-card/50 backdrop-blur-sm">
         <CardHeader className="border-b border-border/50 pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar despesas..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle>Lista de Despesas</CardTitle>
+              <CardDescription>
+                Filtre por categoria e forma de pagamento
+              </CardDescription>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="hidden sm:flex">
-                <Filter className="w-4 h-4 mr-2" />
-                Filtrar
-              </Button>
-              <Button onClick={() => setIsExpenseModalOpen(true)} size="sm">
-                <Plus className="w-4 h-4 mr-1" />
-                Nova Despesa
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar despesas..."
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-full sm:w-45">
+                  <SelectValue placeholder="Todas Categorias" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas Categorias</SelectItem>
+                  {categories?.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={filterPaymentMethod}
+                onValueChange={setFilterPaymentMethod}
+              >
+                <SelectTrigger className="w-full sm:w-45">
+                  <SelectValue placeholder="Todos Pagamentos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos Pagamentos</SelectItem>
+                  {Object.entries(paymentMethodLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm("");
+                  setFilterCategory("all");
+                  setFilterPaymentMethod("all");
+                }}
+                className="w-full sm:w-auto"
+              >
+                Limpar Filtros
               </Button>
             </div>
           </div>
