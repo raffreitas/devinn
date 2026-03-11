@@ -1,5 +1,15 @@
-import { Check, Copy, ExternalLink } from "lucide-react";
+import {
+  Check,
+  Copy,
+  ExternalLink,
+  InfoIcon,
+} from "lucide-react";
 import { useState } from "react";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,
@@ -85,32 +95,15 @@ export function ICalExportCard({
           </div>
         </div>
 
-        <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground space-y-2">
-          <p className="font-medium text-foreground">ℹ️ Como usar:</p>
-          <ul className="list-disc list-inside space-y-1 ml-2">
-            <li>Copie a URL acima</li>
-            <li>
-              Cole na plataforma desejada (geralmente em "Calendário" ou
-              "Sincronização")
-            </li>
-            <li>As reservas deste quarto serão exportadas automaticamente</li>
-            <li>
-              Reservas importadas de outros iCals não são reexportadas (evita
-              loops)
-            </li>
-          </ul>
-        </div>
-
-        <div className="rounded-lg border border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-900 p-4 text-sm">
-          <p className="font-medium text-orange-900 dark:text-orange-200">
-            ⚠️ Segurança
-          </p>
-          <p className="text-orange-800 dark:text-orange-300 mt-1">
+        <Alert>
+          <InfoIcon />
+          <AlertTitle>Segurança</AlertTitle>
+          <AlertDescription>
             Esta URL é privada e específica deste quarto. Não compartilhe
             publicamente. Apenas datas ficam visíveis (sem dados pessoais dos
             hóspedes).
-          </p>
-        </div>
+          </AlertDescription>
+        </Alert>
       </CardContent>
     </Card>
   );

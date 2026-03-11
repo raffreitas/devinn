@@ -7,9 +7,7 @@ using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 using DevInn.Domain.Shared.ValueObjects;
-
 using FluentResults;
-
 using Mediator;
 
 namespace DevInn.Application.Features.Bookings.Commands.UpdateBooking;
@@ -39,7 +37,8 @@ internal sealed class UpdateBookingCommandHandler(
         CancellationToken cancellationToken)
     {
         if (command.Guest is null)
-            return Result.Fail(new ValidationError("Dados do hóspede são obrigatórios para enriquecimento do bloqueio."));
+            return Result.Fail(
+                new ValidationError("Dados do hóspede são obrigatórios para enriquecimento do bloqueio."));
 
         var room = await roomRepository.GetByIdAsync(booking.RoomId, cancellationToken);
         if (room is null)
@@ -61,7 +60,7 @@ internal sealed class UpdateBookingCommandHandler(
 
         booking.Enrich(guest, occupancy, command.Notes, new Money(decimal.Round(breakdown.Total.Value, 2)));
 
-        if (command is { PaidAmount: not null, PaymentMethod: not null })
+        if (command is { PaidAmount: > 0, PaymentMethod: not null })
         {
             booking.ClearPayments();
             booking.AddPayment(
