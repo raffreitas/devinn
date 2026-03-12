@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 using Quartz;
 
-namespace DevInn.Infrastructure.BackgroundJobs;
+namespace DevInn.Infrastructure.BackgroundJobs.Jobs;
 
 [DisallowConcurrentExecution]
 internal sealed class SyncAllChannelsJob(
