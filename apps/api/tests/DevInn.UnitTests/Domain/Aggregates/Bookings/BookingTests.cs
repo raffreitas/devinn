@@ -55,6 +55,37 @@ public sealed class BookingTests
     }
 
     [Fact]
+    public void ResyncExternalBlock_ShouldUpdateImportedBlock()
+    {
+        var block = CreateBlockBooking();
+        var roomId = Guid.NewGuid();
+        var stay = new StayPeriod(
+            new DateTimeOffset(2026, 03, 14, 12, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 03, 15, 12, 0, 0, TimeSpan.Zero));
+
+        block.ResyncExternalBlock(roomId, stay, BookingSource.AirbnbIcal, "Atualizado pelo feed");
+
+        block.RoomId.ShouldBe(roomId);
+        block.StayPeriod.ShouldBe(stay);
+        block.Source.ShouldBe(BookingSource.AirbnbIcal);
+        block.Notes.ShouldBe("Atualizado pelo feed");
+        block.TotalValue.ShouldBe(new Money(0m));
+    }
+
+    [Fact]
+    public void ResyncExternalBlock_ShouldThrow_WhenBookingIsNotBlock()
+    {
+        var booking = CreateRegularBooking();
+
+        Should.Throw<DomainException>(() => booking.ResyncExternalBlock(
+                Guid.NewGuid(),
+                new StayPeriod(DateTimeOffset.UtcNow.AddDays(5), DateTimeOffset.UtcNow.AddDays(7)),
+                BookingSource.BookingIcal,
+                "Atualizado"))
+            .Message.ShouldBe("A sincronização externa só pode atualizar bloqueios importados.");
+    }
+
+    [Fact]
     public void AddPayment_ShouldThrow_WhenAmountIsZero()
     {
         var booking = CreateRegularBooking();

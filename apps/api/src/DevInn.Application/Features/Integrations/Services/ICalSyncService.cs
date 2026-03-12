@@ -6,6 +6,7 @@ using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.Aggregates.Integrations;
 using DevInn.Domain.Aggregates.Integrations.Abstractions;
+using DevInn.Domain.Aggregates.Integrations.Enums;
 using DevInn.Domain.Shared.ValueObjects;
 
 using Microsoft.Extensions.Logging;
@@ -121,12 +122,17 @@ internal sealed class ICalSyncService(
         ChannelIntegration integration,
         CancellationToken cancellationToken)
     {
+        var source = GetBookingSource(integration);
+        var stay = new StayPeriod(iCalEvent.Start, iCalEvent.End);
+        var notes = BuildEventNotes(iCalEvent);
+
         // Check if booking with this ExternalId already exists
         var existingBooking = await FindBookingByExternalIdAsync(iCalEvent.Uid, cancellationToken);
 
         if (existingBooking is not null)
         {
-            logger.LogDebug("Booking with ExternalId {ExternalId} already exists, skipping", iCalEvent.Uid);
+            await UpdateExistingICalBookingAsync(existingBooking, integration, iCalEvent, stay, source, notes,
+                cancellationToken);
             return;
         }
 
@@ -146,17 +152,6 @@ internal sealed class ICalSyncService(
         }
 
         // Create booking from iCal event (blocks, not real bookings)
-        var source = integration.ChannelType == Domain.Aggregates.Integrations.Enums.ChannelType.Booking
-            ? BookingSource.BookingIcal
-            : BookingSource.AirbnbIcal;
-
-        var stay = new StayPeriod(iCalEvent.Start, iCalEvent.End);
-
-        // Store iCal summary in notes (e.g., "CLOSED - Not available")
-        var notes = string.IsNullOrWhiteSpace(iCalEvent.Description)
-            ? iCalEvent.Summary
-            : $"{iCalEvent.Summary}\n{iCalEvent.Description}";
-
         var booking = new Booking(
             roomId: integration.RoomId,
             guest: null, // Blocks don't have guest information
@@ -175,8 +170,62 @@ internal sealed class ICalSyncService(
             iCalEvent.Uid, integration.RoomId);
     }
 
-    private async Task<Booking?> FindBookingByExternalIdAsync(string externalId, CancellationToken cancellationToken)
+    private async Task UpdateExistingICalBookingAsync(
+        Booking existingBooking,
+        ChannelIntegration integration,
+        ICalEventDto iCalEvent,
+        StayPeriod stay,
+        BookingSource source,
+        string? notes,
+        CancellationToken cancellationToken)
     {
-        return await bookingRepository.GetByExternalIdAsync(externalId, cancellationToken);
+        if (!CanUpdateImportedBlock(existingBooking, integration))
+        {
+            logger.LogWarning(
+                "Booking with ExternalId {ExternalId} already exists but is not an updatable imported block. Skipping sync update.",
+                iCalEvent.Uid);
+            return;
+        }
+
+        var hasConflict = await bookingRepository.HasOverlappingAsync(
+            integration.RoomId,
+            iCalEvent.Start,
+            iCalEvent.End,
+            existingBooking.Id,
+            cancellationToken);
+
+        if (hasConflict)
+        {
+            logger.LogWarning(
+                "Conflict detected while updating imported block {BookingId} for event {EventUid}. Manual booking has priority. Skipping update.",
+                existingBooking.Id, iCalEvent.Uid);
+            return;
+        }
+
+        existingBooking.ResyncExternalBlock(integration.RoomId, stay, source, notes);
+
+        logger.LogInformation("Updated booking from iCal event {EventUid} for room {RoomId}",
+            iCalEvent.Uid, integration.RoomId);
     }
+
+    private static BookingSource GetBookingSource(ChannelIntegration integration)
+    {
+        return integration.ChannelType == ChannelType.Booking
+            ? BookingSource.BookingIcal
+            : BookingSource.AirbnbIcal;
+    }
+
+    private static string BuildEventNotes(ICalEventDto iCalEvent)
+        => string.IsNullOrWhiteSpace(iCalEvent.Description)
+            ? iCalEvent.Summary
+            : $"{iCalEvent.Summary}\n{iCalEvent.Description}";
+
+
+    private static bool CanUpdateImportedBlock(Booking existingBooking, ChannelIntegration integration)
+        => existingBooking.IsBlock
+           && existingBooking.ChannelIntegrationId == integration.Id
+           && existingBooking.Source is BookingSource.BookingIcal or BookingSource.AirbnbIcal;
+
+    private async Task<Booking?> FindBookingByExternalIdAsync(string externalId, CancellationToken cancellationToken)
+        => await bookingRepository.GetByExternalIdAsync(externalId, cancellationToken);
 }

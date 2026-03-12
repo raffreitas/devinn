@@ -1,4 +1,4 @@
-import { endOfMonth, format, startOfMonth } from "date-fns";
+import { addMonths, endOfMonth, format, startOfMonth } from "date-fns";
 import {
   EllipsisVerticalIcon,
   EyeIcon,
@@ -147,7 +147,7 @@ export function BookingsPage() {
   const today = new Date();
   const defaultDateRange: DateRange = {
     from: startOfMonth(today),
-    to: endOfMonth(today),
+    to: endOfMonth(addMonths(today, 3)),
   };
   const [dateRange, setDateRange] = useState<DateRange | undefined>(
     defaultDateRange,
@@ -246,7 +246,7 @@ export function BookingsPage() {
     const today = new Date();
     setDateRange({
       from: startOfMonth(today),
-      to: endOfMonth(today),
+      to: endOfMonth(addMonths(today, 3)),
     });
     setFilterStatus("Scheduled");
     setFilterPaymentStatus("all");

@@ -94,6 +94,26 @@ public sealed class Booking : Entity
         TotalValue = totalValue;
     }
 
+    public void ResyncExternalBlock(
+        Guid roomId,
+        StayPeriod stayPeriod,
+        BookingSource source,
+        string? notes = null)
+    {
+        if (!IsBlock)
+            throw new DomainException("A sincronização externa só pode atualizar bloqueios importados.");
+
+        if (source is not (BookingSource.BookingIcal or BookingSource.AirbnbIcal))
+            throw new DomainException("A sincronização externa requer uma origem iCal válida.");
+
+        RoomId = roomId;
+        StayPeriod = stayPeriod;
+        Source = source;
+        Notes = notes;
+        TotalValue = new Money(0);
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     public void AddPayment(Money amount, PaymentMethod method, DateTimeOffset paymentDate, string? notes = null)
     {
         if (IsBlock)
