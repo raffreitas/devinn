@@ -23,7 +23,9 @@ namespace DevInn.UnitTests.Application.Integrations.Services;
 [Trait("Category", "Application")]
 public sealed class ICalSyncServiceTests
 {
-    private readonly IChannelIntegrationRepository _integrationRepository = Substitute.For<IChannelIntegrationRepository>();
+    private readonly IChannelIntegrationRepository _integrationRepository =
+        Substitute.For<IChannelIntegrationRepository>();
+
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
     private readonly IICalService _icalService = Substitute.For<IICalService>();
     private readonly IUnitOfWork _uow = Substitute.For<IUnitOfWork>();
@@ -59,7 +61,8 @@ public sealed class ICalSyncServiceTests
         _icalService.ParseICalFeedAsync(integration.ICalUrl, TestContext.Current.CancellationToken).Returns([
             new ICalEventDto("event-1", "Blocked", updatedStart, updatedEnd, "Changed")
         ]);
-        _bookingRepository.GetByExternalIdAsync("event-1", TestContext.Current.CancellationToken).Returns(existingBooking);
+        _bookingRepository.GetByExternalIdAsync("event-1", TestContext.Current.CancellationToken)
+            .Returns(existingBooking);
         _bookingRepository.HasOverlappingAsync(
                 integration.RoomId,
                 updatedStart,
@@ -85,6 +88,56 @@ public sealed class ICalSyncServiceTests
     }
 
     [Fact]
+    public async Task SyncChannelIntegrationAsync_ShouldReactivateCanceledImportedBlock_WhenSameUidReturns()
+    {
+        var integration = new ChannelIntegration(ChannelType.Booking, "https://example.com/feed.ics", Guid.NewGuid());
+        var existingBooking = new Booking(
+            roomId: Guid.NewGuid(),
+            guest: null,
+            stayPeriod: new StayPeriod(
+                new DateTimeOffset(2026, 03, 10, 12, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 03, 11, 12, 0, 0, TimeSpan.Zero)),
+            occupancy: null,
+            totalValue: new Money(0m),
+            source: BookingSource.BookingIcal,
+            notes: "Cancelado anteriormente",
+            externalId: "event-1",
+            channelIntegrationId: integration.Id);
+        var updatedStart = new DateTimeOffset(2026, 03, 14, 12, 0, 0, TimeSpan.Zero);
+        var updatedEnd = new DateTimeOffset(2026, 03, 15, 12, 0, 0, TimeSpan.Zero);
+
+        existingBooking.Cancel(CancellationReason.ExternalCancellation);
+
+        _integrationRepository.GetByIdAsync(integration.Id, TestContext.Current.CancellationToken).Returns(integration);
+        _icalService.ParseICalFeedAsync(integration.ICalUrl, TestContext.Current.CancellationToken).Returns([
+            new ICalEventDto("event-1", "Blocked", updatedStart, updatedEnd, "Retornou")
+        ]);
+        _bookingRepository.GetByExternalIdAsync("event-1", TestContext.Current.CancellationToken)
+            .Returns(existingBooking);
+        _bookingRepository.HasOverlappingAsync(
+                integration.RoomId,
+                updatedStart,
+                updatedEnd,
+                existingBooking.Id,
+                TestContext.Current.CancellationToken)
+            .Returns(false);
+        _bookingRepository.GetByChannelIntegrationIdAsync(
+                integration.Id,
+                Arg.Any<DateTimeOffset?>(),
+                TestContext.Current.CancellationToken)
+            .Returns([]);
+
+        var result = await _sut.SyncChannelIntegrationAsync(integration.Id, TestContext.Current.CancellationToken);
+
+        result.ShouldBe(1);
+        existingBooking.Status.ShouldBe(BookingStatus.Scheduled);
+        existingBooking.CancellationReason.ShouldBeNull();
+        existingBooking.StayPeriod.CheckIn.ShouldBe(updatedStart);
+        existingBooking.StayPeriod.CheckOut.ShouldBe(updatedEnd);
+        await _bookingRepository.DidNotReceive().AddAsync(Arg.Any<Booking>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task SyncChannelIntegrationAsync_ShouldNotUpdateManualBookingWithSameExternalId()
     {
         var integration = new ChannelIntegration(ChannelType.Booking, "https://example.com/feed.ics", Guid.NewGuid());
@@ -107,7 +160,8 @@ public sealed class ICalSyncServiceTests
         _icalService.ParseICalFeedAsync(integration.ICalUrl, TestContext.Current.CancellationToken).Returns([
             new ICalEventDto("event-1", "Blocked", updatedStart, updatedEnd)
         ]);
-        _bookingRepository.GetByExternalIdAsync("event-1", TestContext.Current.CancellationToken).Returns(existingBooking);
+        _bookingRepository.GetByExternalIdAsync("event-1", TestContext.Current.CancellationToken)
+            .Returns(existingBooking);
         _bookingRepository.GetByChannelIntegrationIdAsync(
                 integration.Id,
                 Arg.Any<DateTimeOffset?>(),

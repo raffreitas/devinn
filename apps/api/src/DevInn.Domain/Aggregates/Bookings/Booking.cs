@@ -111,6 +111,12 @@ public sealed class Booking : Entity
         Source = source;
         Notes = notes;
         TotalValue = new Money(0);
+        if (Status == BookingStatus.Canceled)
+        {
+            Status = BookingStatus.Scheduled;
+            CancellationReason = null;
+        }
+
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
