@@ -26,8 +26,7 @@ public static class DependencyInjection
         {
             var jobKey = new JobKey(nameof(SyncAllChannelsJob));
             q.AddJob<SyncAllChannelsJob>(opts => opts.WithIdentity(jobKey));
-
-            // Schedule job to run every 3 hours
+            
             q.AddTrigger(opts => opts
                 .ForJob(jobKey)
                 .WithIdentity($"{nameof(SyncAllChannelsJob)}-trigger")
