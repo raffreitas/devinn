@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState } from "react";
-import { useCreateIntegration } from "@/features/integrations/hooks/use-integrations";
 import { Button } from "@/shared/components/ui/button";
 import {
   Sheet,
@@ -45,7 +44,6 @@ export function RoomFormSheet({
 
   const { createRoom } = useCreateRoom();
   const { updateRoom } = useUpdateRoom();
-  const { createIntegration } = useCreateIntegration();
 
   const isEditMode = !!editRoom;
 
@@ -92,15 +90,14 @@ export function RoomFormSheet({
           await updateRoom({ id: editRoom.id, data: roomFormData });
         }
       } else if (roomFormData) {
-        // Create mode: create room, then create all pending integrations
-        const room = await createRoom(roomFormData);
-        for (const integration of pendingIntegrations) {
-          await createIntegration({
-            roomId: room.id,
-            channelType: integration.channelType,
-            iCalUrl: integration.iCalUrl,
-          });
-        }
+        // Create mode: create room with all pending integrations in a single request
+        await createRoom({
+          ...roomFormData,
+          integrations: pendingIntegrations.map((i) => ({
+            channelType: i.channelType,
+            iCalUrl: i.iCalUrl,
+          })),
+        });
       }
       handleClose();
     } catch {

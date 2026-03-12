@@ -43,9 +43,9 @@ export const roomService = {
     return response.data;
   },
 
-  create: async (data: CreateRoomRequest): Promise<Room> => {
-    const response = await api.post<Room>("/api/v1/rooms", data);
-    return response.data;
+  create: async (data: CreateRoomRequest): Promise<{ id: string }> => {
+    const response = await api.post<ApiResponse<string>>("/api/v1/rooms", data);
+    return { id: response.data.data };
   },
 
   update: async (id: string, data: UpdateRoomRequest): Promise<Room> => {

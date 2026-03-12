@@ -55,11 +55,17 @@ export interface Room {
   iCalExportToken: string;
 }
 
+export type CreateRoomIntegrationInput = {
+  channelType: "Booking" | "Airbnb";
+  iCalUrl: string;
+};
+
 export type CreateRoomRequest = {
   categoryId: string;
   number: number;
   status: RoomStatus;
   description?: string;
+  integrations?: CreateRoomIntegrationInput[];
 };
 
 export type UpdateRoomRequest = Partial<CreateRoomRequest>;

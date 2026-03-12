@@ -1,6 +1,7 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
 using DevInn.Application.Features.Inventory.Rooms.CreateRoom;
+using DevInn.Domain.Aggregates.Integrations.Abstractions;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 using DevInn.Domain.Aggregates.Inventory.Enums;
 using DevInn.Domain.Aggregates.Inventory.ValueObjects;
@@ -19,19 +20,20 @@ public sealed class CreateRoomHandlerTests
 {
     private readonly IRoomRepository _roomRepository = Substitute.For<IRoomRepository>();
     private readonly IRoomCategoryRepository _categoryRepository = Substitute.For<IRoomCategoryRepository>();
+    private readonly IChannelIntegrationRepository _integrationRepository = Substitute.For<IChannelIntegrationRepository>();
     private readonly IUnitOfWork _uow = Substitute.For<IUnitOfWork>();
 
     private readonly CreateRoomHandler _sut;
 
     public CreateRoomHandlerTests()
     {
-        _sut = new CreateRoomHandler(_roomRepository, _categoryRepository, _uow);
+        _sut = new CreateRoomHandler(_roomRepository, _categoryRepository, _integrationRepository, _uow);
     }
 
     [Fact]
     public async Task Handle_ShouldReturnNotFound_WhenCategoryDoesNotExist()
     {
-        var command = new CreateRoomCommand(Guid.NewGuid(), 101, "Suite", RoomStatus.Active);
+        var command = new CreateRoomCommand(Guid.NewGuid(), 101, "Suite", RoomStatus.Active, null);
         _categoryRepository.GetByIdAsync(command.CategoryId, TestContext.Current.CancellationToken).ReturnsNull();
 
         var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
@@ -45,7 +47,7 @@ public sealed class CreateRoomHandlerTests
     public async Task Handle_ShouldReturnConflict_WhenRoomNumberIsNotUnique()
     {
         var category = new RoomCategory("Suite", "Desc", 4, new PricingPolicy(200m, 50m));
-        var command = new CreateRoomCommand(category.Id, 101, "Suite 101", RoomStatus.Active);
+        var command = new CreateRoomCommand(category.Id, 101, "Suite 101", RoomStatus.Active, null);
         _categoryRepository.GetByIdAsync(command.CategoryId, TestContext.Current.CancellationToken).Returns(category);
         _roomRepository.IsNumberUniqueAsync(command.Number, null, TestContext.Current.CancellationToken).Returns(false);
 
@@ -59,7 +61,7 @@ public sealed class CreateRoomHandlerTests
     public async Task Handle_ShouldCreateRoomAndCommit_WhenCommandIsValid()
     {
         var category = new RoomCategory("Suite", "Desc", 4, new PricingPolicy(200m, 50m));
-        var command = new CreateRoomCommand(category.Id, 101, "Suite 101", RoomStatus.Active);
+        var command = new CreateRoomCommand(category.Id, 101, "Suite 101", RoomStatus.Active, null);
         _categoryRepository.GetByIdAsync(command.CategoryId, TestContext.Current.CancellationToken).Returns(category);
         _roomRepository.IsNumberUniqueAsync(command.Number, null, TestContext.Current.CancellationToken).Returns(true);
 

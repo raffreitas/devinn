@@ -1,6 +1,8 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.Validation;
+using DevInn.Domain.Aggregates.Integrations;
+using DevInn.Domain.Aggregates.Integrations.Abstractions;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 
@@ -13,6 +15,7 @@ namespace DevInn.Application.Features.Inventory.Rooms.CreateRoom;
 internal sealed class CreateRoomHandler(
     IRoomRepository roomRepository,
     IRoomCategoryRepository categoryRepository,
+    IChannelIntegrationRepository integrationRepository,
     IUnitOfWork uow) : ICommandHandler<CreateRoomCommand, Result<Guid>>
 {
     public async ValueTask<Result<Guid>> Handle(CreateRoomCommand command, CancellationToken cancellationToken)
@@ -35,6 +38,16 @@ internal sealed class CreateRoomHandler(
 
         var room = new Room(command.CategoryId, command.Number, command.Name, command.Status);
         await roomRepository.AddAsync(room, cancellationToken);
+
+        if (command.Integrations is { Count: > 0 })
+        {
+            foreach (var input in command.Integrations)
+            {
+                var integration = new ChannelIntegration(input.ChannelType, input.ICalUrl, room.Id);
+                await integrationRepository.AddAsync(integration, cancellationToken);
+            }
+        }
+
         await uow.CommitAsync(cancellationToken);
 
         return Result.Ok(room.Id);
