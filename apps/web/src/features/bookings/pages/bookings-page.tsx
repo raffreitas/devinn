@@ -246,7 +246,7 @@ export function BookingsPage() {
     const today = new Date();
     setDateRange({
       from: startOfMonth(today),
-      to: endOfMonth(today),
+      to: endOfMonth(addMonths(today, 3)),
     });
     setFilterStatus("Scheduled");
     setFilterPaymentStatus("all");
