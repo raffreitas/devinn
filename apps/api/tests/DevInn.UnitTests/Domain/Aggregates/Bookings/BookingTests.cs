@@ -73,6 +73,26 @@ public sealed class BookingTests
     }
 
     [Fact]
+    public void ResyncExternalBlock_ShouldReactivateCanceledImportedBlock()
+    {
+        var block = CreateBlockBooking();
+        var roomId = Guid.NewGuid();
+        var stay = new StayPeriod(
+            new DateTimeOffset(2026, 03, 14, 12, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 03, 15, 12, 0, 0, TimeSpan.Zero));
+
+        block.Cancel(CancellationReason.ExternalCancellation);
+
+        block.ResyncExternalBlock(roomId, stay, BookingSource.BookingIcal, "Reimportado");
+
+        block.Status.ShouldBe(BookingStatus.Scheduled);
+        block.CancellationReason.ShouldBeNull();
+        block.RoomId.ShouldBe(roomId);
+        block.StayPeriod.ShouldBe(stay);
+        block.Notes.ShouldBe("Reimportado");
+    }
+
+    [Fact]
     public void ResyncExternalBlock_ShouldThrow_WhenBookingIsNotBlock()
     {
         var booking = CreateRegularBooking();
