@@ -1,16 +1,12 @@
 using System.Text.Json;
-
 using Dapper;
-
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Pagination;
 using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Application.Features.Bookings.Shared;
 using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Shared.Enums;
-
 using FluentResults;
-
 using Mediator;
 
 namespace DevInn.Application.Features.Bookings.Queries.ListBookings;
@@ -120,7 +116,8 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
             }
 
             var payments = await connection.QueryAsync<PaymentProjection>(paymentsSql, new { BookingId = r.Id });
-            var paymentsList = payments.Select(p => new PaymentDto(p.Id, p.Amount, Enum.Parse<PaymentMethod>(p.Method), p.PaymentDate, p.Notes)).ToArray();
+            var paymentsList = payments.Select(p =>
+                new PaymentDto(p.Id, p.Amount, Enum.Parse<PaymentMethod>(p.Method), p.PaymentDate, p.Notes)).ToArray();
 
             var paymentStatus = paymentsList.Length == 0 ? PaymentStatus.Pending
                 : paymentsList.Sum(p => p.Amount) < r.TotalValue ? PaymentStatus.Partial : PaymentStatus.Paid;
@@ -132,9 +129,15 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                 r.TotalValue, 0m, r.TotalValue);
 
             GuestDto? guest = null;
-            if (!string.IsNullOrWhiteSpace(r.GuestName) && !string.IsNullOrWhiteSpace(r.GuestPhone))
+            if (!string.IsNullOrWhiteSpace(r.GuestName))
             {
-                guest = new GuestDto(r.GuestName, r.GuestPhone, r.GuestEmail, r.GuestDocument, r.GuestBirthDate);
+                guest = new GuestDto(
+                    r.GuestName,
+                    r.GuestPhone,
+                    r.GuestEmail,
+                    r.GuestDocument,
+                    r.GuestBirthDate
+                );
             }
 
             itemsList.Add(new BookingDto(

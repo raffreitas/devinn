@@ -1,16 +1,12 @@
 using System.Text.Json;
-
 using Dapper;
-
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Application.Features.Bookings.Shared;
 using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Shared.Enums;
-
 using FluentResults;
-
 using Mediator;
 
 namespace DevInn.Application.Features.Bookings.Queries.GetBookingById;
@@ -90,9 +86,15 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
             r.TotalValue, 0m, r.TotalValue);
 
         GuestDto? guest = null;
-        if (!string.IsNullOrWhiteSpace(r.GuestName) && !string.IsNullOrWhiteSpace(r.GuestPhone))
+        if (!string.IsNullOrWhiteSpace(r.GuestName))
         {
-            guest = new GuestDto(r.GuestName, r.GuestPhone, r.GuestEmail, r.GuestDocument, r.GuestBirthDate);
+            guest = new GuestDto(
+                r.GuestName,
+                r.GuestPhone,
+                r.GuestEmail,
+                r.GuestDocument,
+                r.GuestBirthDate
+            );
         }
 
         var booking = new BookingDto(
