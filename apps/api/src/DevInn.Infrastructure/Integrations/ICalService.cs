@@ -7,6 +7,8 @@ namespace DevInn.Infrastructure.Integrations;
 
 internal sealed class ICalService(IHttpClientFactory httpClientFactory) : IICalService
 {
+    private const int AllDayNormalizationHourUtc = 12;
+
     public async Task<IReadOnlyList<ICalEventDto>> ParseICalFeedAsync(string iCalUrl,
         CancellationToken cancellationToken = default)
     {
@@ -37,8 +39,8 @@ internal sealed class ICalService(IHttpClientFactory httpClientFactory) : IICalS
 
     private static ICalEventDto MapToDto(CalendarEvent calendarEvent)
     {
-        var start = calendarEvent.Start!.AsUtc;
-        var end = calendarEvent.End!.AsUtc;
+        var start = NormalizeEventDate(calendarEvent.Start!, calendarEvent.IsAllDay);
+        var end = NormalizeEventDate(calendarEvent.End!, calendarEvent.IsAllDay);
 
         return new ICalEventDto(
             Uid: calendarEvent.Uid!,
@@ -47,5 +49,15 @@ internal sealed class ICalService(IHttpClientFactory httpClientFactory) : IICalS
             End: end,
             Description: calendarEvent.Description
         );
+    }
+
+    private static DateTimeOffset NormalizeEventDate(Ical.Net.DataTypes.CalDateTime eventDate, bool isAllDay)
+    {
+        if (!isAllDay)
+            return new DateTimeOffset(eventDate.AsUtc, TimeSpan.Zero);
+
+        return new DateTimeOffset(
+            eventDate.Date.ToDateTime(new TimeOnly(AllDayNormalizationHourUtc, 0), DateTimeKind.Utc),
+            TimeSpan.Zero);
     }
 }
