@@ -6,17 +6,9 @@ using DevInn.Domain.Shared.ValueObjects;
 
 namespace DevInn.Domain.Aggregates.Bookings.Services;
 
-/// <summary>
-/// Serviço de domínio responsável por calcular o breakdown de preços para reservas.
-/// É a única fonte verdadeira para cálculos de preço no sistema.
-/// Delegue a lógica para ValueObjects (PricingPolicy, ChildrenPricingRules, Occupancy).
-/// </summary>
 public sealed class PricingCalculatorService : IPricingCalculatorService
 {
-    public PricingBreakdown CalculateBreakdown(
-        StayPeriod stayPeriod,
-        RoomCategory roomCategory,
-        Occupancy occupancy)
+    public PricingBreakdown CalculateBreakdown(StayPeriod stayPeriod, RoomCategory roomCategory, Occupancy occupancy)
     {
         if (stayPeriod.Equals(default)) throw new DomainException("O período de estadia não pode ser nulo.");
         DomainException.ThrowIfNull(roomCategory, "O categoria de quarto não pode ser nula.");
@@ -26,14 +18,11 @@ public sealed class PricingCalculatorService : IPricingCalculatorService
         if (nights <= 0)
             throw new DomainException("O período de estadia deve ter pelo menos uma noite.");
 
-        // Delegar para PricingPolicy - separação clara de responsabilidades
         var pricing = roomCategory.PricingPolicy;
         (decimal payingUnits, decimal childrenCostPerNight) = pricing.CalculateOccupancyCharges(occupancy);
 
-        // Calcular taxa diária baseada na ocupação
         var dailyRate = pricing.CalculateDailyRate(payingUnits);
 
-        // Totais
         var dailyTotal = decimal.Round(dailyRate, 2);
         var childrenCostTotal = decimal.Round(childrenCostPerNight * nights, 2);
         var total = decimal.Round((dailyRate * nights), 2);
