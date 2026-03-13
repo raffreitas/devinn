@@ -16,9 +16,5 @@ public sealed record PricingBreakdown(
 
 public interface IPricingCalculatorService
 {
-    PricingBreakdown CalculateBreakdown(
-        StayPeriod stayPeriod,
-        RoomCategory roomCategory,
-        Occupancy occupancy
-    );
+    PricingBreakdown CalculateBreakdown(StayPeriod stayPeriod, RoomCategory roomCategory, Occupancy occupancy);
 }

@@ -9,7 +9,7 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useEffect } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { useCalculatePriceBreakdown } from "@/features/bookings/hooks/use-calculate-price-breakdown";
 import { useRooms } from "@/features/inventory/hooks";
 import { InputMoney } from "@/shared/components/input-money";
@@ -90,13 +90,42 @@ export function BookingForm({
       name: "childrenAges",
     });
 
-  const selectedRoomId = form.watch("roomId");
-  const checkIn = form.watch("checkIn");
-  const checkOut = form.watch("checkOut");
-  const childrenCount = form.watch("children");
-  const adults = form.watch("adults");
-  const childrenAges = form.watch("childrenAges") || [];
-  const paidAmount = form.watch("paidAmount");
+  const selectedRoomId = useWatch({
+    control: form.control,
+    name: "roomId",
+    defaultValue: form.getValues("roomId"),
+  });
+  const checkIn = useWatch({
+    control: form.control,
+    name: "checkIn",
+    defaultValue: form.getValues("checkIn"),
+  });
+  const checkOut = useWatch({
+    control: form.control,
+    name: "checkOut",
+    defaultValue: form.getValues("checkOut"),
+  });
+  const childrenCount = useWatch({
+    control: form.control,
+    name: "children",
+    defaultValue: form.getValues("children"),
+  });
+  const adults = useWatch({
+    control: form.control,
+    name: "adults",
+    defaultValue: form.getValues("adults"),
+  });
+  const childrenAges =
+    useWatch({
+      control: form.control,
+      name: "childrenAges",
+      defaultValue: form.getValues("childrenAges"),
+    }) || [];
+  const paidAmount = useWatch({
+    control: form.control,
+    name: "paidAmount",
+    defaultValue: form.getValues("paidAmount"),
+  });
 
   const { data: roomsData } = useRooms();
 
@@ -159,7 +188,10 @@ export function BookingForm({
     const currentAges = form.getValues("childrenAges") || [];
     if (childrenCount > currentAges.length) {
       const toAdd = childrenCount - currentAges.length;
-      const newAges = [...currentAges, ...Array(toAdd).fill({ age: 0 })];
+      const newAges = [
+        ...currentAges,
+        ...Array.from({ length: toAdd }, () => ({ age: 0 })),
+      ];
       replaceChildrenAges(newAges);
     } else if (childrenCount < currentAges.length) {
       const newAges = currentAges.slice(0, childrenCount);

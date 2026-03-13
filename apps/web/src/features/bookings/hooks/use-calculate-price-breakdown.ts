@@ -20,6 +20,20 @@ type UseCalculatePriceBreakdownParams = {
   childrenAges: { age: number }[];
 };
 
+type PriceBreakdownQueryParams = {
+  roomCategoryId: string;
+  checkInIso: string;
+  checkOutIso: string;
+  adults: number;
+  children: number;
+  childrenAges: number[];
+};
+
+type PriceBreakdownQueryKey = [
+  "priceBreakdown",
+  PriceBreakdownQueryParams | null,
+];
+
 export function useCalculatePriceBreakdown({
   roomCategoryId,
   checkIn,
@@ -28,43 +42,58 @@ export function useCalculatePriceBreakdown({
   children,
   childrenAges,
 }: UseCalculatePriceBreakdownParams) {
-  const isReady =
-    !!roomCategoryId && !!checkIn && !!checkOut && adults > 0 && children >= 0;
+  const normalizedChildrenAges = childrenAges
+    .map((child) => child.age)
+    .filter((age) => Number.isFinite(age) && age >= 0);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: [
-      "priceBreakdown",
-      roomCategoryId,
-      checkIn?.toISOString(),
-      checkOut?.toISOString(),
-      adults,
-      children,
-      JSON.stringify(childrenAges),
-    ],
-    queryFn: async () => {
-      if (!isReady) return null;
+  const queryParams =
+    !!roomCategoryId &&
+    !!checkIn &&
+    !!checkOut &&
+    adults > 0 &&
+    children >= 0 &&
+    normalizedChildrenAges.length === children
+      ? {
+          roomCategoryId,
+          checkInIso: checkIn.toISOString(),
+          checkOutIso: checkOut.toISOString(),
+          adults,
+          children,
+          childrenAges: normalizedChildrenAges,
+        }
+      : null;
 
-      const childrenAgesArray = childrenAges
-        .map((c) => c.age)
-        .filter((age) => age >= 0);
+  const { data, isLoading, error } = useQuery<
+    PriceBreakdownResponse,
+    Error,
+    PriceBreakdownResponse,
+    PriceBreakdownQueryKey
+  >({
+    queryKey: ["priceBreakdown", queryParams],
+    queryFn: async ({ queryKey }) => {
+      const [, params] = queryKey;
+
+      if (!params) {
+        throw new Error("Price breakdown query called without parameters.");
+      }
 
       return await bookingService.calculatePriceBreakdown(
-        roomCategoryId,
-        checkIn,
-        checkOut,
-        adults,
-        children,
-        childrenAgesArray,
+        params.roomCategoryId,
+        new Date(params.checkInIso),
+        new Date(params.checkOutIso),
+        params.adults,
+        params.children,
+        params.childrenAges,
       );
     },
-    enabled: isReady,
-    staleTime: 30_000,
+    enabled: queryParams !== null,
+    staleTime: 0,
   });
 
   return {
     priceBreakdown: data,
     isLoading,
     error,
-    isReady,
+    isReady: queryParams !== null,
   };
 }
