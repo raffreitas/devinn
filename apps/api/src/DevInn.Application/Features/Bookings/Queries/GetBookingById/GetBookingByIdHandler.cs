@@ -1,12 +1,16 @@
 using System.Text.Json;
+
 using Dapper;
+
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Application.Features.Bookings.Shared;
 using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Shared.Enums;
+
 using FluentResults;
+
 using Mediator;
 
 namespace DevInn.Application.Features.Bookings.Queries.GetBookingById;
