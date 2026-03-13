@@ -28,7 +28,7 @@ import {
 } from "@/shared/components/ui/select";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ExpenseForm, type ExpenseFormData } from "../components/expense-form";
-import { type EditExpenseData, ExpenseList } from "../components/expense-list";
+import { ExpenseList } from "../components/expense-list";
 import { useExpenseCategories } from "../hooks/use-expense-categories";
 import {
   useCreateExpense,
@@ -36,11 +36,12 @@ import {
   useExpenses,
   useUpdateExpense,
 } from "../hooks/use-expenses";
-import { type PaymentMethod, paymentMethodLabels } from "../types";
+import { type Expense, type PaymentMethod, paymentMethodLabels } from "../types";
 
 export function ExpensesPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterPaymentMethod, setFilterPaymentMethod] = useState("all");
@@ -60,10 +61,20 @@ export function ExpensesPage() {
   const { categories, isLoading: isLoadingCategories } = useExpenseCategories();
 
   const { createExpense, isLoading: isCreating } = useCreateExpense();
-  const { updateExpense } = useUpdateExpense();
+  const { updateExpense, isLoading: isUpdating } = useUpdateExpense();
   const { deleteExpense } = useDeleteExpense();
 
   const isLoading = isLoadingExpenses || isLoadingCategories;
+  const isSubmittingExpense = isCreating || isUpdating;
+  const expenseFormInitialData = editingExpense
+    ? {
+        categoryId: editingExpense.categoryId,
+        description: editingExpense.description,
+        amount: editingExpense.amount,
+        paymentMethod: editingExpense.paymentMethod,
+        date: editingExpense.paymentDate || editingExpense.dueDate,
+      }
+    : undefined;
 
   const navigateMonth = (direction: number) => {
     setCurrentMonth((prev) =>
@@ -71,30 +82,41 @@ export function ExpensesPage() {
     );
   };
 
-  const handleCreateExpense = async (data: ExpenseFormData) => {
-    await createExpense({
+  const closeExpenseModal = () => {
+    setIsExpenseModalOpen(false);
+    setEditingExpense(null);
+  };
+
+  const handleOpenCreateExpenseModal = () => {
+    setEditingExpense(null);
+    setIsExpenseModalOpen(true);
+  };
+
+  const handleSubmitExpense = async (data: ExpenseFormData) => {
+    const expensePayload = {
       categoryId: data.categoryId,
       description: data.description,
       amount: data.amount,
       paymentMethod: data.paymentMethod as PaymentMethod,
       dueDate: data.date,
       paymentDate: data.date,
-    });
-    setIsExpenseModalOpen(false);
+    };
+
+    if (editingExpense) {
+      await updateExpense({
+        id: editingExpense.id,
+        data: expensePayload,
+      });
+    } else {
+      await createExpense(expensePayload);
+    }
+
+    closeExpenseModal();
   };
 
-  const handleEditExpense = async (id: string, data: EditExpenseData) => {
-    await updateExpense({
-      id,
-      data: {
-        categoryId: data.categoryId,
-        description: data.description,
-        amount: data.amount,
-        paymentMethod: data.paymentMethod,
-        dueDate: data.date,
-        paymentDate: data.date,
-      },
-    });
+  const handleEditExpense = (expense: Expense) => {
+    setEditingExpense(expense);
+    setIsExpenseModalOpen(true);
   };
 
   const handleDeleteExpense = async (id: string) => {
@@ -148,7 +170,7 @@ export function ExpensesPage() {
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <Button onClick={() => setIsExpenseModalOpen(true)}>
+          <Button onClick={handleOpenCreateExpenseModal}>
             <Plus className="mr-2 h-4 w-4" />
             Nova Despesa
           </Button>
@@ -227,7 +249,6 @@ export function ExpensesPage() {
           ) : (
             <ExpenseList
               expenses={filteredExpenses || []}
-              categories={categories || []}
               onEdit={handleEditExpense}
               onDelete={handleDeleteExpense}
             />
@@ -235,20 +256,25 @@ export function ExpensesPage() {
         </CardContent>
       </Card>
 
-      {/* Modal de Nova Despesa */}
+      {/* Modal de despesa */}
       <Modal
         isOpen={isExpenseModalOpen}
-        onClose={() => setIsExpenseModalOpen(false)}
-        title="Nova Despesa"
-        description="Registre uma nova saída no seu fluxo de caixa."
+        onClose={closeExpenseModal}
+        title={editingExpense ? "Editar Despesa" : "Nova Despesa"}
+        description={
+          editingExpense
+            ? "Atualize os dados da despesa selecionada."
+            : "Registre uma nova saída no seu fluxo de caixa."
+        }
         className="sm:max-w-md"
       >
         {categories && (
           <ExpenseForm
             categories={categories}
-            onSubmit={handleCreateExpense}
-            onCancel={() => setIsExpenseModalOpen(false)}
-            isSubmitting={isCreating}
+            initialData={expenseFormInitialData}
+            onSubmit={handleSubmitExpense}
+            onCancel={closeExpenseModal}
+            isSubmitting={isSubmittingExpense}
           />
         )}
       </Modal>

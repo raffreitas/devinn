@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { InputMoney } from "@/shared/components/input-money";
@@ -44,6 +45,14 @@ interface ExpenseFormProps {
   isSubmitting?: boolean;
 }
 
+const getDefaultExpenseFormData = (): ExpenseFormData => ({
+  categoryId: "",
+  description: "",
+  amount: 0,
+  paymentMethod: "Cash",
+  date: new Date().toISOString().split("T")[0],
+});
+
 export function ExpenseForm({
   categories,
   initialData,
@@ -53,14 +62,12 @@ export function ExpenseForm({
 }: ExpenseFormProps) {
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
-    defaultValues: initialData || {
-      categoryId: "",
-      description: "",
-      amount: 0,
-      paymentMethod: "Cash",
-      date: new Date().toISOString().split("T")[0],
-    },
+    defaultValues: initialData || getDefaultExpenseFormData(),
   });
+
+  useEffect(() => {
+    form.reset(initialData || getDefaultExpenseFormData());
+  }, [form, initialData]);
 
   return (
     <Form {...form}>
@@ -118,10 +125,7 @@ export function ExpenseForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Método de Pagamento</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value?.toString()}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecione o método" />
