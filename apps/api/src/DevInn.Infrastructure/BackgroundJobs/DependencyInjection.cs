@@ -26,12 +26,12 @@ public static class DependencyInjection
         {
             var jobKey = new JobKey(nameof(SyncAllChannelsJob));
             q.AddJob<SyncAllChannelsJob>(opts => opts.WithIdentity(jobKey));
-            
+
             q.AddTrigger(opts => opts
                 .ForJob(jobKey)
                 .WithIdentity($"{nameof(SyncAllChannelsJob)}-trigger")
                 .WithCronSchedule(jobsOptions.CronExpression)
-                .WithDescription("Sync all active channel integrations every 3 hours"));
+                .WithDescription($"Sync all active channel integrations every {jobsOptions.CronExpression}"));
         });
 
         services.AddQuartzHostedService(options =>
