@@ -48,10 +48,13 @@ public sealed class Expense : Entity
         return Status == ExpenseStatus.Pending && DueDate == referenceDate;
     }
 
+    public bool IsPaid() => Status == ExpenseStatus.Paid;
+
     public void Update(
         Guid? categoryId = null,
         Money? amount = null,
         DateOnly? dueDate = null,
+        PaymentMethod? paymentMethod = null,
         string? description = null)
     {
         if (Status != ExpenseStatus.Pending)
@@ -64,6 +67,7 @@ public sealed class Expense : Entity
         Amount = amount ?? Amount;
         DueDate = dueDate ?? DueDate;
         CategoryId = categoryId ?? CategoryId;
+        PaymentMethod = paymentMethod ?? PaymentMethod;
 
         UpdatedAt = DateTime.UtcNow;
     }

@@ -72,7 +72,8 @@ export function ExpensesPage() {
         description: editingExpense.description,
         amount: editingExpense.amount,
         paymentMethod: editingExpense.paymentMethod,
-        date: editingExpense.paymentDate || editingExpense.dueDate,
+        dueDate: editingExpense.dueDate,
+        paymentDate: editingExpense.paymentDate ?? "",
       }
     : undefined;
 
@@ -93,22 +94,27 @@ export function ExpensesPage() {
   };
 
   const handleSubmitExpense = async (data: ExpenseFormData) => {
-    const expensePayload = {
-      categoryId: data.categoryId,
-      description: data.description,
-      amount: data.amount,
-      paymentMethod: data.paymentMethod as PaymentMethod,
-      dueDate: data.date,
-      paymentDate: data.date,
-    };
-
     if (editingExpense) {
       await updateExpense({
         id: editingExpense.id,
-        data: expensePayload,
+        data: {
+          categoryId: data.categoryId,
+          description: data.description,
+          amount: data.amount,
+          dueDate: data.dueDate,
+          paymentDate: data.paymentDate || undefined,
+          paymentMethod: data.paymentMethod as PaymentMethod,
+        },
       });
     } else {
-      await createExpense(expensePayload);
+      await createExpense({
+        categoryId: data.categoryId,
+        description: data.description,
+        amount: data.amount,
+        paymentMethod: data.paymentMethod as PaymentMethod,
+        dueDate: data.dueDate,
+        paymentDate: data.paymentDate || undefined,
+      });
     }
 
     closeExpenseModal();
@@ -275,6 +281,7 @@ export function ExpensesPage() {
             onSubmit={handleSubmitExpense}
             onCancel={closeExpenseModal}
             isSubmitting={isSubmittingExpense}
+            mode={editingExpense ? "edit" : "create"}
           />
         )}
       </Modal>

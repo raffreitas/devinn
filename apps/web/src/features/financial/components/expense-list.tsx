@@ -80,8 +80,8 @@ export function ExpenseList({
             <TableRow className="hover:bg-transparent px-4">
               <TableHead className="pl-6">Lançamento</TableHead>
               <TableHead>Categoria</TableHead>
-              <TableHead className="hidden sm:table-cell">Pagamento</TableHead>
-              <TableHead className="text-center">Data</TableHead>
+              <TableHead className="text-center">Vencimento</TableHead>
+              <TableHead className="text-center">Pagamento</TableHead>
               <TableHead className="text-right">Valor</TableHead>
               <TableHead className="text-right pr-6">Ações</TableHead>
             </TableRow>
@@ -102,16 +102,15 @@ export function ExpenseList({
                     {expense.categoryName}
                   </Badge>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <span className="text-sm text-muted-foreground">
-                    {paymentMethodLabels[expense.paymentMethod]}
-                  </span>
+                <TableCell className="text-center text-sm text-muted-foreground">
+                  {expense.dueDate
+                    ? format(new Date(expense.dueDate), "dd/MM/yyyy")
+                    : "-"}
                 </TableCell>
                 <TableCell className="text-center text-sm text-muted-foreground">
-                  {format(
-                    new Date(expense.paymentDate || expense.dueDate),
-                    "dd/MM/yyyy",
-                  )}
+                  {expense.paymentDate
+                    ? format(new Date(expense.paymentDate), "dd/MM/yyyy")
+                    : "-"}
                 </TableCell>
                 <TableCell className="text-right font-bold text-destructive">
                   {formatCurrency(expense.amount)}

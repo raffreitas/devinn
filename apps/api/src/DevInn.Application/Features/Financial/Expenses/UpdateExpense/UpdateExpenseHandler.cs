@@ -29,7 +29,12 @@ internal sealed class UpdateExpenseHandler(
         if (category == null)
             return Result.Fail(new NotFoundError("Categoria de despesa não encontrada"));
 
-        expense.Update(command.CategoryId, new Money(command.Amount), command.DueDate, command.Description);
+        expense.Update(command.CategoryId, new Money(command.Amount), command.DueDate, command.PaymentMethod, command.Description);
+
+        if (!expense.IsPaid() && command.PaymentDate.HasValue)
+        {
+            expense.MarkAsPaid(command.PaymentDate.Value);
+        }
 
         await expenseRepository.UpdateAsync(expense, cancellationToken);
         await uow.CommitAsync(cancellationToken);
