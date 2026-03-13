@@ -7,7 +7,9 @@ using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 using DevInn.Domain.Shared.ValueObjects;
+
 using FluentResults;
+
 using Mediator;
 
 namespace DevInn.Application.Features.Bookings.Commands.UpdateBooking;
