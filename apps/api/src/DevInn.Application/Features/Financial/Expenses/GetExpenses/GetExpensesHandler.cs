@@ -5,6 +5,8 @@ using Dapper;
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Pagination;
 using DevInn.Application.Common.Tenancy.Abstractions;
+using DevInn.Application.Common.Time;
+using DevInn.Domain.Aggregates.Financial.Enums;
 
 using FluentResults;
 
@@ -12,12 +14,17 @@ using Mediator;
 
 namespace DevInn.Application.Features.Financial.Expenses.GetExpenses;
 
-internal sealed class GetExpensesHandler(IDbConnectionFactory dbConnectionFactory, ITenantContext tenantContext)
-    : IQueryHandler<GetExpensesQuery, Result<PaginatedResult<ExpenseResponse>>>
+internal sealed class GetExpensesHandler(
+    IDbConnectionFactory dbConnectionFactory,
+    ITenantContext tenantContext,
+    IDateTimeProvider dateTimeProvider
+) : IQueryHandler<GetExpensesQuery, Result<PaginatedResult<ExpenseResponse>>>
 {
     public async ValueTask<Result<PaginatedResult<ExpenseResponse>>> Handle(GetExpensesQuery query,
         CancellationToken cancellationToken)
     {
+        var today = dateTimeProvider.GetLocalDate();
+
         const string countSql = """
                                 SELECT count(1)
                                 FROM expenses e
@@ -65,9 +72,34 @@ internal sealed class GetExpensesHandler(IDbConnectionFactory dbConnectionFactor
 
         await using var connection = await dbConnectionFactory.OpenConnectionAsync(cancellationToken);
         var count = await connection.ExecuteScalarAsync<int>(countSql, parameters);
-        var expenses = await connection.QueryAsync<ExpenseResponse>(sql, parameters);
+        var rawExpenses = await connection.QueryAsync<RawExpense>(sql, parameters);
 
-        var paged = new PaginatedResult<ExpenseResponse>(expenses.ToArray(), count, query.PageNumber, query.PageSize);
+        var expenses = rawExpenses.Select(re =>
+        {
+            var displayStatus = re.Status switch
+            {
+                nameof(ExpenseStatus.Paid) => ExpenseDisplayStatus.Paid,
+                nameof(ExpenseStatus.Cancelled) => ExpenseDisplayStatus.Cancelled,
+                nameof(ExpenseStatus.Pending) when re.DueDate < today => ExpenseDisplayStatus.Overdue,
+                nameof(ExpenseStatus.Pending) when re.DueDate == today => ExpenseDisplayStatus.DueToday,
+                _ => ExpenseDisplayStatus.Pending
+            };
+
+            return new ExpenseResponse(
+                re.Id,
+                re.CategoryId,
+                re.Description,
+                re.Amount,
+                re.DueDate,
+                re.PaymentDate,
+                re.PaymentMethod,
+                displayStatus,
+                re.CategoryName
+            );
+        }).ToList();
+
+
+        var paged = new PaginatedResult<ExpenseResponse>([.. expenses], count, query.PageNumber, query.PageSize);
         return Result.Ok(paged);
     }
 }

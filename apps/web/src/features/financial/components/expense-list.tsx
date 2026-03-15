@@ -1,5 +1,9 @@
 import { format } from "date-fns";
 import {
+  AlertCircleIcon,
+  CalendarIcon,
+  CheckCircle2Icon,
+  ClockIcon,
   Edit2,
   EllipsisVerticalIcon,
   Trash2,
@@ -33,8 +37,45 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import type { Expense } from "../types";
-import { paymentMethodLabels } from "../types";
+import { type Expense, ExpenseStatus } from "../types";
+
+const statusConfig = {
+  [ExpenseStatus.PAID]: {
+    label: "Pago",
+    variant: "default" as const,
+    icon: CheckCircle2Icon,
+    className:
+      "bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-200 border border-green-300 dark:border-green-700",
+  },
+  [ExpenseStatus.PENDING]: {
+    label: "Pendente",
+    variant: "secondary" as const,
+    icon: ClockIcon,
+    className:
+      "bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700",
+  },
+  [ExpenseStatus.OVERDUE]: {
+    label: "Vencido",
+    variant: "destructive" as const,
+    icon: AlertCircleIcon,
+    className:
+      "bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-700",
+  },
+  [ExpenseStatus.DUE_TODAY]: {
+    label: "Vence Hoje",
+    variant: "outline" as const,
+    icon: CalendarIcon,
+    className:
+      "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700",
+  },
+  [ExpenseStatus.CANCELLED]: {
+    label: "Cancelado",
+    variant: "secondary" as const,
+    icon: AlertCircleIcon,
+    className:
+      "bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700",
+  },
+};
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -42,11 +83,7 @@ interface ExpenseListProps {
   onDelete: (id: string) => void;
 }
 
-export function ExpenseList({
-  expenses,
-  onEdit,
-  onDelete,
-}: ExpenseListProps) {
+export function ExpenseList({ expenses, onEdit, onDelete }: ExpenseListProps) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
@@ -82,65 +119,76 @@ export function ExpenseList({
               <TableHead>Categoria</TableHead>
               <TableHead className="text-center">Vencimento</TableHead>
               <TableHead className="text-center">Pagamento</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
+              <TableHead className="text-center">Valor</TableHead>
+              <TableHead className="text-center">Status</TableHead>
               <TableHead className="text-right pr-6">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {expenses.map((expense) => (
-              <TableRow key={expense.id} className="px-4">
-                <TableCell className="pl-6">
-                  <div className="font-medium text-foreground">
-                    {expense.description}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className="font-semibold text-[10px] uppercase py-0.5 tracking-wider"
-                  >
-                    {expense.categoryName}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center text-sm text-muted-foreground">
-                  {expense.dueDate
-                    ? format(new Date(expense.dueDate), "dd/MM/yyyy")
-                    : "-"}
-                </TableCell>
-                <TableCell className="text-center text-sm text-muted-foreground">
-                  {expense.paymentDate
-                    ? format(new Date(expense.paymentDate), "dd/MM/yyyy")
-                    : "-"}
-                </TableCell>
-                <TableCell className="text-right font-bold text-destructive">
-                  {formatCurrency(expense.amount)}
-                </TableCell>
-                <TableCell className="text-right pr-6">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <EllipsisVerticalIcon className="h-4 w-4" />
-                        <span className="sr-only">Ações</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(expense)}>
-                        <Edit2 className="h-4 w-4" />
-                        Editar
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => setDeleteConfirmId(expense.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Excluir
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
+            {expenses.map((expense) => {
+              const config = statusConfig[expense.status];
+              const StatusIcon = config.icon;
+              return (
+                <TableRow key={expense.id} className="px-4">
+                  <TableCell className="pl-6">
+                    <div className="font-medium text-foreground">
+                      {expense.description}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="secondary"
+                      className="font-semibold text-[10px] uppercase py-0.5 tracking-wider"
+                    >
+                      {expense.categoryName}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center text-sm text-muted-foreground">
+                    {expense.dueDate
+                      ? format(new Date(expense.dueDate), "dd/MM/yyyy")
+                      : "-"}
+                  </TableCell>
+                  <TableCell className="text-center text-sm text-muted-foreground">
+                    {expense.paymentDate
+                      ? format(new Date(expense.paymentDate), "dd/MM/yyyy")
+                      : "-"}
+                  </TableCell>
+                  <TableCell className="text-center font-bold text-destructive">
+                    {formatCurrency(expense.amount)}
+                  </TableCell>
+                  <TableCell className="text-center text-sm text-muted-foreground">
+                    <Badge className={config.className}>
+                      <StatusIcon className="mr-1 h-3 w-3" />
+                      {config.label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right pr-6">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <EllipsisVerticalIcon className="h-4 w-4" />
+                          <span className="sr-only">Ações</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onEdit(expense)}>
+                          <Edit2 className="h-4 w-4" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setDeleteConfirmId(expense.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
