@@ -158,25 +158,32 @@ export function ExpensesPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigateMonth(-1)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" className="min-w-36 cursor-default">
-            {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigateMonth(1)}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button onClick={handleOpenCreateExpenseModal}>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-2 sm:w-auto">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigateMonth(-1)}
+              className="shrink-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full min-w-0 cursor-default justify-center px-3 sm:min-w-36"
+            >
+              {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigateMonth(1)}
+              className="shrink-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button onClick={handleOpenCreateExpenseModal} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Nova Despesa
           </Button>
