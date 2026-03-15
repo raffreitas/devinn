@@ -1,17 +1,15 @@
 ﻿using DevInn.Infrastructure.BackgroundJobs;
-using DevInn.Infrastructure.BackgroundJobs.Jobs;
 using DevInn.Infrastructure.Identity;
 using DevInn.Infrastructure.Observability;
 using DevInn.Infrastructure.Persistence;
 using DevInn.Infrastructure.Persistence.SeedData;
+using DevInn.Infrastructure.Time;
 using DevInn.Infrastructure.Tokens;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
-using Quartz;
 
 namespace DevInn.Infrastructure;
 
@@ -26,6 +24,7 @@ public static class InfrastructureModule
         services.ConfigureIdentityService(configuration);
         services.ConfigureTokenService(configuration);
         services.ConfigureObservability(configuration);
+        services.ConfigureTimeProviders();
 
         return services;
     }

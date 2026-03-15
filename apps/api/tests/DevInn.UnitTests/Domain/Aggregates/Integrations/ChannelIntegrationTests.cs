@@ -1,6 +1,5 @@
 using DevInn.Domain.Aggregates.Integrations;
 using DevInn.Domain.Aggregates.Integrations.Enums;
-using DevInn.Domain.Aggregates.Integrations.ValueObjects;
 using DevInn.Domain.SeedWork;
 
 using Shouldly;

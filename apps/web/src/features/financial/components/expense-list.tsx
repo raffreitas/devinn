@@ -1,14 +1,15 @@
 import { format } from "date-fns";
 import {
-  Check,
+  AlertCircleIcon,
+  CalendarIcon,
+  CheckCircle2Icon,
+  ClockIcon,
   Edit2,
   EllipsisVerticalIcon,
   Trash2,
   Wallet,
-  X,
 } from "lucide-react";
 import { useState } from "react";
-import { InputMoney } from "@/shared/components/input-money";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,14 +29,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { Input } from "@/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
 import {
   Table,
   TableBody,
@@ -44,32 +37,59 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import type { Expense, ExpenseCategory, PaymentMethod } from "../types";
-import { paymentMethodLabels } from "../types";
+import { type Expense, ExpenseStatus } from "../types";
+
+const statusConfig = {
+  [ExpenseStatus.PAID]: {
+    label: "Pago",
+    variant: "default" as const,
+    icon: CheckCircle2Icon,
+    className:
+      "bg-green-100 dark:bg-green-950 text-green-800 dark:text-green-200 border border-green-300 dark:border-green-700",
+  },
+  [ExpenseStatus.PENDING]: {
+    label: "Pendente",
+    variant: "secondary" as const,
+    icon: ClockIcon,
+    className:
+      "bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700",
+  },
+  [ExpenseStatus.OVERDUE]: {
+    label: "Vencido",
+    variant: "destructive" as const,
+    icon: AlertCircleIcon,
+    className:
+      "bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-700",
+  },
+  [ExpenseStatus.DUE_TODAY]: {
+    label: "Vence Hoje",
+    variant: "outline" as const,
+    icon: CalendarIcon,
+    className:
+      "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700",
+  },
+  [ExpenseStatus.CANCELLED]: {
+    label: "Cancelado",
+    variant: "secondary" as const,
+    icon: AlertCircleIcon,
+    className:
+      "bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700",
+  },
+};
 
 interface ExpenseListProps {
   expenses: Expense[];
-  categories: ExpenseCategory[];
-  onEdit: (id: string, data: EditExpenseData) => void;
+  onEdit: (expense: Expense) => void;
+  onMarkAsPaid: (expense: Expense) => void;
   onDelete: (id: string) => void;
-}
-
-export interface EditExpenseData {
-  categoryId: string;
-  description: string;
-  amount: number;
-  paymentMethod: PaymentMethod;
-  date: string;
 }
 
 export function ExpenseList({
   expenses,
-  categories,
   onEdit,
   onDelete,
+  onMarkAsPaid,
 }: ExpenseListProps) {
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<EditExpenseData | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
@@ -79,28 +99,8 @@ export function ExpenseList({
     });
   };
 
-  const handleStartEdit = (expense: Expense) => {
-    setEditingId(expense.id);
-    setEditData({
-      categoryId: expense.categoryId,
-      description: expense.description,
-      amount: expense.amount,
-      paymentMethod: expense.paymentMethod,
-      date: expense.paymentDate || expense.dueDate,
-    });
-  };
-
-  const handleSaveEdit = () => {
-    if (editingId && editData) {
-      onEdit(editingId, editData);
-      setEditingId(null);
-      setEditData(null);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditData(null);
+  const handleMarkAsPaid = (expense: Expense) => {
+    onMarkAsPaid(expense);
   };
 
   if (expenses.length === 0) {
@@ -127,179 +127,93 @@ export function ExpenseList({
             <TableRow className="hover:bg-transparent px-4">
               <TableHead className="pl-6">Lançamento</TableHead>
               <TableHead>Categoria</TableHead>
-              <TableHead className="hidden sm:table-cell">Pagamento</TableHead>
-              <TableHead className="text-center">Data</TableHead>
-              <TableHead className="text-right">Valor</TableHead>
+              <TableHead className="text-center">Vencimento</TableHead>
+              <TableHead className="text-center">Pagamento</TableHead>
+              <TableHead className="text-center">Valor</TableHead>
+              <TableHead className="text-center">Status</TableHead>
               <TableHead className="text-right pr-6">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {expenses.map((expense) => (
-              <TableRow key={expense.id} className="px-4">
-                {editingId === expense.id && editData ? (
-                  <>
-                    <TableCell className="pl-6">
-                      <Input
-                        value={editData.description}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            description: e.target.value,
-                          })
-                        }
-                        className="h-8 text-sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={editData.categoryId}
-                        onValueChange={(v) =>
-                          setEditData({ ...editData, categoryId: v })
-                        }
-                      >
-                        <SelectTrigger
-                          size="sm"
-                          className="h-8 text-sm px-2 w-full"
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>
-                              {c.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      <Select
-                        value={editData.paymentMethod.toString()}
-                        onValueChange={(v) =>
-                          setEditData({
-                            ...editData,
-                            paymentMethod: v as PaymentMethod,
-                          })
-                        }
-                      >
-                        <SelectTrigger
-                          size="sm"
-                          className="h-8 text-sm px-2 w-full"
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(paymentMethodLabels).map(([k, l]) => (
-                            <SelectItem key={k} value={k}>
-                              {l}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="date"
-                        value={editData.date}
-                        onChange={(e) =>
-                          setEditData({ ...editData, date: e.target.value })
-                        }
-                        className="h-8 text-sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <InputMoney
-                        value={editData.amount}
-                        onChange={(v) =>
-                          setEditData({ ...editData, amount: v })
-                        }
-                        className="h-8 text-sm text-right font-medium"
-                      />
-                    </TableCell>
-                    <TableCell className="text-right pr-6">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-primary"
-                          onClick={handleSaveEdit}
-                        >
-                          <Check className="h-4 w-4" />
+            {expenses.map((expense) => {
+              const config = statusConfig[expense.status];
+              const StatusIcon = config.icon;
+              return (
+                <TableRow key={expense.id} className="px-4">
+                  <TableCell className="pl-6">
+                    <div className="font-medium text-foreground">
+                      {expense.description}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant="secondary"
+                      className="font-semibold text-[10px] uppercase py-0.5 tracking-wider"
+                    >
+                      {expense.categoryName}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center text-sm text-muted-foreground">
+                    {expense.dueDate
+                      ? format(new Date(expense.dueDate), "dd/MM/yyyy")
+                      : "-"}
+                  </TableCell>
+                  <TableCell className="text-center text-sm text-muted-foreground">
+                    {expense.paymentDate
+                      ? format(new Date(expense.paymentDate), "dd/MM/yyyy")
+                      : "-"}
+                  </TableCell>
+                  <TableCell className="text-center font-bold">
+                    {formatCurrency(expense.amount)}
+                  </TableCell>
+                  <TableCell className="text-center text-sm text-muted-foreground">
+                    <Badge className={config.className}>
+                      <StatusIcon className="mr-1 h-3 w-3" />
+                      {config.label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right pr-6">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <EllipsisVerticalIcon className="h-4 w-4" />
+                          <span className="sr-only">Ações</span>
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground"
-                          onClick={handleCancelEdit}
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => onEdit(expense)}
+                          disabled={
+                            expense.status === ExpenseStatus.PAID ||
+                            expense.status === ExpenseStatus.CANCELLED
+                          }
                         >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </>
-                ) : (
-                  <>
-                    <TableCell className="pl-6">
-                      <div className="font-medium text-foreground">
-                        {expense.description}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="secondary"
-                        className="font-semibold text-[10px] uppercase py-0.5 tracking-wider"
-                      >
-                        {expense.categoryName}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      <span className="text-sm text-muted-foreground">
-                        {paymentMethodLabels[expense.paymentMethod]}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center text-sm text-muted-foreground">
-                      {format(
-                        new Date(expense.paymentDate || expense.dueDate),
-                        "dd/MM/yyyy",
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-destructive">
-                      {formatCurrency(expense.amount)}
-                    </TableCell>
-                    <TableCell className="text-right pr-6">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
-                            <EllipsisVerticalIcon className="h-4 w-4" />
-                            <span className="sr-only">Ações</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleStartEdit(expense)}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => setDeleteConfirmId(expense.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </>
-                )}
-              </TableRow>
-            ))}
+                          <Edit2 className="h-4 w-4" />
+                          Editar
+                        </DropdownMenuItem>
+                        {expense.status !== ExpenseStatus.PAID &&
+                          expense.status !== ExpenseStatus.CANCELLED && (
+                            <DropdownMenuItem
+                              onClick={() => handleMarkAsPaid(expense)}
+                            >
+                              <CheckCircle2Icon className="h-4 w-4" />
+                              Marcar como Pago
+                            </DropdownMenuItem>
+                          )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setDeleteConfirmId(expense.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>

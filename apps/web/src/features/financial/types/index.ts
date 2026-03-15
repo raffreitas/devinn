@@ -13,6 +13,16 @@ export const PaymentMethod = {
   BankTransfer: "BankTransfer" as PaymentMethod,
 } as const;
 
+export const ExpenseStatus = {
+  PAID: "Paid",
+  PENDING: "Pending",
+  OVERDUE: "Overdue",
+  DUE_TODAY: "DueToday",
+  CANCELLED: "Cancelled",
+} as const;
+
+export type ExpenseStatus = (typeof ExpenseStatus)[keyof typeof ExpenseStatus];
+
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
   Cash: "Dinheiro",
   Pix: "PIX",
@@ -35,7 +45,7 @@ export interface Expense {
   paymentMethod: PaymentMethod;
   dueDate: string; // ISO date string
   paymentDate: string | null; // ISO date string
-  status: string;
+  status: ExpenseStatus;
 }
 
 export interface CreateExpenseRequest {
@@ -47,7 +57,14 @@ export interface CreateExpenseRequest {
   paymentDate?: string; // ISO date string (YYYY-MM-DD)
 }
 
-export interface UpdateExpenseRequest extends CreateExpenseRequest {}
+export interface UpdateExpenseRequest {
+  categoryId: string;
+  description: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  dueDate: string; // ISO date string (YYYY-MM-DD)
+  paymentDate?: string; // ISO date string (YYYY-MM-DD)
+}
 
 export interface ExpenseFilters {
   categoryId?: string;

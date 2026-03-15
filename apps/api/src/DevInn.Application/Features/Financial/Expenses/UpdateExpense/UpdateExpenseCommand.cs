@@ -1,4 +1,5 @@
 using DevInn.Application.Common.Validation;
+using DevInn.Domain.Shared.Enums;
 
 using FluentResults;
 
@@ -13,7 +14,9 @@ public sealed record UpdateExpenseCommand(
     Guid CategoryId,
     string Description,
     decimal Amount,
-    DateOnly DueDate
+    PaymentMethod PaymentMethod,
+    DateOnly DueDate,
+    DateOnly? PaymentDate = null
 ) : ICommand<Result>
 {
     public Validation Validate() => new UpdateExpenseValidator().Validate(this).ToFailure();

@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { InputMoney } from "@/shared/components/input-money";
@@ -6,6 +7,7 @@ import { Button } from "@/shared/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,8 +33,16 @@ const expenseFormSchema = z.object({
     .max(500, "Descrição não pode ter mais de 500 caracteres"),
   amount: z.number().min(0.01, "Valor deve ser maior que zero"),
   paymentMethod: z.string({ error: "Método de pagamento é obrigatório" }),
-  date: z.string().min(1, "Data é obrigatória"),
-});
+  dueDate: z.string().min(1, "Data de vencimento é obrigatória"),
+  paymentDate: z.string().optional(),
+}).refine(
+  (data) => !data.paymentDate || data.paymentDate >= data.dueDate,
+  {
+    path: ["paymentDate"],
+    message:
+      "Data de pagamento não pode ser anterior à data de vencimento",
+  },
+);
 
 export type ExpenseFormData = z.infer<typeof expenseFormSchema>;
 
@@ -42,7 +52,17 @@ interface ExpenseFormProps {
   onSubmit: (data: ExpenseFormData) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
+  mode?: "create" | "edit";
 }
+
+const getDefaultExpenseFormData = (): ExpenseFormData => ({
+  categoryId: "",
+  description: "",
+  amount: 0,
+  paymentMethod: "Cash",
+  dueDate: new Date().toISOString().split("T")[0],
+  paymentDate: "",
+});
 
 export function ExpenseForm({
   categories,
@@ -50,17 +70,16 @@ export function ExpenseForm({
   onSubmit,
   onCancel,
   isSubmitting,
+  mode = "create",
 }: ExpenseFormProps) {
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
-    defaultValues: initialData || {
-      categoryId: "",
-      description: "",
-      amount: 0,
-      paymentMethod: "Cash",
-      date: new Date().toISOString().split("T")[0],
-    },
+    defaultValues: initialData || getDefaultExpenseFormData(),
   });
+
+  useEffect(() => {
+    form.reset(initialData || getDefaultExpenseFormData());
+  }, [form, initialData]);
 
   return (
     <Form {...form}>
@@ -114,38 +133,10 @@ export function ExpenseForm({
 
           <FormField
             control={form.control}
-            name="paymentMethod"
+            name="dueDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Método de Pagamento</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value?.toString()}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione o método" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {Object.entries(paymentMethodLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Data</FormLabel>
+                <FormLabel>Data de vencimento</FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
@@ -153,6 +144,56 @@ export function ExpenseForm({
               </FormItem>
             )}
           />
+
+
+            <FormField
+              control={form.control}
+              name="paymentMethod"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Método de Pagamento</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione o método" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.entries(paymentMethodLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+
+
+            <FormField
+              control={form.control}
+              name="paymentDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data de pagamento</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Deixe em branco se a despesa ainda não foi paga.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
         </div>
 
         <div className="flex gap-2 justify-end">
@@ -160,7 +201,11 @@ export function ExpenseForm({
             Cancelar
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : "Salvar"}
+            {isSubmitting
+              ? "Salvando..."
+              : mode === "create"
+                ? "Cadastrar"
+                : "Salvar"}
           </Button>
         </div>
       </form>
