@@ -36,7 +36,11 @@ import {
   useExpenses,
   useUpdateExpense,
 } from "../hooks/use-expenses";
-import { type Expense, type PaymentMethod, paymentMethodLabels } from "../types";
+import {
+  type Expense,
+  type PaymentMethod,
+  paymentMethodLabels,
+} from "../types";
 
 export function ExpensesPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -125,6 +129,17 @@ export function ExpensesPage() {
     setIsExpenseModalOpen(true);
   };
 
+  const handleMarkAsPaid = async (expense: Expense) => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    await updateExpense({
+      id: expense.id,
+      data: {
+        ...expense,
+        paymentDate: today,
+      },
+    });
+  };
+
   const handleDeleteExpense = async (id: string) => {
     await deleteExpense(id);
   };
@@ -183,7 +198,10 @@ export function ExpensesPage() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-          <Button onClick={handleOpenCreateExpenseModal} className="w-full sm:w-auto">
+          <Button
+            onClick={handleOpenCreateExpenseModal}
+            className="w-full sm:w-auto"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Nova Despesa
           </Button>
@@ -264,6 +282,7 @@ export function ExpensesPage() {
               expenses={filteredExpenses || []}
               onEdit={handleEditExpense}
               onDelete={handleDeleteExpense}
+              onMarkAsPaid={handleMarkAsPaid}
             />
           )}
         </CardContent>

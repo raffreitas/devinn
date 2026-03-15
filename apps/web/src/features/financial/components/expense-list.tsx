@@ -80,10 +80,16 @@ const statusConfig = {
 interface ExpenseListProps {
   expenses: Expense[];
   onEdit: (expense: Expense) => void;
+  onMarkAsPaid: (expense: Expense) => void;
   onDelete: (id: string) => void;
 }
 
-export function ExpenseList({ expenses, onEdit, onDelete }: ExpenseListProps) {
+export function ExpenseList({
+  expenses,
+  onEdit,
+  onDelete,
+  onMarkAsPaid,
+}: ExpenseListProps) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
@@ -91,6 +97,10 @@ export function ExpenseList({ expenses, onEdit, onDelete }: ExpenseListProps) {
       style: "currency",
       currency: "BRL",
     });
+  };
+
+  const handleMarkAsPaid = (expense: Expense) => {
+    onMarkAsPaid(expense);
   };
 
   if (expenses.length === 0) {
@@ -153,7 +163,7 @@ export function ExpenseList({ expenses, onEdit, onDelete }: ExpenseListProps) {
                       ? format(new Date(expense.paymentDate), "dd/MM/yyyy")
                       : "-"}
                   </TableCell>
-                  <TableCell className="text-center font-bold text-destructive">
+                  <TableCell className="text-center font-bold">
                     {formatCurrency(expense.amount)}
                   </TableCell>
                   <TableCell className="text-center text-sm text-muted-foreground">
@@ -171,10 +181,25 @@ export function ExpenseList({ expenses, onEdit, onDelete }: ExpenseListProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(expense)}>
+                        <DropdownMenuItem
+                          onClick={() => onEdit(expense)}
+                          disabled={
+                            expense.status === ExpenseStatus.PAID ||
+                            expense.status === ExpenseStatus.CANCELLED
+                          }
+                        >
                           <Edit2 className="h-4 w-4" />
                           Editar
                         </DropdownMenuItem>
+                        {expense.status !== ExpenseStatus.PAID &&
+                          expense.status !== ExpenseStatus.CANCELLED && (
+                            <DropdownMenuItem
+                              onClick={() => handleMarkAsPaid(expense)}
+                            >
+                              <CheckCircle2Icon className="h-4 w-4" />
+                              Marcar como Pago
+                            </DropdownMenuItem>
+                          )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           variant="destructive"

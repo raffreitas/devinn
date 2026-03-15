@@ -38,12 +38,5 @@ public sealed class UpdateExpenseValidator : AbstractValidator<UpdateExpenseComm
 
         RuleFor(x => x.DueDate)
             .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.UtcNow)).WithMessage("Data de vencimento inválida");
-
-        When(x => x.PaymentDate.HasValue, () =>
-        {
-            RuleFor(x => x.PaymentDate!.Value)
-                .GreaterThanOrEqualTo(x => x.DueDate)
-                .WithMessage("Data de pagamento não pode ser anterior à data de vencimento");
-        });
     }
 }
