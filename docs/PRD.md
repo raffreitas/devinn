@@ -68,12 +68,6 @@ Atualmente, a gestão é feita de forma fragmentada, sem um controle centralizad
 * **RF06 - FNRH Opcional:** Ficha de hóspede com dados (CPF, Nome, Veículo) que pode ser preenchida no check-in ou ignorada.
     * *Flexibilidade:* Sistema não bloqueia criação de reserva sem dados completos da FNRH
 
-### 3.3 Integrações (Channel Manager Lite)
-
-> **📘 Documentação Técnica Detalhada:**
-> - [Especificação de Integração Booking.com (Connectivity API)](./INTEGRACAO-BOOKING.md)
-> - [Integração Booking.com (iCal + Inbound Email via Resend)](./INTEGRACAO-BOOKING-ICAL-INBOUND-EMAIL.md)
-
 * **RF07 - Integração Booking.com API:** Sincronização de reservas via Booking.com Connectivity API com importação de dados financeiros completos.
     * *Funcionalidades principais:*
         * Sincronização automática de novas reservas (pull + webhook)
