@@ -44,3 +44,44 @@ export const formatMoney = (value: number | string | undefined) => {
 export const removeChars = (value: string) => {
   return value.replace(/\D/g, "");
 };
+
+export const formatCpf = (value: string | undefined) => {
+  const digits = removeChars(value ?? "").slice(0, 11);
+
+  if (!digits) return "";
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) {
+    return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  }
+  if (digits.length <= 9) {
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  }
+
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+};
+
+export const formatPhone = (value: string | undefined) => {
+  const digits = removeChars(value ?? "").slice(0, 11);
+
+  if (!digits) return "";
+  if (digits.length <= 2) return `(${digits}`;
+
+  const areaCode = digits.slice(0, 2);
+  const number = digits.slice(2);
+
+  if (digits.length <= 10) {
+    const prefix = number.slice(0, 4);
+    const suffix = number.slice(4, 8);
+
+    return suffix
+      ? `(${areaCode}) ${prefix}-${suffix}`
+      : `(${areaCode}) ${prefix}`;
+  }
+
+  const prefix = number.slice(0, 5);
+  const suffix = number.slice(5, 9);
+
+  return suffix
+    ? `(${areaCode}) ${prefix}-${suffix}`
+    : `(${areaCode}) ${prefix}`;
+};

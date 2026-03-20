@@ -1,6 +1,7 @@
 import { differenceInDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Booking } from "../types";
+import { formatCpf, formatPhone } from "@/shared/lib/utils";
 
 interface BookingReceiptTemplateProps {
   booking: Booking;
@@ -112,7 +113,7 @@ export const BookingReceiptTemplate = ({
               TELEFONE
             </p>
             <p style={{ fontSize: "13px", margin: "0", fontWeight: "500" }}>
-              {booking.guest?.phone}
+              {formatPhone(booking.guest?.phone)}
             </p>
           </div>
           {booking.guest?.email && (
@@ -145,7 +146,7 @@ export const BookingReceiptTemplate = ({
                 DOCUMENTO
               </p>
               <p style={{ fontSize: "13px", margin: "0", fontWeight: "500" }}>
-                {booking.guest.document}
+                {formatCpf(booking.guest.document)}
               </p>
             </div>
           )}

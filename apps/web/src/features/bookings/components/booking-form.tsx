@@ -12,8 +12,10 @@ import { useEffect } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { useCalculatePriceBreakdown } from "@/features/bookings/hooks/use-calculate-price-breakdown";
 import { useRooms } from "@/features/inventory/hooks";
+import { InputCpf } from "@/shared/components/input-cpf";
 import { InputMoney } from "@/shared/components/input-money";
 import { InputNumber } from "@/shared/components/input-number";
+import { InputPhone } from "@/shared/components/input-phone";
 import { Button } from "@/shared/components/ui/button";
 import { Calendar } from "@/shared/components/ui/calendar";
 import {
@@ -38,10 +40,14 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { cn } from "@/shared/lib/utils";
-import { type BookingFormData, bookingSchema } from "../types";
+import {
+  type BookingFormData,
+  type BookingFormInput,
+  bookingSchema,
+} from "../types";
 
 type BookingFormProps = {
-  initialData?: BookingFormData & { id?: string };
+  initialData?: BookingFormInput & { id?: string };
   isSubmitting?: boolean;
   isICalBlock?: boolean;
   onSubmit: (data: BookingFormData) => void | Promise<void>;
@@ -59,7 +65,7 @@ export function BookingForm({
   preSelectedRoom,
   preSelectedDate,
 }: BookingFormProps) {
-  const form = useForm<BookingFormData>({
+  const form = useForm<BookingFormInput, undefined, BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
       roomId: preSelectedRoom ? preSelectedRoom : initialData?.roomId || "",
@@ -565,7 +571,7 @@ export function BookingForm({
                 <FormItem>
                   <FormLabel>Telefone</FormLabel>
                   <FormControl>
-                    <Input placeholder="(11) 98765-4321" {...field} />
+                    <InputPhone placeholder="(11) 98765-4321" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -611,7 +617,7 @@ export function BookingForm({
                 <FormItem>
                   <FormLabel>CPF</FormLabel>
                   <FormControl>
-                    <Input placeholder="123.456.789-00" {...field} />
+                    <InputCpf placeholder="123.456.789-00" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

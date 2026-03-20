@@ -1,4 +1,26 @@
 import z from "zod";
+import { removeChars } from "@/shared/lib/utils";
+
+const normalizeDigits = (value: string | undefined) => removeChars(value ?? "");
+
+const optionalPhoneSchema = z
+  .string()
+  .optional()
+  .transform((value) => normalizeDigits(value))
+  .refine(
+    (value) => value === "" || value.length === 10 || value.length === 11,
+    {
+      message: "Telefone deve ter DDD + número válidos",
+    },
+  );
+
+const optionalCpfSchema = z
+  .string()
+  .optional()
+  .transform((value) => normalizeDigits(value))
+  .refine((value) => value === "" || value.length === 11, {
+    message: "CPF deve ter 11 dígitos",
+  });
 
 export type BookingStatus =
   | "Scheduled"
@@ -107,7 +129,7 @@ export interface BookingFilters {
   pageSize?: number;
 }
 
-export function mapToFormData(dto?: Booking): BookingFormData | undefined {
+export function mapToFormData(dto?: Booking): BookingFormInput | undefined {
   if (!dto) return undefined;
 
   return {
@@ -141,8 +163,8 @@ export const bookingSchema = z
       .optional(),
     guestName: z.string().min(1, "Nome do hóspede é obrigatório"),
     guestEmail: z.email("E-mail inválido").optional().or(z.literal("")),
-    guestPhone: z.string().optional().or(z.literal("")),
-    guestDocument: z.string().optional(),
+    guestPhone: optionalPhoneSchema,
+    guestDocument: optionalCpfSchema,
     guestBirthDate: z.string().optional(),
     notes: z.string().optional(),
     paidAmount: z
@@ -171,4 +193,5 @@ export const bookingSchema = z
     },
   );
 
-export type BookingFormData = z.infer<typeof bookingSchema>;
+export type BookingFormInput = z.input<typeof bookingSchema>;
+export type BookingFormData = z.output<typeof bookingSchema>;

@@ -21,7 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { cn } from "@/shared/lib/utils";
+import { cn, removeChars } from "@/shared/lib/utils";
 import { ReservationBar } from "../components/reservation-bar";
 import { useBookings, useDeleteBooking } from "../hooks/use-booking";
 import { bookingService } from "../services/booking-service";
@@ -100,8 +100,8 @@ export function BookingCalendar() {
       guest: {
         name: data.guestName,
         email: data.guestEmail,
-        phone: data.guestPhone,
-        document: data.guestDocument,
+        phone: removeChars(data.guestPhone ?? ""),
+        document: removeChars(data.guestDocument ?? ""),
         birthDate: data.guestBirthDate,
       },
       roomId: data.roomId,
