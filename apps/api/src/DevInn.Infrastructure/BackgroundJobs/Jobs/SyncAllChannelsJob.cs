@@ -21,6 +21,8 @@ internal sealed class SyncAllChannelsJob(
     IServiceScopeFactory serviceScopeFactory
 ) : IJob
 {
+    private const int MaxDegreeOfParallelism = 5;
+
     public async Task Execute(IJobExecutionContext context)
     {
         logger.LogInformation("Starting SyncAllChannelsJob execution");
@@ -33,43 +35,56 @@ internal sealed class SyncAllChannelsJob(
 
         await using var dbConnection = await dbConnectionFactory.OpenConnectionAsync(context.CancellationToken);
         var activeIntegrations = await dbConnection.QueryAsync<IntegrationRow>(query, context.CancellationToken);
-        var integrationsList = activeIntegrations.ToList();
 
-        foreach (var integration in integrationsList)
-        {
-            try
-            {
-                logger.LogInformation("Syncing integration {IntegrationId} for room {RoomId}",
-                    integration.Id, integration.RoomId);
+        using var semaphore = new SemaphoreSlim(MaxDegreeOfParallelism);
+        var tasks = activeIntegrations.Select(integration =>
+            SyncIntegrationAsync(integration, semaphore, context.CancellationToken));
 
-                using var scope = serviceScopeFactory.CreateScope();
-                var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
-                var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-                tenantContext.SetTenant(new Tenant(integration.InnId));
-
-                var command = new SyncChannelIntegrationCommand(integration.Id);
-                var result = await sender.Send(command, context.CancellationToken);
-
-                if (result.IsSuccess)
-                {
-                    logger.LogInformation(
-                        "Successfully synced integration {IntegrationId}. Imported {Count} bookings",
-                        integration.Id, result.Value);
-                }
-                else
-                {
-                    logger.LogWarning("Failed to sync integration {IntegrationId}: {Errors}",
-                        integration.Id, string.Join(", ", result.Errors.Select(e => e.Message)));
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error syncing integration {IntegrationId}", integration.Id);
-            }
-        }
+        await Task.WhenAll(tasks);
 
         logger.LogInformation("SyncAllChannelsJob execution completed");
+    }
+
+    private async Task SyncIntegrationAsync(
+        IntegrationRow integration,
+        SemaphoreSlim semaphore,
+        CancellationToken cancellationToken)
+    {
+        await semaphore.WaitAsync(cancellationToken);
+        try
+        {
+            logger.LogInformation("Syncing integration {IntegrationId} for room {RoomId}",
+                integration.Id, integration.RoomId);
+
+            using var scope = serviceScopeFactory.CreateScope();
+            var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+
+            tenantContext.SetTenant(new Tenant(integration.InnId));
+
+            var command = new SyncChannelIntegrationCommand(integration.Id);
+            var result = await sender.Send(command, cancellationToken);
+
+            if (result.IsSuccess)
+            {
+                logger.LogInformation(
+                    "Successfully synced integration {IntegrationId}. Imported {Count} bookings",
+                    integration.Id, result.Value);
+            }
+            else
+            {
+                logger.LogWarning("Failed to sync integration {IntegrationId}: {Errors}",
+                    integration.Id, string.Join(", ", result.Errors.Select(e => e.Message)));
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "Error syncing integration {IntegrationId}", integration.Id);
+        }
+        finally
+        {
+            semaphore.Release();
+        }
     }
 
     private sealed record IntegrationRow(Guid Id, Guid RoomId, Guid InnId);

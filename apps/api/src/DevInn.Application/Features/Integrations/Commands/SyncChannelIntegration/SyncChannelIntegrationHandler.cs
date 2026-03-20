@@ -19,6 +19,7 @@ internal sealed class SyncChannelIntegrationHandler(IICalSyncService syncService
         }
         catch (Exception ex)
         {
+            if (ex is OperationCanceledException) throw;
             return Result.Fail($"Erro ao sincronizar: {ex.Message}");
         }
     }

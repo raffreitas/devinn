@@ -21,7 +21,7 @@ internal sealed class ChannelIntegrationRepository(ApplicationDbContext dbContex
         => await dbContext.ChannelIntegrations
             .FirstOrDefaultAsync(ci => ci.Id == id, cancellationToken);
 
-    public async Task<IEnumerable<ChannelIntegration>> GetAllActiveAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ChannelIntegration>> GetAllActiveAsync(CancellationToken cancellationToken = default)
         => await dbContext.ChannelIntegrations
             .Where(ci => ci.IsActive)
             .ToListAsync(cancellationToken);

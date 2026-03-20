@@ -68,7 +68,7 @@ internal sealed class ListChannelIntegrationsHandler(
 
         var results = await connection.QueryAsync<IntegrationRaw>(sql, parameters);
 
-        var integrations = results.Select(MapToDto).ToList();
+        var integrations = results.Select(MapToDto);
 
         return Result.Ok(new PaginatedResult<ChannelIntegrationDto>(
             integrations.ToArray(),
