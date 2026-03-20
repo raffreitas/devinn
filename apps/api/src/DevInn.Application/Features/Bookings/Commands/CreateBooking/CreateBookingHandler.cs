@@ -74,7 +74,7 @@ internal sealed class CreateBookingHandler(
             command.Notes);
 
         // Add initial payment if provided
-        if (command is { PaidAmount: not null, PaymentMethod: not null })
+        if (command is { PaidAmount: > 0, PaymentMethod: not null })
         {
             booking.AddPayment(
                 new Money(command.PaidAmount.Value),
