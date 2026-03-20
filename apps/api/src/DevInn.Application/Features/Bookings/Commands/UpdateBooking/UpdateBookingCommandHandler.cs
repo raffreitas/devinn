@@ -21,6 +21,8 @@ internal sealed class UpdateBookingCommandHandler(
     IPricingCalculatorService pricingCalculatorService,
     IUnitOfWork uow) : ICommandHandler<UpdateBookingCommand, Result>
 {
+    private const int CurrencyDecimalPlaces = 2;
+
     public async ValueTask<Result> Handle(UpdateBookingCommand command, CancellationToken cancellationToken)
     {
         var booking = await bookingRepository.GetByIdAsync(command.Id, cancellationToken);
@@ -60,7 +62,12 @@ internal sealed class UpdateBookingCommandHandler(
             command.Guest.Document,
             command.Guest.BirthDate);
 
-        booking.Enrich(guest, occupancy, command.Notes, new Money(decimal.Round(breakdown.Total.Value, 2)));
+        booking.Enrich(
+            guest,
+            occupancy,
+            command.Notes,
+            new Money(decimal.Round(breakdown.Total.Value, CurrencyDecimalPlaces))
+        );
 
         if (command is { PaidAmount: > 0, PaymentMethod: not null })
         {
@@ -127,7 +134,7 @@ internal sealed class UpdateBookingCommandHandler(
             guest,
             stay,
             occupancy,
-            new Money(decimal.Round(total, 2)),
+            new Money(decimal.Round(total, CurrencyDecimalPlaces)),
             command.Source,
             command.Notes);
 

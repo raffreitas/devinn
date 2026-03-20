@@ -1,5 +1,7 @@
-﻿using DevInn.Infrastructure.BackgroundJobs.Jobs;
+using DevInn.Application.Features.Integrations.Services;
+using DevInn.Infrastructure.BackgroundJobs.Jobs;
 using DevInn.Infrastructure.BackgroundJobs.Options;
+using DevInn.Infrastructure.BackgroundJobs.Providers;
 using DevInn.Infrastructure.Common.Extensions;
 
 using Microsoft.Extensions.Configuration;
@@ -17,6 +19,8 @@ public static class DependencyInjection
             .BindConfiguration(BackgroundJobsOptions.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
+
+        services.AddSingleton<INextSyncTimeProvider, QuartzNextSyncTimeProvider>();
 
         var jobsOptions = configuration.GetOrThrow<BackgroundJobsOptions>(BackgroundJobsOptions.SectionName);
 

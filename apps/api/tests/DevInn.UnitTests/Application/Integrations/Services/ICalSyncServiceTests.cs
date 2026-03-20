@@ -28,6 +28,7 @@ public sealed class ICalSyncServiceTests
 
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
     private readonly IICalService _icalService = Substitute.For<IICalService>();
+    private readonly INextSyncTimeProvider _nextSyncTimeProvider = Substitute.For<INextSyncTimeProvider>();
     private readonly IUnitOfWork _uow = Substitute.For<IUnitOfWork>();
     private readonly ILogger<ICalSyncService> _logger = NullLogger<ICalSyncService>.Instance;
 
@@ -35,7 +36,15 @@ public sealed class ICalSyncServiceTests
 
     public ICalSyncServiceTests()
     {
-        _sut = new ICalSyncService(_integrationRepository, _bookingRepository, _icalService, _uow, _logger);
+        _nextSyncTimeProvider.GetNextSyncAt(Arg.Any<DateTimeOffset>())
+            .Returns(new DateTimeOffset(2026, 03, 20, 15, 0, 0, TimeSpan.Zero));
+        _sut = new ICalSyncService(
+            _integrationRepository,
+            _bookingRepository,
+            _icalService,
+            _nextSyncTimeProvider,
+            _uow,
+            _logger);
     }
 
     [Fact]
@@ -83,6 +92,7 @@ public sealed class ICalSyncServiceTests
         existingBooking.StayPeriod.CheckIn.ShouldBe(updatedStart);
         existingBooking.StayPeriod.CheckOut.ShouldBe(updatedEnd);
         existingBooking.Notes.ShouldBe("Blocked\nChanged");
+        integration.SyncStatus.NextSyncAt.ShouldBe(new DateTimeOffset(2026, 03, 20, 15, 0, 0, TimeSpan.Zero));
         await _bookingRepository.DidNotReceive().AddAsync(Arg.Any<Booking>(), Arg.Any<CancellationToken>());
         await _uow.Received().CommitAsync(TestContext.Current.CancellationToken);
     }

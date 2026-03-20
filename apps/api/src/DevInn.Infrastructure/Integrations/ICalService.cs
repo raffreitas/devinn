@@ -31,10 +31,6 @@ internal sealed class ICalService(IHttpClientFactory httpClientFactory) : IICalS
         {
             throw new InvalidOperationException($"Failed to fetch iCal feed from {iCalUrl}", ex);
         }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Failed to parse iCal content from {iCalUrl}", ex);
-        }
     }
 
     private static ICalEventDto MapToDto(CalendarEvent calendarEvent)
