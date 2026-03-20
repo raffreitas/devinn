@@ -1,9 +1,4 @@
-import {
-  Check,
-  Copy,
-  ExternalLink,
-  InfoIcon,
-} from "lucide-react";
+import { Check, Copy, ExternalLink, InfoIcon } from "lucide-react";
 import { useState } from "react";
 import {
   Alert,

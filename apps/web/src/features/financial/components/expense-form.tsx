@@ -25,24 +25,22 @@ import type { ExpenseCategory } from "../types";
 import { paymentMethodLabels } from "../types";
 import { CategorySelect } from "./category-select";
 
-const expenseFormSchema = z.object({
-  categoryId: z.string().min(1, "Categoria é obrigatória"),
-  description: z
-    .string()
-    .min(1, "Descrição é obrigatória")
-    .max(500, "Descrição não pode ter mais de 500 caracteres"),
-  amount: z.number().min(0.01, "Valor deve ser maior que zero"),
-  paymentMethod: z.string({ error: "Método de pagamento é obrigatório" }),
-  dueDate: z.string().min(1, "Data de vencimento é obrigatória"),
-  paymentDate: z.string().optional(),
-}).refine(
-  (data) => !data.paymentDate || data.paymentDate >= data.dueDate,
-  {
+const expenseFormSchema = z
+  .object({
+    categoryId: z.string().min(1, "Categoria é obrigatória"),
+    description: z
+      .string()
+      .min(1, "Descrição é obrigatória")
+      .max(500, "Descrição não pode ter mais de 500 caracteres"),
+    amount: z.number().min(0.01, "Valor deve ser maior que zero"),
+    paymentMethod: z.string({ error: "Método de pagamento é obrigatório" }),
+    dueDate: z.string().min(1, "Data de vencimento é obrigatória"),
+    paymentDate: z.string().optional(),
+  })
+  .refine((data) => !data.paymentDate || data.paymentDate >= data.dueDate, {
     path: ["paymentDate"],
-    message:
-      "Data de pagamento não pode ser anterior à data de vencimento",
-  },
-);
+    message: "Data de pagamento não pode ser anterior à data de vencimento",
+  });
 
 export type ExpenseFormData = z.infer<typeof expenseFormSchema>;
 
@@ -145,55 +143,47 @@ export function ExpenseForm({
             )}
           />
 
-
-            <FormField
-              control={form.control}
-              name="paymentMethod"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Método de Pagamento</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione o método" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(paymentMethodLabels).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-
-
-            <FormField
-              control={form.control}
-              name="paymentDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data de pagamento</FormLabel>
+          <FormField
+            control={form.control}
+            name="paymentMethod"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Método de Pagamento</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      value={field.value ?? ""}
-                    />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione o método" />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormDescription>
-                    Deixe em branco se a despesa ainda não foi paga.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <SelectContent>
+                    {Object.entries(paymentMethodLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
+          <FormField
+            control={form.control}
+            name="paymentDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Data de pagamento</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} value={field.value ?? ""} />
+                </FormControl>
+                <FormDescription>
+                  Deixe em branco se a despesa ainda não foi paga.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="flex gap-2 justify-end">

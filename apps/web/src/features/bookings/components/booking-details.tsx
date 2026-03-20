@@ -55,6 +55,7 @@ import type {
 import { getBlockLabel, isBlock, isICalSource } from "../utils/booking-helpers";
 import { BookingReceiptPrinter } from "./booking-receipt-printer";
 import { BookingSourceBadge } from "./booking-source-badge";
+import { formatCpf, formatPhone } from "@/shared/lib/utils";
 
 interface BookingDetailsProps {
   booking: Booking;
@@ -522,7 +523,7 @@ export function BookingDetails({
                       Telefone
                     </p>
                     <p className="text-sm font-semibold">
-                      {booking.guest?.phone}
+                      {formatPhone(booking.guest?.phone)}
                     </p>
                   </div>
                 </div>
@@ -572,7 +573,7 @@ export function BookingDetails({
                         Documento (CPF/RG)
                       </p>
                       <p className="text-sm font-semibold">
-                        {booking.guest?.document}
+                        {formatCpf(booking.guest?.document)}
                       </p>
                     </div>
                   </div>

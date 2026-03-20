@@ -64,6 +64,7 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { usePagination } from "@/shared/hooks/use-pagination";
+import { removeChars } from "@/shared/lib/utils";
 import { BookingDetails } from "../components/booking-details";
 import { BookingForm } from "../components/booking-form";
 import {
@@ -198,8 +199,8 @@ export function BookingsPage() {
       guest: {
         name: data.guestName,
         email: data.guestEmail,
-        phone: data.guestPhone,
-        document: data.guestDocument,
+        phone: removeChars(data.guestPhone ?? ""),
+        document: removeChars(data.guestDocument ?? ""),
         birthDate: data.guestBirthDate,
       },
       roomId: data.roomId,
