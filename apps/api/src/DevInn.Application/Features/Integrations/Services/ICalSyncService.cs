@@ -17,10 +17,13 @@ internal sealed class ICalSyncService(
     IChannelIntegrationRepository integrationRepository,
     IBookingRepository bookingRepository,
     IICalService iCalService,
+    INextSyncTimeProvider nextSyncTimeProvider,
     IUnitOfWork uow,
     ILogger<ICalSyncService> logger
 ) : IICalSyncService
 {
+    private const int ReconciliationWindowDays = 30;
+
     public async Task<int> SyncChannelIntegrationAsync(Guid integrationId,
         CancellationToken cancellationToken = default)
     {
@@ -65,7 +68,7 @@ internal sealed class ICalSyncService(
             // Reconcile: cancel bookings that no longer exist in iCal feed
             var canceledCount = await ReconcileBookingsAsync(integration.Id, iCalEventUids, cancellationToken);
 
-            var nextSync = DateTimeOffset.UtcNow.AddHours(3);
+            var nextSync = nextSyncTimeProvider.GetNextSyncAt(DateTimeOffset.UtcNow);
             integration.MarkSyncSuccess(importedCount, nextSync);
             await uow.CommitAsync(cancellationToken);
 
@@ -90,7 +93,7 @@ internal sealed class ICalSyncService(
         CancellationToken cancellationToken)
     {
         // Only reconcile bookings from last 30 days + future to optimize performance
-        var cutoffDate = DateTimeOffset.UtcNow.AddDays(-30);
+        var cutoffDate = DateTimeOffset.UtcNow.AddDays(-ReconciliationWindowDays);
         var existingBookings = await bookingRepository.GetByChannelIntegrationIdAsync(
             integrationId,
             checkOutAfter: cutoffDate,
@@ -127,7 +130,7 @@ internal sealed class ICalSyncService(
         var notes = BuildEventNotes(iCalEvent);
 
         // Check if booking with this ExternalId already exists
-        var existingBooking = await FindBookingByExternalIdAsync(iCalEvent.Uid, cancellationToken);
+        var existingBooking = await bookingRepository.GetByExternalIdAsync(iCalEvent.Uid, cancellationToken);
 
         if (existingBooking is not null)
         {
@@ -225,7 +228,4 @@ internal sealed class ICalSyncService(
         => existingBooking.IsBlock
            && existingBooking.ChannelIntegrationId == integration.Id
            && existingBooking.Source is BookingSource.BookingIcal or BookingSource.AirbnbIcal;
-
-    private async Task<Booking?> FindBookingByExternalIdAsync(string externalId, CancellationToken cancellationToken)
-        => await bookingRepository.GetByExternalIdAsync(externalId, cancellationToken);
 }
