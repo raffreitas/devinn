@@ -114,9 +114,26 @@ The project has a CI/CD workflow configured in `.github/workflows/webapi-cicd.ya
 
 *   **CI (Continuous Integration)**: Automatically builds and tests the monorepo (both React and .NET applications) on pushes to the `main` branch and on pull requests.
 *   **Release**: Automatically creates a GitHub Release when a semantic version tag (e.g., `v1.2.3`) is pushed to the repository.
-*   **Deploy (Production)**: Manual deployment to production is done via a `workflow_dispatch` event in GitHub Actions. This is to ensure control over production deployments.
+*   **Deploy (Production)**: Manual deployment to production is done via a `workflow_dispatch` event in GitHub Actions (`deploy-production.yaml`). This promotes `main` → `production` branch, which Railway watches for auto-deploy.
 
 The CI pipeline is optimized with caching for both pnpm and NuGet packages to speed up builds. The deployment process includes running database migrations before deploying the application to Railway.
+
+### Branch Protection
+
+Since the project uses GitHub Free, branch protection rules and environments are not available. Instead, the following mechanisms are in place:
+
+*   **Git Hook (pre-push)**: Husky is configured with a `pre-push` hook that blocks direct pushes to `main`. All changes must go through Pull Requests. The hook is automatically installed via `pnpm install`.
+
+### Deployment Flow
+
+The deployment to production follows this flow:
+
+1.  Developer creates a branch and opens a PR targeting `main`
+2.  CI workflows run automatically (build, test, lint)
+3.  PR is merged into `main` (auto-creates semver tag and GitHub Release)
+4.  Railway detects the change on `main` branch and deploys automatically
+
+**Railway Configuration**: Railway must be configured to watch the `main` branch. This is done in the Railway dashboard under the service's Settings → Source → Branch.
 
 ## Development Conventions
 

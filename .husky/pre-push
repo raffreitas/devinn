@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+# Prevent direct pushes to the main branch.
+# All changes to main must go through a Pull Request.
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$BRANCH" = "main" ]; then
+  echo ""
+  echo "🚫 Push direto para 'main' bloqueado!"
+  echo ""
+  echo "   Todas as mudanças devem ser feitas via Pull Request."
+  echo "   Crie uma branch, faça push, e abra um PR."
+  echo ""
+  echo "   git checkout -b minha-feature"
+  echo "   git push origin minha-feature"
+  echo ""
+  exit 1
+fi
