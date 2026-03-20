@@ -61,13 +61,10 @@ internal sealed record BookingProjection
     public int Children { get; init; }
     public string? ChildrenAges { get; init; }
     public decimal TotalValue { get; init; }
-    public decimal PaidValue { get; init; }
     public string Status { get; init; } = null!;
     public string Source { get; init; } = null!;
-    public string? Payments { get; init; }
     public string? Notes { get; init; }
 }
-
 
 internal sealed record PaymentProjection
 {
