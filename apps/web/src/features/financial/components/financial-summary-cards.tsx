@@ -1,28 +1,24 @@
-import { DollarSign, PiggyBank, TrendingDown, TrendingUp } from "lucide-react";
-import type { Booking } from "@/features/bookings/types";
-import type { Expense } from "../types";
+import {
+  Calculator,
+  Clock3,
+  DollarSign,
+  PiggyBank,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import type { FinancialDashboardMetrics } from "../types";
 
 interface FinancialSummaryCardsProps {
-  bookings: Booking[];
-  expenses: Expense[];
+  metrics: FinancialDashboardMetrics;
 }
 
-export function FinancialSummaryCards({
-  bookings,
-  expenses,
-}: FinancialSummaryCardsProps) {
-  // Calcula receitas do mês
-  const totalRevenue = bookings.reduce((sum, b) => sum + b.pricing.total, 0);
-  const receivedRevenue = bookings.reduce((sum, b) => sum + b.totalPaid, 0);
-  const pendingRevenue = totalRevenue - receivedRevenue;
-
-  // Calcula despesas do mês
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-
-  // Balanço
-  const balance = receivedRevenue - totalExpenses;
-  const projectedBalance = totalRevenue - totalExpenses;
-
+export function FinancialSummaryCards({ metrics }: FinancialSummaryCardsProps) {
   const formatCurrency = (value: number) => {
     return value.toLocaleString("pt-BR", {
       style: "currency",
@@ -30,103 +26,84 @@ export function FinancialSummaryCards({
     });
   };
 
+  const cards = [
+    {
+      title: "Receita Total",
+      value: formatCurrency(metrics.totalRevenue),
+      description: "Reservas do mês selecionado",
+      icon: TrendingUp,
+      accent: "primary",
+    },
+    {
+      title: "Receita Recebida",
+      value: formatCurrency(metrics.receivedRevenue),
+      description:
+        metrics.pendingRevenue > 0
+          ? `${formatCurrency(metrics.pendingRevenue)} pendente`
+          : "100% recebido",
+      icon: DollarSign,
+      accent: metrics.pendingRevenue > 0 ? "amber" : "primary",
+    },
+    {
+      title: "Receita Pendente",
+      value: formatCurrency(metrics.pendingRevenue),
+      description: "Diferença entre total e recebido",
+      icon: Clock3,
+      accent: metrics.pendingRevenue > 0 ? "amber" : "muted",
+    },
+    {
+      title: "Total de Despesas",
+      value: formatCurrency(metrics.totalExpenses),
+      description: "Despesas lançadas no período",
+      icon: TrendingDown,
+      accent: "destructive",
+    },
+    {
+      title: "Balanço Real",
+      value: formatCurrency(metrics.actualBalance),
+      description: "Recebido menos despesas",
+      icon: PiggyBank,
+      accent: metrics.actualBalance >= 0 ? "primary" : "destructive",
+    },
+    {
+      title: "Balanço Projetado",
+      value: formatCurrency(metrics.projectedBalance),
+      description: "Total previsto menos despesas",
+      icon: Calculator,
+      accent: metrics.projectedBalance >= 0 ? "primary" : "destructive",
+    },
+  ] as const;
+
+  const toneClasses = {
+    primary: "text-primary",
+    destructive: "text-destructive",
+    amber: "text-amber-500",
+    muted: "text-muted-foreground",
+  };
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Receita Total */}
-      <div className="bg-card rounded-xl p-5 border border-border shadow-sm flex flex-col justify-between hover:border-primary/50 transition-colors">
-        <div className="flex items-center justify-between mb-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <TrendingUp className="w-5 h-5 text-primary" />
-          </div>
-          <span className="text-muted-foreground font-medium text-xs uppercase tracking-wider">
-            Receita Total
-          </span>
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-foreground">
-            {formatCurrency(totalRevenue)}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1 font-medium">
-            {bookings.length} reservas no período
-          </p>
-        </div>
-      </div>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {cards.map((card) => {
+        const toneColor = toneClasses[card.accent];
+        const Icon = card.icon;
 
-      {/* Receita Recebida */}
-      <div className="bg-card rounded-xl p-5 border border-border shadow-sm flex flex-col justify-between hover:border-primary/50 transition-colors">
-        <div className="flex items-center justify-between mb-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <DollarSign className="w-5 h-5 text-primary" />
-          </div>
-          <span className="text-muted-foreground font-medium text-xs uppercase tracking-wider">
-            Recebido
-          </span>
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-foreground">
-            {formatCurrency(receivedRevenue)}
-          </p>
-          <p
-            className={`text-xs mt-1 font-medium ${pendingRevenue > 0 ? "text-amber-500" : "text-primary"}`}
-          >
-            {pendingRevenue > 0
-              ? `${formatCurrency(pendingRevenue)} pendente`
-              : "100% recebido"}
-          </p>
-        </div>
-      </div>
-
-      {/* Despesas */}
-      <div className="bg-card rounded-xl p-5 border border-border shadow-sm flex flex-col justify-between hover:border-destructive/50 transition-colors">
-        <div className="flex items-center justify-between mb-3">
-          <div className="p-2 bg-destructive/10 rounded-lg">
-            <TrendingDown className="w-5 h-5 text-destructive" />
-          </div>
-          <span className="text-muted-foreground font-medium text-xs uppercase tracking-wider">
-            Despesas
-          </span>
-        </div>
-        <div>
-          <p className="text-2xl font-bold text-foreground">
-            {formatCurrency(totalExpenses)}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1 font-medium">
-            {expenses.length} lançamentos realizados
-          </p>
-        </div>
-      </div>
-
-      {/* Saldo */}
-      <div
-        className={`bg-card rounded-xl p-5 border shadow-sm flex flex-col justify-between transition-colors ${
-          balance >= 0
-            ? "border-primary/30 hover:border-primary/60"
-            : "border-destructive/30 hover:border-destructive/60"
-        }`}
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div
-            className={`p-2 rounded-lg ${balance >= 0 ? "bg-primary/10" : "bg-destructive/10"}`}
-          >
-            <PiggyBank
-              className={`w-5 h-5 ${balance >= 0 ? "text-primary" : "text-destructive"}`}
-            />
-          </div>
-          <span className="text-muted-foreground font-medium text-xs uppercase tracking-wider">
-            Saldo Atual
-          </span>
-        </div>
-        <div>
-          <p
-            className={`text-2xl font-bold ${balance >= 0 ? "text-primary" : "text-destructive"}`}
-          >
-            {formatCurrency(balance)}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1 font-medium">
-            Projetado: {formatCurrency(projectedBalance)}
-          </p>
-        </div>
-      </div>
+        return (
+          <Card key={card.title}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                {card.title}
+              </CardTitle>
+              <Icon className={`h-4 w-4 ${toneColor}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{card.value}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {card.description}
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

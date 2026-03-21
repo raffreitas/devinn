@@ -75,3 +75,24 @@ export interface ExpenseFilters {
   pageNumber?: number;
   pageSize?: number;
 }
+
+export interface FinancialDashboardMonth {
+  monthStart: string;
+  totalRevenue: number;
+  receivedRevenue: number;
+  pendingRevenue: number;
+  totalExpenses: number;
+  actualBalance: number;
+  projectedBalance: number;
+}
+
+export interface FinancialDashboardMetrics {
+  referenceMonth: string;
+  totalRevenue: number;
+  receivedRevenue: number;
+  pendingRevenue: number;
+  totalExpenses: number;
+  actualBalance: number;
+  projectedBalance: number;
+  monthlyEvolution: FinancialDashboardMonth[];
+}

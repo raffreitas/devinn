@@ -1,50 +1,51 @@
-import { endOfMonth, format, startOfMonth } from "date-fns";
+import {
+  addMonths,
+  endOfMonth,
+  format,
+  startOfMonth,
+  subMonths,
+} from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import type { DateRange } from "react-day-picker";
-import { useBookings } from "@/features/bookings/hooks/use-booking";
-import { DateRangePicker } from "@/shared/components/date-range-picker";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
+import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ExpensesCategoryChart } from "../components/dashboard/expenses-category-chart";
-import { RevenueExpensesChart } from "../components/dashboard/revenue-expenses-chart";
+import { MonthlyEvolutionChart } from "../components/dashboard/monthly-evolution-chart";
 import { FinancialSummaryCards } from "../components/financial-summary-cards";
 import { useExpenses } from "../hooks/use-expenses";
+import { useFinancialDashboard } from "../hooks/use-financial-dashboard";
 
 export function FinancialPage() {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: startOfMonth(new Date()),
-    to: endOfMonth(new Date()),
-  });
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Format dates for API (YYYY-MM-DD)
-  // Se não tiver data selecionada, usa o mês atual como fallback
-  const startDate = dateRange?.from
-    ? format(dateRange.from, "yyyy-MM-dd")
-    : format(startOfMonth(new Date()), "yyyy-MM-dd");
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const referenceDate = format(monthStart, "yyyy-MM-dd");
+  const startDate = referenceDate;
+  const endDate = format(monthEnd, "yyyy-MM-dd");
 
-  const endDate = dateRange?.to
-    ? format(dateRange.to, "yyyy-MM-dd")
-    : dateRange?.from
-      ? format(dateRange.from, "yyyy-MM-dd")
-      : format(endOfMonth(new Date()), "yyyy-MM-dd");
-
-  const { data: bookings, isLoading: isLoadingBookings } = useBookings({
-    startDate,
-    endDate,
-  });
+  const { metrics, isLoading: isLoadingMetrics } =
+    useFinancialDashboard(referenceDate);
 
   const { expenses, isLoading: isLoadingExpenses } = useExpenses({
     dueDateFrom: startDate,
     dueDateTo: endDate,
   });
 
-  const isLoading = isLoadingBookings || isLoadingExpenses;
+  const isLoading = isLoadingMetrics || isLoadingExpenses;
+
+  const navigateMonth = (direction: number) => {
+    setCurrentMonth((prev) =>
+      direction > 0 ? addMonths(prev, 1) : subMonths(prev, 1),
+    );
+  };
 
   return (
     <div className="space-y-8 pb-10">
       <LoadingOverlay isFetching={isLoading} position="top-bar" />
 
-      {/* Header com navegação de mês */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
@@ -56,38 +57,59 @@ export function FinancialPage() {
           </p>
         </div>
 
-        {/* Navegação de Data */}
-        <div className="flex items-center gap-2">
-          <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+        <div className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-2 sm:w-auto">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigateMonth(-1)}
+            className="shrink-0"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full min-w-0 cursor-default justify-center px-3 capitalize sm:min-w-40"
+          >
+            {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigateMonth(1)}
+            className="shrink-0"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Cards de Resumo */}
       <section>
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full rounded-xl" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              "total",
+              "received",
+              "pending",
+              "expenses",
+              "actual-balance",
+              "projected-balance",
+            ].map((key) => (
+              <Skeleton key={key} className="h-32 w-full rounded-xl" />
             ))}
           </div>
-        ) : (
-          <FinancialSummaryCards
-            bookings={bookings?.items || []}
-            expenses={expenses || []}
-          />
-        )}
+        ) : metrics ? (
+          <FinancialSummaryCards metrics={metrics} />
+        ) : null}
       </section>
 
-      {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <RevenueExpensesChart
-          bookings={bookings?.items || []}
-          expenses={expenses || []}
-          isLoading={isLoading}
+        <MonthlyEvolutionChart
+          data={metrics?.monthlyEvolution || []}
+          isLoading={isLoadingMetrics}
         />
         <ExpensesCategoryChart
           expenses={expenses || []}
-          isLoading={isLoading}
+          isLoading={isLoadingExpenses}
         />
       </div>
     </div>
