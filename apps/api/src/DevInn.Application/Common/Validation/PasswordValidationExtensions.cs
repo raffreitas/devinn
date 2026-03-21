@@ -6,7 +6,7 @@ public static class PasswordValidationExtensions
 {
     public static IRuleBuilderOptions<T, string> MustMatchPasswordPolicy<T>(
         this IRuleBuilder<T, string> ruleBuilder,
-        string passwordLabel)
+        string passwordLabel = "A senha")
     {
         return ruleBuilder
             .MinimumLength(8).WithMessage($"{passwordLabel} deve ter no mínimo 8 caracteres.")
