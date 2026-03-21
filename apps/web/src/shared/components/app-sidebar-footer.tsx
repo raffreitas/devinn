@@ -36,7 +36,7 @@ export function AppSidebarFooter() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               side="top"
-              className="w-[--radix-popper-anchor-width]"
+              className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             >
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="cursor-pointer flex items-center gap-2">

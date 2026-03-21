@@ -38,7 +38,7 @@ public sealed class ChangePasswordHandlerTests
     public async Task Handle_ShouldReturnFailure_WhenIdentityServiceFails()
     {
         var userId = Guid.NewGuid();
-        var command = new ChangePasswordCommand("123456", "654321");
+        var command = new ChangePasswordCommand("Valid123!", "Strong123!");
         _userContext.UserId.Returns(userId);
         _identityService.ChangePasswordAsync(Arg.Any<ChangePasswordRequest>(), TestContext.Current.CancellationToken)
             .Returns(Result.Fail("Falha ao alterar senha."));
@@ -54,7 +54,7 @@ public sealed class ChangePasswordHandlerTests
     public async Task Handle_ShouldPassCurrentUserIdAndPasswordsToIdentityService()
     {
         var userId = Guid.NewGuid();
-        var command = new ChangePasswordCommand("123456", "654321");
+        var command = new ChangePasswordCommand("Valid123!", "Strong123!");
         _userContext.UserId.Returns(userId);
         _identityService.ChangePasswordAsync(Arg.Any<ChangePasswordRequest>(), TestContext.Current.CancellationToken)
             .Returns(Result.Ok());

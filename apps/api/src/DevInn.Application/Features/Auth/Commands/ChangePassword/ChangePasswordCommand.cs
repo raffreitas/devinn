@@ -22,7 +22,7 @@ public sealed class ChangePasswordCommandValidator : AbstractValidator<ChangePas
 
         RuleFor(x => x.NewPassword)
             .NotEmpty().WithMessage("Nova senha deve ser informada")
-            .MinimumLength(6).WithMessage("A nova senha deve conter no mínimo 6 caracteres");
+            .MustMatchPasswordPolicy("A nova senha");
 
         RuleFor(x => x.NewPassword)
             .Must((x, newPassword) => x.CurrentPassword != newPassword)
