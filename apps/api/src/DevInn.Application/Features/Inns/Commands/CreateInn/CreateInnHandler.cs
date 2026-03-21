@@ -24,6 +24,7 @@ internal sealed class CreateInnHandler(IInnRepository innRepository, IUnitOfWork
             command.City,
             command.Country,
             command.State,
+            command.ZipCode,
             command.Phone,
             command.Email
         );

@@ -6,6 +6,7 @@ public record InnDto(
     string Address,
     string City,
     string Country,
-    string PhoneNumber,
+    string ZipCode,
+    string Phone,
     string Email
 );

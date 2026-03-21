@@ -14,6 +14,7 @@ public sealed record CreateInnCommand(
     string City,
     string Country,
     string State,
+    string ZipCode,
     string Phone,
     string Email) : ICommand<Result<Guid>>
 {
@@ -38,6 +39,9 @@ public class CreateInnInputValidation : AbstractValidator<CreateInnCommand>
 
         RuleFor(x => x.State).NotEmpty().WithMessage("Estado é obrigatório.");
         RuleFor(x => x.State).MaximumLength(100).WithMessage("Estado deve ter no máximo 100 caracteres.");
+        
+        RuleFor(x => x.ZipCode).NotEmpty().WithMessage("CEP é obrigatório.");
+        RuleFor(x => x.ZipCode).MaximumLength(20).WithMessage("CEP deve ter no máximo 20 caracteres.");
 
         RuleFor(x => x.Phone).NotEmpty().WithMessage("Telefone é obrigatório.");
         RuleFor(x => x.Phone).MaximumLength(15).WithMessage("Telefone deve ter no máximo 15 caracteres.");

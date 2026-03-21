@@ -23,7 +23,7 @@ internal sealed class GetInnByIdHandler(IDbConnectionFactory dbConnectionFactory
                                 address AS "Address",
                                 city AS "City",
                                 country AS "Country",
-                                phone AS "PhoneNumber",
+                                phone AS "Phone",
                                 email AS "Email"
                            FROM public.inns
                            where id = @Id

@@ -26,7 +26,7 @@ public sealed class CreateInnHandlerTests
     [Fact]
     public async Task Handle_ShouldReturnValidationError_WhenInputIsInvalid()
     {
-        var command = new CreateInnCommand("", "addr", "city", "BR", "SP", "1199", "invalid-email");
+        var command = new CreateInnCommand("", "addr", "city", "BR", "SP", "1234","1199", "invalid-email");
 
         var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
 
@@ -43,6 +43,7 @@ public sealed class CreateInnHandlerTests
             "São Paulo",
             "Brasil",
             "SP",
+            "37928000",
             "11999999999",
             "contato@pousada.com");
 

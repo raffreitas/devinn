@@ -11,6 +11,7 @@ public sealed class Inn : Entity
     public string State { get; private set; }
     public string Phone { get; private set; }
     public string Email { get; private set; }
+    public string ZipCode { get; private set; }
     public string TimeZoneId { get; private set; } // IANA timezone
 
     public Inn(
@@ -19,6 +20,7 @@ public sealed class Inn : Entity
         string city,
         string country,
         string state,
+        string zipCode,
         string phone,
         string email)
     {
@@ -29,6 +31,7 @@ public sealed class Inn : Entity
         State = state;
         Phone = phone;
         Email = email;
+        ZipCode = zipCode;
         TimeZoneId = "America/Sao_Paulo";
     }
 }
