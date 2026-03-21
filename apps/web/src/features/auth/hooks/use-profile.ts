@@ -22,8 +22,8 @@ export function useUpdateProfile() {
     mutationFn: (payload: { name: string; email?: string }) => {
       return authService.updateProfile(payload);
     },
-    onSuccess: (updatedProfile) => {
-      queryClient.setQueryData(["profile"], updatedProfile);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
