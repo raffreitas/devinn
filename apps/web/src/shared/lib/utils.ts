@@ -85,3 +85,12 @@ export const formatPhone = (value: string | undefined) => {
     ? `(${areaCode}) ${prefix}-${suffix}`
     : `(${areaCode}) ${prefix}`;
 };
+
+export const formatZipCode = (value: string | undefined) => {
+  const digits = removeChars(value ?? "").slice(0, 8);
+
+  if (!digits) return "";
+  if (digits.length <= 5) return digits;
+
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+};

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useAuth } from "@/features/auth/contexts/auth-context";
 import { useInn, useUpdateInn } from "@/features/inns/hooks/use-inns";
 import { InputPhone } from "@/shared/components/input-phone";
+import { InputZipCode } from "@/shared/components/input-zip-code";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -202,7 +203,7 @@ export function SettingsPage() {
                         <FormItem>
                           <FormLabel>CEP</FormLabel>
                           <FormControl>
-                            <Input placeholder="00000-000" {...field} />
+                            <InputZipCode placeholder="00000-000" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
