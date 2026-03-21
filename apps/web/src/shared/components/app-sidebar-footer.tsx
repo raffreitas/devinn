@@ -1,7 +1,14 @@
-import { LogOutIcon, User2Icon } from "lucide-react";
+import { ChevronUpIcon, LogOutIcon, User2Icon } from "lucide-react";
+import { Link } from "react-router";
 import { useAuth } from "@/features/auth/contexts/auth-context";
 import { useProfile } from "@/features/auth/hooks/use-profile";
-import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 import {
   SidebarFooter,
   SidebarMenu,
@@ -12,22 +19,44 @@ import {
 export function AppSidebarFooter() {
   const { logout } = useAuth();
   const { data } = useProfile();
+
   return (
     <SidebarFooter>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton>
-            <User2Icon /> {data?.name || "Usuário"}
-            <Button
-              variant="ghost"
-              className="p-0 ml-auto cursor-pointer hover:text-primary"
-              title="Sair"
-              asChild
-              onClick={logout}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton className="w-full justify-between cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <User2Icon className="size-4" />
+                  <span>{data?.name || "Usuário"}</span>
+                </div>
+                <ChevronUpIcon className="size-4" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              side="top"
+              className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             >
-              <LogOutIcon />
-            </Button>
-          </SidebarMenuButton>
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/profile"
+                  className="cursor-pointer flex items-center gap-2"
+                >
+                  <User2Icon className="size-4" />
+                  <span>Meu Perfil</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={logout}
+                className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive flex items-center gap-2"
+              >
+                <LogOutIcon className="size-4" />
+                <span>Sair</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarFooter>

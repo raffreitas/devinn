@@ -40,7 +40,7 @@ public sealed class RegisterCommandHandlerTests
     public async Task Handle_ShouldReturnNotFound_WhenInnDoesNotExist()
     {
         var innId = Guid.NewGuid();
-        var command = new RegisterCommand("User", "user@test.com", "123456", innId, UserRole.InnAdmin);
+        var command = new RegisterCommand("User", "user@test.com", "User123!", innId, UserRole.InnAdmin);
         _innRepository.ExistsAsync(innId, TestContext.Current.CancellationToken).Returns(false);
 
         var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
@@ -52,7 +52,7 @@ public sealed class RegisterCommandHandlerTests
     [Fact]
     public async Task Handle_ShouldSucceed_WhenSuperAdminAndIdentityRegistersUser()
     {
-        var command = new RegisterCommand("Admin", "admin@test.com", "123456", null, UserRole.SuperAdmin);
+        var command = new RegisterCommand("Admin", "admin@test.com", "Admin123!", null, UserRole.SuperAdmin);
         _identityService.RegisterAsync(Arg.Any<RegisterUserRequest>(), TestContext.Current.CancellationToken)
             .Returns(Result.Ok(new User(Guid.NewGuid(), null, "Admin", command.Email, [UserRole.SuperAdmin])));
 

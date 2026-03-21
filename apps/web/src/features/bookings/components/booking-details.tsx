@@ -46,6 +46,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/shared/components/ui/tooltip";
+import { formatCpf, formatPhone } from "@/shared/lib/utils";
 import type {
   Booking,
   BookingStatus,
@@ -55,7 +56,6 @@ import type {
 import { getBlockLabel, isBlock, isICalSource } from "../utils/booking-helpers";
 import { BookingReceiptPrinter } from "./booking-receipt-printer";
 import { BookingSourceBadge } from "./booking-source-badge";
-import { formatCpf, formatPhone } from "@/shared/lib/utils";
 
 interface BookingDetailsProps {
   booking: Booking;

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authService } from "../services/auth-service";
 
 export function useProfile() {
@@ -13,4 +13,25 @@ export function useProfile() {
     data: data,
     isLoading: isLoading,
   };
+}
+
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: { name: string; email?: string }) => {
+      return authService.updateProfile(payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+}
+
+export function useUpdatePassword() {
+  return useMutation({
+    mutationFn: (payload: { currentPassword: string; newPassword: string }) => {
+      return authService.updatePassword(payload);
+    },
+  });
 }

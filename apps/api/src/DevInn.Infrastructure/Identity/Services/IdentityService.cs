@@ -84,4 +84,37 @@ internal sealed class IdentityService(
 
         return Result.Ok(resultUser);
     }
+
+    public async Task<Result> UpdateProfileAsync(User user, CancellationToken cancellationToken = default)
+    {
+        var existingUser = await userManager.FindByIdAsync(user.Id.ToString());
+        if (existingUser is null)
+            return Result.Fail(new NotFoundError("Usuário não encontrado"));
+
+        existingUser.Name = user.Name;
+
+        var updateResult = await userManager.UpdateAsync(existingUser);
+        if (updateResult.Succeeded)
+            return Result.Ok();
+
+        var erros = updateResult.Errors.Select(e => e.Description);
+        logger.LogError("Erro ao atualizar perfil do usuário: {Errors}", erros);
+        return Result.Fail("Falha ao atualizar o perfil.");
+    }
+
+    public async Task<Result> ChangePasswordAsync(ChangePasswordRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(request.UserId.ToString());
+        if (user is null)
+            return Result.Fail(new NotFoundError("Usuário não encontrado"));
+
+        var changeResult = await userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (changeResult.Succeeded)
+            return Result.Ok();
+
+        var errors = changeResult.Errors.Select(e => e.Description);
+        logger.LogError("Erro ao alterar senha do usuário: {Errors}", errors);
+        return Result.Fail("Falha ao alterar senha.");
+    }
 }

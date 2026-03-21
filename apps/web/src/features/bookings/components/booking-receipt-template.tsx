@@ -1,7 +1,7 @@
 import { differenceInDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { Booking } from "../types";
 import { formatCpf, formatPhone } from "@/shared/lib/utils";
+import type { Booking } from "../types";
 
 interface BookingReceiptTemplateProps {
   booking: Booking;

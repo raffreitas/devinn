@@ -12,4 +12,12 @@ export const tenantService = {
     const response = await api.get<ApiResponse<Inn>>(`/api/v1/inns/${innId}`);
     return response.data.data;
   },
+
+  updateInn: async (innId: string, payload: Partial<Inn>) => {
+    const response = await api.put<ApiResponse<Inn>>(
+      `/api/v1/inns/${innId}`,
+      payload,
+    );
+    return response.data.data;
+  },
 };
