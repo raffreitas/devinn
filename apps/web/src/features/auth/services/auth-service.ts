@@ -30,4 +30,13 @@ export const authService = {
 
     return response.data.data;
   },
+
+  updateProfile: async (payload: { name: string; email?: string }): Promise<Profile> => {
+    const response = await api.put<ApiResponse<Profile>>("/api/v1/users/profile", payload);
+    return response.data.data;
+  },
+
+  updatePassword: async (payload: { currentPassword: string; newPassword: string }): Promise<void> => {
+    await api.put("/api/v1/users/password", payload);
+  },
 };

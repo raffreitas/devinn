@@ -26,8 +26,4 @@
         <InternalsVisibleTo Include="DevInn.UnitTests"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Features\Auth\Commands\" />
-    </ItemGroup>
-
 </Project>
