@@ -34,4 +34,25 @@ public sealed class Inn : Entity
         ZipCode = zipCode;
         TimeZoneId = "America/Sao_Paulo";
     }
+
+    public void Update(
+        string name,
+        string address,
+        string city,
+        string country,
+        string state,
+        string zipCode,
+        string phone,
+        string email)
+    {
+        Name = name;
+        Address = address;
+        City = city;
+        Country = country;
+        State = state;
+        ZipCode = zipCode;
+        Phone = phone;
+        Email = email;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }
