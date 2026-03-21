@@ -44,7 +44,7 @@ internal sealed class RegisterCommandValidator : AbstractValidator<RegisterComma
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("A senha é obrigatória.")
-            .MustMatchPasswordPolicy("A nova senha")
+            .MustMatchPasswordPolicy()
             .MaximumLength(100).WithMessage("A senha pode ter no máximo 100 caracteres.");
     }
 }
