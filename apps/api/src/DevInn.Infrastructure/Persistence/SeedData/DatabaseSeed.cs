@@ -46,7 +46,8 @@ internal sealed class DatabaseSeed(
             "São Roque de Minas",
             "Brasil",
             "MG",
-            "+55 12 3456-7890",
+            "37928000",
+            "1234567890",
             "contato@pousadaexemplo.com"
         );
 

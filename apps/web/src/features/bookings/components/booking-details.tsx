@@ -308,7 +308,7 @@ export function BookingDetails({
                   <p className="text-xs text-muted-foreground truncate">
                     Valor Total
                   </p>
-                  <p className="text-xl font-bold break-words">
+                  <p className="text-xl font-bold wrap-break-word">
                     {formatCurrency(booking.pricing.total)}
                   </p>
                 </div>
@@ -316,7 +316,7 @@ export function BookingDetails({
                   <p className="text-xs text-muted-foreground truncate">
                     Valor Pago
                   </p>
-                  <p className="text-xl font-bold text-emerald-600 break-words">
+                  <p className="text-xl font-bold text-emerald-600 wrap-break-word">
                     {formatCurrency(booking.totalPaid)}
                   </p>
                 </div>
@@ -325,7 +325,7 @@ export function BookingDetails({
                     Saldo Devedor
                   </p>
                   <p
-                    className={`text-xl font-bold break-words ${booking.balanceDue > 0 ? "text-rose-600" : "text-emerald-600"}`}
+                    className={`text-xl font-bold wrap-break-word ${booking.balanceDue > 0 ? "text-rose-600" : "text-emerald-600"}`}
                   >
                     {formatCurrency(booking.balanceDue)}
                   </p>
@@ -339,7 +339,7 @@ export function BookingDetails({
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between items-start gap-4 text-muted-foreground">
-                    <span className="break-words">
+                    <span className="wrap-break-word">
                       Diária base ({booking.categoryName})
                     </span>
                     <span className="text-foreground whitespace-nowrap shrink-0">
@@ -348,7 +348,7 @@ export function BookingDetails({
                   </div>
                   {booking.pricing.numberOfExtraGuests > 0 && (
                     <div className="flex justify-between items-start gap-4 text-muted-foreground">
-                      <span className="break-words">
+                      <span className="wrap-break-word">
                         {booking.pricing.numberOfExtraGuests} hóspede(s)
                         extra(s)
                       </span>
@@ -362,7 +362,7 @@ export function BookingDetails({
                   )}
                   <Separator className="my-2" />
                   <div className="flex justify-between items-start gap-4 text-muted-foreground">
-                    <span className="break-words">Subtotal por diária</span>
+                    <span className="wrap-break-word">Subtotal por diária</span>
                     <span className="text-foreground whitespace-nowrap shrink-0">
                       {formatCurrency(
                         booking.pricing.basePrice +
@@ -372,7 +372,7 @@ export function BookingDetails({
                     </span>
                   </div>
                   <div className="flex justify-between items-start gap-4 text-muted-foreground">
-                    <span className="break-words">
+                    <span className="wrap-break-word">
                       Total por {booking.pricing.numberOfNights} noites
                     </span>
                     <span className="text-foreground font-semibold whitespace-nowrap shrink-0">
@@ -381,7 +381,7 @@ export function BookingDetails({
                   </div>
                   {booking.pricing.discounts > 0 && (
                     <div className="flex justify-between items-start gap-4 text-rose-600">
-                      <span className="break-words">Descontos</span>
+                      <span className="wrap-break-word">Descontos</span>
                       <span className="whitespace-nowrap shrink-0">
                         - {formatCurrency(booking.pricing.discounts)}
                       </span>
@@ -389,7 +389,7 @@ export function BookingDetails({
                   )}
                   <Separator className="my-2" />
                   <div className="flex justify-between items-start gap-4">
-                    <span className="font-bold break-words">
+                    <span className="font-bold wrap-break-word">
                       Total da Reserva
                     </span>
                     <span className="font-bold text-primary text-lg whitespace-nowrap shrink-0">
@@ -555,7 +555,7 @@ export function BookingDetails({
                       </p>
                       <p className="text-sm font-semibold">
                         {format(
-                          new Date(booking.guest.birthDate!),
+                          new Date(booking.guest.birthDate),
                           "dd/MM/yyyy",
                         )}
                       </p>
@@ -573,7 +573,7 @@ export function BookingDetails({
                         Documento (CPF/RG)
                       </p>
                       <p className="text-sm font-semibold">
-                        {formatCpf(booking.guest?.document)}
+                        {formatCpf(booking.guest.document)}
                       </p>
                     </div>
                   </div>
@@ -590,7 +590,7 @@ export function BookingDetails({
               <FileText className="w-4 h-4" />
               Observações
             </h4>
-            <div className="p-4 bg-muted/50 rounded-xl border border-dashed border-muted-foreground/20 text-sm text-foreground italic break-words">
+            <div className="p-4 bg-muted/50 rounded-xl border border-dashed border-muted-foreground/20 text-sm text-foreground italic wrap-break-word">
               "{booking.notes}"
             </div>
           </div>

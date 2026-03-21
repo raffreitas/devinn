@@ -18,6 +18,7 @@ internal sealed class InnConfiguration : IEntityTypeConfiguration<Inn>
         builder.Property(x => x.State).IsRequired().HasMaxLength(100);
         builder.Property(x => x.Phone).IsRequired().HasMaxLength(20);
         builder.Property(x => x.Email).IsRequired().HasMaxLength(200);
+        builder.Property(x => x.ZipCode).IsRequired().HasMaxLength(20);
         builder.Property(x => x.TimeZoneId).IsRequired().HasMaxLength(50)
             .HasDefaultValue("America/Sao_Paulo");
         builder.Property(e => e.CreatedAt).IsRequired();

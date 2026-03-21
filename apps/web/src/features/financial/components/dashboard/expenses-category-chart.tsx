@@ -41,8 +41,8 @@ export function ExpensesCategoryChart({
           <CardTitle>Despesas por Categoria</CardTitle>
           <CardDescription>Distribuição de gastos no período</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px] flex items-center justify-center">
-          <Skeleton className="h-[250px] w-[250px] rounded-full" />
+        <CardContent className="h-75 flex items-center justify-center">
+          <Skeleton className="h-62.5 w-62.5 rounded-full" />
         </CardContent>
       </Card>
     );
@@ -104,7 +104,7 @@ export function ExpensesCategoryChart({
         {data.length > 0 ? (
           <ChartContainer
             config={chartConfig}
-            className="mx-auto aspect-square max-h-[300px]"
+            className="mx-auto aspect-square max-h-75"
           >
             <PieChart>
               <ChartTooltip

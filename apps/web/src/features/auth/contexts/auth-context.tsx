@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [innId, setInnId] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation> O efeito de hidratação do estado de autenticação deve ser executado apenas uma vez na montagem do componente para verificar o token armazenado e configurar o estado inicial. Adicionar dependências como `navigate` ou `queryClient` causaria reexecuções desnecessárias do efeito, o que não é desejável, pois queremos apenas verificar o token uma vez e configurar o estado de autenticação. Portanto, intencionalmente deixamos as dependências vazias para garantir que este efeito seja executado apenas na montagem.
   useEffect(() => {
     // Hydrate auth state from storage/token on mount
     const token = storage.get(STORAGE_KEYS.TOKEN);

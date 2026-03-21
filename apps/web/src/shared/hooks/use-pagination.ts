@@ -46,6 +46,7 @@ export function usePagination({
         { replace: true },
       );
     }
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation> As dependências do useEffect devem incluir apenas as variáveis que, quando mudadas, devem resetar a página para 1. Incluir `searchParams` ou `setSearchParams` causaria reexecuções desnecessárias do efeito, já que eles são estáveis e não mudam entre renderizações. O objetivo é que o efeito seja acionado apenas quando as dependências relevantes (como filtros) mudarem, e não por mudanças na própria paginação. Portanto, intencionalmente deixamos as dependências vazias para garantir que este efeito seja executado apenas quando as dependências fornecidas mudarem.
   }, dependencies);
 
   // Navegar para uma página específica

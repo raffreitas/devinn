@@ -35,10 +35,8 @@ api.interceptors.response.use(
       storage.remove(STORAGE_KEYS.TENANT_ID);
 
       try {
-        // emite evento global que o AuthProvider pode ouvir e executar logout de forma segura
         window.dispatchEvent(new CustomEvent("auth:unauthorized"));
-      } catch (e) {
-        // se CustomEvent não estiver disponível, faz um replace na rota como fallback
+      } catch {
         try {
           window.location.replace("/login");
         } catch {}

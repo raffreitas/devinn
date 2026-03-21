@@ -11,7 +11,6 @@ interface GetRoomsParams {
 
 export const roomService = {
   getAll: async (params?: GetRoomsParams): Promise<PaginatedResponse<Room>> => {
-    // Mapear 'page' para 'pageNumber' conforme esperado pela API
     const apiParams = {
       pageNumber: params?.page ?? 1,
       pageSize: params?.pageSize ?? 10,

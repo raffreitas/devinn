@@ -72,7 +72,6 @@ migrate-all:
 # --- Database Migrations (App) ---
 
 db-add:
-	@if "$(V)"=="" (echo ERROR: V is required. Use: make db-add V=001 & exit /b 1)
 	$(DOTNET_CMD) ef migrations add V$(V) -p $(MIGRATIONS_PROJECT) -s $(STARTUP_PROJECT) -o $(MIGRATIONS_DB_PATH) -c $(CONTEXT_DB)
 
 db-update:
@@ -84,7 +83,6 @@ db-remove:
 # --- Database Migrations (Identity) ---
 
 id-add:
-	@if "$(V)"=="" (echo ERROR: V is required. Use: make id-add V=001 & exit /b 1)
 	$(DOTNET_CMD) ef migrations add V$(V) -p $(MIGRATIONS_PROJECT) -s $(STARTUP_PROJECT) -o $(MIGRATIONS_IDENTITY_PATH) -c $(CONTEXT_IDENTITY)
 
 id-update:

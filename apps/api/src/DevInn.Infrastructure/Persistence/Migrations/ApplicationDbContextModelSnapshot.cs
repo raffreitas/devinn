@@ -18,7 +18,7 @@ namespace DevInn.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -342,6 +342,12 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("zip_code");
+
                     b.HasKey("Id")
                         .HasName("pk_inns");
 
@@ -564,7 +570,6 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                                 .HasColumnName("guest_name");
 
                             b1.Property<string>("Phone")
-                                .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("character varying(20)")
                                 .HasColumnName("guest_phone");

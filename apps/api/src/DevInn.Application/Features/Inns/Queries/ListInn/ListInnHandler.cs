@@ -17,7 +17,9 @@ internal sealed class ListInnHandler(IInnRepository innRepository) : IQueryHandl
             inn.Name,
             inn.Address,
             inn.City,
+            inn.State,
             inn.Country,
+            inn.ZipCode,
             inn.Phone,
             inn.Email
         )).ToArray();
