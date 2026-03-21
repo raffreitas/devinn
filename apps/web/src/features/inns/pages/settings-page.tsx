@@ -78,7 +78,7 @@ export function SettingsPage() {
 
   async function onInnSubmit(values: z.infer<typeof innSchema>) {
     if (!innId) return;
-    
+
     try {
       await updateInn.mutateAsync({ id: innId, payload: values });
       toast.success("Dados da pousada atualizados com sucesso!");
@@ -164,7 +164,11 @@ export function SettingsPage() {
                         <FormItem>
                           <FormLabel>Email de Contato</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="contato@pousada.com" {...field} />
+                            <Input
+                              type="email"
+                              placeholder="contato@pousada.com"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -190,7 +194,10 @@ export function SettingsPage() {
                         <FormItem className="md:col-span-2">
                           <FormLabel>Endereço Completo</FormLabel>
                           <FormControl>
-                            <Input placeholder="Rua das Flores, 123" {...field} />
+                            <Input
+                              placeholder="Rua das Flores, 123"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -262,7 +269,8 @@ export function SettingsPage() {
             <CardHeader>
               <CardTitle>Gateway de Pagamentos</CardTitle>
               <CardDescription>
-                Configure as credenciais da API para aceitar reservas diretas (Em breve).
+                Configure as credenciais da API para aceitar reservas diretas
+                (Em breve).
               </CardDescription>
             </CardHeader>
             <CardContent className="h-40 flex items-center justify-center border-dashed border-2 rounded-lg bg-muted/20">
@@ -278,7 +286,8 @@ export function SettingsPage() {
             <CardHeader>
               <CardTitle>Chaves de API (Webhooks)</CardTitle>
               <CardDescription>
-                Conecte a pousada com outros serviços via Webhooks e API Keys (Em breve).
+                Conecte a pousada com outros serviços via Webhooks e API Keys
+                (Em breve).
               </CardDescription>
             </CardHeader>
             <CardContent className="h-40 flex items-center justify-center border-dashed border-2 rounded-lg bg-muted/20">

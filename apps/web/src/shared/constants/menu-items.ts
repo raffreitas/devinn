@@ -3,7 +3,7 @@ import {
   CalendarDaysIcon,
   CalendarIcon,
   LayoutGridIcon,
-  SettingsIcon,
+  // SettingsIcon,
   TrendingDownIcon,
   WalletIcon,
 } from "lucide-react";

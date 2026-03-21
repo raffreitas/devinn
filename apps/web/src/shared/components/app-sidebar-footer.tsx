@@ -39,7 +39,10 @@ export function AppSidebarFooter() {
               className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             >
               <DropdownMenuItem asChild>
-                <Link to="/profile" className="cursor-pointer flex items-center gap-2">
+                <Link
+                  to="/profile"
+                  className="cursor-pointer flex items-center gap-2"
+                >
                   <User2Icon className="size-4" />
                   <span>Meu Perfil</span>
                 </Link>
