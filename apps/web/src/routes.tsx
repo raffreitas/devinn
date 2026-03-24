@@ -8,6 +8,7 @@ import { SettingsPage } from "./features/inns/pages/settings-page";
 import { inventoryRoutes } from "./features/inventory/inventory-routes";
 import { AppLayout } from "./shared/components/app-layout";
 import { RequireAuth } from "./shared/components/auth-guard";
+import { GlobalError } from "./shared/components/global-error";
 import { RequireGuest } from "./shared/components/guest-guard";
 import { NotFoundPage } from "./shared/pages/not-found-page";
 
@@ -15,11 +16,13 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <RequireGuest />,
+    errorElement: <GlobalError />,
     children: loginRoutes,
   },
   {
     path: "/",
     element: <RequireAuth />,
+    errorElement: <GlobalError />,
     children: [
       {
         element: <AppLayout />,
@@ -55,5 +58,6 @@ export const router = createBrowserRouter([
   {
     path: "*",
     element: <NotFoundPage />,
+    errorElement: <GlobalError />,
   },
 ]);
