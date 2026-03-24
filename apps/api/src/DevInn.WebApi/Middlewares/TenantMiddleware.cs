@@ -18,6 +18,8 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
         "/scalar", "/openapi",
 
         "/api/v1/auth/login",
+        "/api/v1/auth/forgot-password",
+        "/api/v1/auth/reset-password",
         "/api/ical"
     ];
 
@@ -68,8 +70,7 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             await context.Response.WriteAsJsonAsync(new ProblemDetails
             {
-                Title = "Erro interno do servidor",
-                Status = StatusCodes.Status500InternalServerError,
+                Title = "Erro interno do servidor", Status = StatusCodes.Status500InternalServerError,
             });
             return;
         }

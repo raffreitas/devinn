@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Text;
 
 using DevInn.Application.Common.Tokens;
@@ -30,6 +30,12 @@ internal sealed class JwtTokenService(IOptions<JwtTokenOptions> options) : IToke
             new(JwtRegisteredClaimNames.Sub, request.UserId.ToString()),
             ..roleClaims
         ];
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+            claims.Add(new Claim(JwtRegisteredClaimNames.Email, request.Email));
+
+        if (!string.IsNullOrWhiteSpace(request.SecurityStamp))
+            claims.Add(new Claim(AuthClaimTypes.SecurityStamp, request.SecurityStamp));
 
         if (request.TenantId is not null)
             claims.Add(new Claim(TenantKeys.InnClaim, request.TenantId.Value.ToString()));

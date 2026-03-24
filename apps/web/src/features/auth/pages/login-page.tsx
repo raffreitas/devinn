@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router";
 import { z } from "zod";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -163,6 +164,15 @@ export function LoginPage() {
                       </FormItem>
                     )}
                   />
+
+                  <div className="flex justify-end">
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      Esqueci minha senha
+                    </Link>
+                  </div>
 
                   <Button
                     type="submit"

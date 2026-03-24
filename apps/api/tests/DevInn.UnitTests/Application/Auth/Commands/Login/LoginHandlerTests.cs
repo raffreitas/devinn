@@ -55,7 +55,7 @@ public sealed class LoginHandlerTests
     public async Task Handle_ShouldReturnToken_WhenCredentialsAreValid()
     {
         var command = new LoginCommand("user@test.com", "123456");
-        var user = new User(Guid.NewGuid(), Guid.NewGuid(), "User", command.Email, [UserRole.InnAdmin]);
+        var user = new User(Guid.NewGuid(), Guid.NewGuid(), "User", command.Email, [UserRole.InnAdmin], "security-stamp");
         _identityService.LoginAsync(command.Email, command.Password, TestContext.Current.CancellationToken)
             .Returns(Result.Ok(user));
         _tokenService.GenerateTokenAsync(Arg.Any<TokenRequest>(), TestContext.Current.CancellationToken)
@@ -65,5 +65,13 @@ public sealed class LoginHandlerTests
 
         result.IsSuccess.ShouldBeTrue();
         result.Value.AccessToken.ShouldBe("jwt-token");
+        await _tokenService.Received(1).GenerateTokenAsync(
+            Arg.Is<TokenRequest>(request =>
+                request.UserId == user.Id &&
+                request.TenantId == user.TenantId &&
+                request.Email == user.Email &&
+                request.SecurityStamp == user.SecurityStamp &&
+                request.Roles.SequenceEqual(user.Roles.Select(role => role.ToString()))),
+            TestContext.Current.CancellationToken);
     }
 }

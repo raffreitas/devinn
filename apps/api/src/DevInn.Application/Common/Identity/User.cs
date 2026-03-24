@@ -5,7 +5,8 @@ public sealed record User(
     Guid? TenantId,
     string Name,
     string Email,
-    UserRole[] Roles);
+    UserRole[] Roles,
+    string SecurityStamp = "");
 
 public enum UserRole
 {

@@ -1,8 +1,9 @@
-using DevInn.Application.Common.Identity;
+﻿using DevInn.Application.Common.Identity;
 using DevInn.Application.Common.Identity.Abstractions;
 using DevInn.Infrastructure.Common.Extensions;
 using DevInn.Infrastructure.Identity.Context;
 using DevInn.Infrastructure.Identity.Models;
+using DevInn.Infrastructure.Identity.Options;
 using DevInn.Infrastructure.Identity.Services;
 
 using Microsoft.AspNetCore.Authorization;
@@ -17,6 +18,13 @@ public static class DependencyInjection
 {
     public static void ConfigureIdentityService(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddOptions<PasswordResetOptions>()
+            .BindConfiguration(PasswordResetOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        var passwordResetOptions = configuration.GetOrThrow<PasswordResetOptions>(PasswordResetOptions.SectionName);
+
         // Configure Identity
         services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
             .AddEntityFrameworkStores<IdentityDbContext>()
@@ -42,6 +50,11 @@ public static class DependencyInjection
             options.Lockout.AllowedForNewUsers = true;
             options.User.RequireUniqueEmail = true;
             options.SignIn.RequireConfirmedEmail = false;
+        });
+
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+        {
+            options.TokenLifespan = TimeSpan.FromMinutes(passwordResetOptions.TokenLifetimeInMinutes);
         });
 
         // Configure Auth
