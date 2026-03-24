@@ -89,7 +89,7 @@ export function FinancialSummaryCards({ metrics }: FinancialSummaryCardsProps) {
 
         return (
           <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                 {card.title}
               </CardTitle>
@@ -97,7 +97,7 @@ export function FinancialSummaryCards({ metrics }: FinancialSummaryCardsProps) {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{card.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground">
                 {card.description}
               </p>
             </CardContent>
