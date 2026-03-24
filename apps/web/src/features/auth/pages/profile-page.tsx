@@ -8,6 +8,7 @@ import {
   useUpdatePassword,
   useUpdateProfile,
 } from "@/features/auth/hooks/use-profile";
+import { createPasswordSchema } from "@/features/auth/lib/password-schema";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -35,18 +36,7 @@ const profileSchema = z.object({
 const passwordSchema = z
   .object({
     currentPassword: z.string().min(1, "Senha atual é obrigatória"),
-    newPassword: z
-      .string()
-      .min(8, "A nova senha deve ter no mínimo 8 caracteres")
-      .regex(
-        /[^a-zA-Z0-9]/,
-        "A nova senha deve conter pelo menos um caractere não alfanumérico",
-      )
-      .regex(/\d/, "A nova senha deve conter pelo menos um número")
-      .regex(
-        /[A-Z]/,
-        "A nova senha deve conter pelo menos uma letra maiúscula",
-      ),
+    newPassword: createPasswordSchema("A nova senha"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

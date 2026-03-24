@@ -1,4 +1,5 @@
 ﻿using DevInn.Infrastructure.BackgroundJobs;
+using DevInn.Infrastructure.Email;
 using DevInn.Infrastructure.Identity;
 using DevInn.Infrastructure.Observability;
 using DevInn.Infrastructure.Persistence;
@@ -21,6 +22,7 @@ public static class InfrastructureModule
     {
         services.ConfigureJobs(configuration);
         services.ConfigurePersistence(configuration);
+        services.ConfigureEmail(configuration);
         services.ConfigureIdentityService(configuration);
         services.ConfigureTokenService(configuration);
         services.ConfigureObservability(configuration);

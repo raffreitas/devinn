@@ -25,7 +25,7 @@ internal sealed class LoginHandler(IIdentityService identityService, ITokenServi
         var user = result.Value;
         var userRoles = user.Roles.Select(r => r.ToString());
 
-        var tokenRequest = new TokenRequest(user.Id, user.TenantId, userRoles);
+        var tokenRequest = new TokenRequest(user.Id, user.TenantId, userRoles, user.Email, user.SecurityStamp);
 
         var token = await tokenService.GenerateTokenAsync(tokenRequest, cancellationToken);
 
