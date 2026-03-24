@@ -108,9 +108,9 @@ internal static class PasswordResetTemplate
 
                           <!-- Footer -->
                           <tr>
-                            <td style="padding:24px 40px 32px;border-top:1px solid #e2e8f0;">
-                              <p style="margin:0;font-size:12px;line-height:1.6;color:#94a3b8;">
-                                &copy; {DateTime.Now.Year} <span style="font-weight:600;color:#64748b;">DevInn</span>
+                            <td align="center" style="padding:24px 40px 32px;border-top:1px solid #e2e8f0;">
+                              <p style="margin:0;font-size:12px;line-height:1.6;color:#94a3b8;text-align:center;">
+                                &copy; {DateTime.UtcNow.Year} <span style="font-weight:600;color:#64748b;">DevInn</span>
                               </p>
                             </td>
                           </tr>
