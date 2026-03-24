@@ -1,4 +1,4 @@
-﻿namespace DevInn.Infrastructure.Email.Templates;
+namespace DevInn.Infrastructure.Email.Templates;
 
 internal static class PasswordResetTemplate
 {
@@ -46,15 +46,6 @@ internal static class PasswordResetTemplate
                           <!-- Body -->
                           <tr>
                             <td style="padding:36px 40px;">
-                              <!-- Icon -->
-                              <div style="margin-bottom:28px;">
-                                <div style="width:52px;height:52px;border-radius:14px;background:#f0fbe8;text-align:center;line-height:52px;">
-                                  <!--[if mso]><span style="font-size:24px;">&#128274;</span><![endif]-->
-                                  <!--[if !mso]><!-- -->
-                                  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%234d8b2f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E" alt="" width="24" height="24" style="vertical-align:middle;" />
-                                  <!--<![endif]-->
-                                </div>
-                              </div>
 
                               <h1 style="margin:0 0 8px;font-size:22px;font-weight:600;line-height:1.3;color:#0f172a;letter-spacing:-0.02em;">
                                 Redefinição de senha
@@ -117,9 +108,9 @@ internal static class PasswordResetTemplate
 
                           <!-- Footer -->
                           <tr>
-                            <td style="padding:20px 40px 28px;border-top:1px solid #e2e8f0;">
+                            <td style="padding:24px 40px 32px;border-top:1px solid #e2e8f0;">
                               <p style="margin:0;font-size:12px;line-height:1.6;color:#94a3b8;">
-                                Enviado automaticamente pelo <span style="color:#64748b;">DevInn</span>. Você recebeu este e-mail por ter uma conta ativa.
+                                &copy; {DateTime.Now.Year} <span style="font-weight:600;color:#64748b;">DevInn</span>
                               </p>
                             </td>
                           </tr>
