@@ -83,7 +83,7 @@ public sealed class RecurringExpense : Entity
             Status = RecurringExpenseStatus.Completed;
         }
 
-        if (MaxOccurrences.HasValue && GeneratedOccurrencesCount >= MaxOccurrences.Value)
+        if (GeneratedOccurrencesCount >= MaxOccurrences)
         {
             Status = RecurringExpenseStatus.Completed;
         }

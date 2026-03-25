@@ -17,9 +17,11 @@ internal sealed class ProcessRecurringExpenseHandler(
     IDateTimeProvider dateTimeProvider
 ) : ICommandHandler<ProcessRecurringExpenseCommand, Result<int>>
 {
-    public async ValueTask<Result<int>> Handle(ProcessRecurringExpenseCommand command, CancellationToken cancellationToken)
+    public async ValueTask<Result<int>> Handle(ProcessRecurringExpenseCommand command,
+        CancellationToken cancellationToken)
     {
-        var recurringExpense = await recurringExpenseRepository.GetByIdAsync(command.RecurringExpenseId, cancellationToken);
+        var recurringExpense =
+            await recurringExpenseRepository.GetByIdAsync(command.RecurringExpenseId, cancellationToken);
         if (recurringExpense == null)
             return Result.Fail(new NotFoundError("Despesa recorrente não encontrada"));
 
