@@ -25,6 +25,10 @@ internal sealed class GenerateRecurringExpensesJob(
     {
         logger.LogInformation("Starting GenerateRecurringExpensesJob execution");
 
+        // Intentional cross-tenant query: this background job is a system-level process
+        // responsible for processing recurring expenses across ALL tenants. The tenant context
+        // is set per-item inside the foreach loop before dispatching the command.
+        // Do NOT add a tenant filter here.
         const string query = """
                              SELECT id AS "Id", inn_id AS "InnId"
                              FROM recurring_expenses

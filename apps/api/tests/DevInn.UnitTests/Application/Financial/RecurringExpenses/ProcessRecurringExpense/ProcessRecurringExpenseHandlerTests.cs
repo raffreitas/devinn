@@ -75,4 +75,73 @@ public sealed class ProcessRecurringExpenseHandlerTests
 
         result.IsFailed.ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task Handle_ShouldNotIncrementOccurrenceCount_WhenExpenseAlreadyExists()
+    {
+        var recurringExpense = new RecurringExpense(
+            Guid.NewGuid(),
+            "Internet",
+            new Money(199.90m),
+            PaymentMethod.Pix,
+            new DateOnly(2026, 3, 10));
+
+        var existingExpense = new Expense(
+            recurringExpense.CategoryId,
+            recurringExpense.Description,
+            recurringExpense.Amount,
+            recurringExpense.PaymentMethod,
+            new DateOnly(2026, 3, 10),
+            paymentDate: null,
+            recurringExpenseId: recurringExpense.Id);
+
+        _recurringExpenseRepository.GetByIdAsync(recurringExpense.Id, TestContext.Current.CancellationToken)
+            .Returns(recurringExpense);
+        _expenseRepository.GetByRecurringExpenseIdAndDueDateAsync(
+                recurringExpense.Id,
+                new DateOnly(2026, 3, 10),
+                TestContext.Current.CancellationToken)
+            .Returns(existingExpense);
+        _dateTimeProvider.GetLocalDate().Returns(new DateOnly(2026, 3, 25));
+
+        var result = await _sut.Handle(
+            new ProcessRecurringExpenseCommand(recurringExpense.Id),
+            TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(0);
+        recurringExpense.GeneratedOccurrencesCount.ShouldBe(0);
+        await _expenseRepository.DidNotReceive().AddAsync(Arg.Any<Expense>(), Arg.Any<CancellationToken>());
+        await _uow.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_ShouldGenerateMultipleExpenses_WhenMultipleOccurrencesAreDue()
+    {
+        var recurringExpense = new RecurringExpense(
+            Guid.NewGuid(),
+            "Aluguel",
+            new Money(1500m),
+            PaymentMethod.BankTransfer,
+            new DateOnly(2026, 1, 10));
+
+        _recurringExpenseRepository.GetByIdAsync(recurringExpense.Id, TestContext.Current.CancellationToken)
+            .Returns(recurringExpense);
+        _expenseRepository.GetByRecurringExpenseIdAndDueDateAsync(
+                recurringExpense.Id,
+                Arg.Any<DateOnly>(),
+                TestContext.Current.CancellationToken)
+            .ReturnsNull();
+        _dateTimeProvider.GetLocalDate().Returns(new DateOnly(2026, 3, 25));
+
+        var result = await _sut.Handle(
+            new ProcessRecurringExpenseCommand(recurringExpense.Id),
+            TestContext.Current.CancellationToken);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(3);
+        recurringExpense.GeneratedOccurrencesCount.ShouldBe(3);
+        await _expenseRepository.Received(3).AddAsync(Arg.Any<Expense>(), Arg.Any<CancellationToken>());
+        await _uow.Received(1).CommitAsync(TestContext.Current.CancellationToken);
+    }
 }

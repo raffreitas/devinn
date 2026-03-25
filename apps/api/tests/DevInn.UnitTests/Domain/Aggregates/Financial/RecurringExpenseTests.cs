@@ -27,6 +27,20 @@ public sealed class RecurringExpenseTests
     }
 
     [Fact]
+    public void GetNextDueDate_ShouldReturnStartDate_WhenNoOccurrenceHasBeenGenerated()
+    {
+        var startDate = new DateOnly(2026, 3, 10);
+        var recurringExpense = new RecurringExpense(
+            Guid.NewGuid(),
+            "Internet",
+            new Money(199.90m),
+            PaymentMethod.Pix,
+            startDate);
+
+        recurringExpense.GetNextDueDate().ShouldBe(startDate);
+    }
+
+    [Fact]
     public void RegisterGeneratedOccurrence_ShouldCompleteRecurringExpense_WhenMaxOccurrencesIsReached()
     {
         var recurringExpense = new RecurringExpense(

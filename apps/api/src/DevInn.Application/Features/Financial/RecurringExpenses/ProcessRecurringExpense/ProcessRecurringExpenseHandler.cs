@@ -49,11 +49,10 @@ internal sealed class ProcessRecurringExpenseHandler(
                     recurringExpenseId: recurringExpense.Id);
 
                 await expenseRepository.AddAsync(expense, cancellationToken);
+                recurringExpense.RegisterGeneratedOccurrence(dueDate);
                 generatedCount++;
+                hasChanges = true;
             }
-
-            recurringExpense.RegisterGeneratedOccurrence(dueDate);
-            hasChanges = true;
         }
 
         if (!hasChanges)

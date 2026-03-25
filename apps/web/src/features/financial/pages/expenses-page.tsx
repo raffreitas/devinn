@@ -163,7 +163,11 @@ export function ExpensesPage() {
     await updateExpense({
       id: expense.id,
       data: {
-        ...expense,
+        categoryId: expense.categoryId,
+        description: expense.description,
+        amount: expense.amount,
+        paymentMethod: expense.paymentMethod,
+        dueDate: expense.dueDate,
         paymentDate: today,
       },
     });

@@ -140,6 +140,7 @@ export function ExpenseList({
           <TableBody>
             {expenses.map((expense) => {
               const config = statusConfig[expense.status];
+              if (!config) return null;
               const StatusIcon = config.icon;
               return (
                 <TableRow key={expense.id} className="px-4">
