@@ -6,7 +6,7 @@ import {
   subMonths,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, RepeatIcon, Search } from "lucide-react";
 import { useState } from "react";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Modal } from "@/shared/components/modal";
@@ -29,6 +29,7 @@ import {
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { ExpenseForm, type ExpenseFormData } from "../components/expense-form";
 import { ExpenseList } from "../components/expense-list";
+import { RecurringExpenseManagerModal } from "../components/recurring-expense-manager-modal";
 import { useExpenseCategories } from "../hooks/use-expense-categories";
 import {
   useCreateExpense,
@@ -46,7 +47,11 @@ import {
 export function ExpensesPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [isRecurringManagerOpen, setIsRecurringManagerOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [initialRecurringExpenseId, setInitialRecurringExpenseId] = useState<
+    string | null
+  >(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterPaymentMethod, setFilterPaymentMethod] = useState("all");
@@ -95,6 +100,16 @@ export function ExpensesPage() {
   const closeExpenseModal = () => {
     setIsExpenseModalOpen(false);
     setEditingExpense(null);
+  };
+
+  const openRecurringManager = (recurringExpenseId?: string) => {
+    setInitialRecurringExpenseId(recurringExpenseId ?? null);
+    setIsRecurringManagerOpen(true);
+  };
+
+  const closeRecurringManager = () => {
+    setIsRecurringManagerOpen(false);
+    setInitialRecurringExpenseId(null);
   };
 
   const handleOpenCreateExpenseModal = () => {
@@ -213,6 +228,15 @@ export function ExpensesPage() {
             </Button>
           </div>
           <Button
+            type="button"
+            variant="outline"
+            onClick={() => openRecurringManager()}
+            className="w-full sm:w-auto"
+          >
+            <RepeatIcon className="mr-2 h-4 w-4" />
+            Gerenciar recorrências
+          </Button>
+          <Button
             onClick={handleOpenCreateExpenseModal}
             className="w-full sm:w-auto"
           >
@@ -297,10 +321,20 @@ export function ExpensesPage() {
               onEdit={handleEditExpense}
               onDelete={handleDeleteExpense}
               onMarkAsPaid={handleMarkAsPaid}
+              onOpenRecurringExpense={openRecurringManager}
             />
           )}
         </CardContent>
       </Card>
+
+      {categories && (
+        <RecurringExpenseManagerModal
+          isOpen={isRecurringManagerOpen}
+          onClose={closeRecurringManager}
+          categories={categories}
+          initialRecurringExpenseId={initialRecurringExpenseId}
+        />
+      )}
 
       {/* Modal de despesa */}
       <Modal

@@ -1,5 +1,6 @@
 using DevInn.Domain.Aggregates.Financial;
 using DevInn.Domain.Aggregates.Financial.Abstractions;
+using DevInn.Domain.Aggregates.Financial.Enums;
 using DevInn.Infrastructure.Persistence.Context;
 
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,18 @@ internal sealed class ExpenseRepository(ApplicationDbContext dbContext) : IExpen
         return await dbContext.Expenses.FirstOrDefaultAsync(
             e => e.RecurringExpenseId == recurringExpenseId && e.DueDate == dueDate,
             cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<Expense>> GetPendingByRecurringExpenseIdWithDueDateAfterAsync(
+        Guid recurringExpenseId,
+        DateOnly dueDate,
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Expenses
+            .Where(e => e.RecurringExpenseId == recurringExpenseId &&
+                        e.Status == ExpenseStatus.Pending &&
+                        e.DueDate > dueDate)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyCollection<Expense>> GetAllAsync(CancellationToken cancellationToken = default)

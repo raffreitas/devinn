@@ -11,7 +11,9 @@ internal sealed record RawExpense(
     DateOnly? PaymentDate,
     PaymentMethod PaymentMethod,
     string Status,
-    string CategoryName
+    string CategoryName,
+    Guid? RecurringExpenseId,
+    string? RecurringExpenseDescription
 );
 
 public sealed record ExpenseResponse(
@@ -23,7 +25,9 @@ public sealed record ExpenseResponse(
     DateOnly? PaymentDate,
     PaymentMethod PaymentMethod,
     ExpenseDisplayStatus Status,
-    string CategoryName
+    string CategoryName,
+    Guid? RecurringExpenseId,
+    string? RecurringExpenseDescription
 );
 
 public enum ExpenseDisplayStatus

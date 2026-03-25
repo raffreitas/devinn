@@ -14,6 +14,36 @@ internal sealed class RecurringExpenseRepository(ApplicationDbContext dbContext)
         return await dbContext.RecurringExpenses.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<RecurringExpense>> GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        RecurringExpenseStatus? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = dbContext.RecurringExpenses.AsNoTracking();
+
+        if (status.HasValue)
+            query = query.Where(e => e.Status == status.Value);
+
+        return await query
+            .OrderByDescending(e => e.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> CountAsync(
+        RecurringExpenseStatus? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = dbContext.RecurringExpenses.AsNoTracking();
+
+        if (status.HasValue)
+            query = query.Where(e => e.Status == status.Value);
+
+        return await query.CountAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<RecurringExpense>> GetAllActiveAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.RecurringExpenses

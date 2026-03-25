@@ -46,9 +46,12 @@ internal sealed class GetExpensesHandler(
                                 e.payment_date   AS "{nameof(ExpenseResponse.PaymentDate)}",
                                 e.payment_method AS "{nameof(ExpenseResponse.PaymentMethod)}",
                                 e.status         AS "{nameof(ExpenseResponse.Status)}",
-                                ec.name          AS "{nameof(ExpenseResponse.CategoryName)}"
+                                ec.name          AS "{nameof(ExpenseResponse.CategoryName)}",
+                                e.recurring_expense_id AS "{nameof(ExpenseResponse.RecurringExpenseId)}",
+                                re.description   AS "{nameof(ExpenseResponse.RecurringExpenseDescription)}"
                             FROM expenses e
                             INNER JOIN expense_categories ec ON e.category_id = ec.id
+                            LEFT JOIN recurring_expenses re ON e.recurring_expense_id = re.id
                             WHERE e.inn_id = @TenantId
                                 AND (@CategoryId IS NULL OR e.category_id = @CategoryId)
                                 AND (@PaymentMethod IS NULL OR e.payment_method = @PaymentMethod)
@@ -94,7 +97,9 @@ internal sealed class GetExpensesHandler(
                 re.PaymentDate,
                 re.PaymentMethod,
                 displayStatus,
-                re.CategoryName
+                re.CategoryName,
+                re.RecurringExpenseId,
+                re.RecurringExpenseDescription
             );
         }).ToList();
 

@@ -6,6 +6,7 @@ import {
   ClockIcon,
   Edit2,
   EllipsisVerticalIcon,
+  RepeatIcon,
   Trash2,
   Wallet,
 } from "lucide-react";
@@ -82,6 +83,7 @@ interface ExpenseListProps {
   onEdit: (expense: Expense) => void;
   onMarkAsPaid: (expense: Expense) => void;
   onDelete: (id: string) => void;
+  onOpenRecurringExpense: (recurringExpenseId: string) => void;
 }
 
 export function ExpenseList({
@@ -89,6 +91,7 @@ export function ExpenseList({
   onEdit,
   onDelete,
   onMarkAsPaid,
+  onOpenRecurringExpense,
 }: ExpenseListProps) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -140,9 +143,25 @@ export function ExpenseList({
               const StatusIcon = config.icon;
               return (
                 <TableRow key={expense.id} className="px-4">
-                  <TableCell className="pl-6">
-                    <div className="font-medium text-foreground">
-                      {expense.description}
+                  <TableCell className="pl-6 flex items-center gap-2">
+                    {expense.recurringExpenseId && (
+                      <Badge asChild variant="outline">
+                        <button
+                          type="button"
+                          className="w-fit cursor-pointer gap-1 text-[10px] uppercase tracking-wider"
+                          onClick={() =>
+                            expense.recurringExpenseId &&
+                            onOpenRecurringExpense(expense.recurringExpenseId)
+                          }
+                        >
+                          <RepeatIcon className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    )}
+                    <div className="space-y-1">
+                      <div className="font-medium text-foreground">
+                        {expense.description}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>

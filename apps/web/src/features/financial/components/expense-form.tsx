@@ -40,7 +40,11 @@ const expenseFormSchema = z
     endDate: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    if (!data.isRecurring && data.paymentDate && data.paymentDate < data.dueDate) {
+    if (
+      !data.isRecurring &&
+      data.paymentDate &&
+      data.paymentDate < data.dueDate
+    ) {
       ctx.addIssue({
         code: "custom",
         path: ["paymentDate"],
@@ -52,7 +56,8 @@ const expenseFormSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["paymentDate"],
-        message: "Despesa recorrente não aceita data de pagamento no cadastro da série",
+        message:
+          "Despesa recorrente não aceita data de pagamento no cadastro da série",
       });
     }
 
@@ -73,7 +78,7 @@ interface ExpenseFormProps {
   onSubmit: (data: ExpenseFormData) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
-  mode?: "create" | "edit";
+  mode?: "create" | "edit" | "create-recurring" | "edit-recurring";
 }
 
 const getDefaultExpenseFormData = (): ExpenseFormData => ({
@@ -95,16 +100,28 @@ export function ExpenseForm({
   isSubmitting,
   mode = "create",
 }: ExpenseFormProps) {
+  const isRecurringMode =
+    mode === "create-recurring" || mode === "edit-recurring";
+
   const form = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseFormSchema),
-    defaultValues: initialData || getDefaultExpenseFormData(),
+    defaultValues:
+      initialData ||
+      (isRecurringMode
+        ? { ...getDefaultExpenseFormData(), isRecurring: true }
+        : getDefaultExpenseFormData()),
   });
 
-  const isRecurring = form.watch("isRecurring");
+  const isRecurring = isRecurringMode || form.watch("isRecurring");
 
   useEffect(() => {
-    form.reset(initialData || getDefaultExpenseFormData());
-  }, [form, initialData]);
+    form.reset(
+      initialData ||
+        (isRecurringMode
+          ? { ...getDefaultExpenseFormData(), isRecurring: true }
+          : getDefaultExpenseFormData()),
+    );
+  }, [form, initialData, isRecurringMode]);
 
   useEffect(() => {
     if (!isRecurring) {
@@ -129,14 +146,17 @@ export function ExpenseForm({
                       <Input
                         type="checkbox"
                         checked={field.value}
-                        onChange={(event) => field.onChange(event.target.checked)}
+                        onChange={(event) =>
+                          field.onChange(event.target.checked)
+                        }
                         className="mt-1 h-4 w-4"
                       />
                     </FormControl>
                     <div className="space-y-1">
                       <FormLabel>Despesa recorrente mensal</FormLabel>
                       <FormDescription>
-                        O sistema criará uma série mensal usando o dia do primeiro vencimento.
+                        O sistema criará uma série mensal usando o dia do
+                        primeiro vencimento.
                       </FormDescription>
                     </div>
                   </div>
@@ -249,7 +269,8 @@ export function ExpenseForm({
                     <Input type="date" {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormDescription>
-                    Deixe em branco para manter a recorrência ativa por tempo indeterminado.
+                    Deixe em branco para manter a recorrência ativa por tempo
+                    indeterminado.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -282,7 +303,7 @@ export function ExpenseForm({
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting
               ? "Salvando..."
-              : mode === "create"
+              : mode === "create" || mode === "create-recurring"
                 ? "Cadastrar"
                 : "Salvar"}
           </Button>

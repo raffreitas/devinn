@@ -23,6 +23,15 @@ export const ExpenseStatus = {
 
 export type ExpenseStatus = (typeof ExpenseStatus)[keyof typeof ExpenseStatus];
 
+export const RecurringExpenseStatus = {
+  ACTIVE: "Active",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+} as const;
+
+export type RecurringExpenseStatus =
+  (typeof RecurringExpenseStatus)[keyof typeof RecurringExpenseStatus];
+
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
   Cash: "Dinheiro",
   Pix: "PIX",
@@ -46,6 +55,25 @@ export interface Expense {
   dueDate: string; // ISO date string
   paymentDate: string | null; // ISO date string
   status: ExpenseStatus;
+  recurringExpenseId: string | null;
+  recurringExpenseDescription: string | null;
+}
+
+export interface RecurringExpense {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  description: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  startDate: string;
+  dayOfMonth: number;
+  endDate: string | null;
+  maxOccurrences: number | null;
+  lastGeneratedDueDate: string | null;
+  generatedOccurrencesCount: number;
+  status: RecurringExpenseStatus;
+  nextDueDate: string | null;
 }
 
 export interface CreateExpenseRequest {
@@ -83,4 +111,19 @@ export interface ExpenseFilters {
   dueDateTo?: string; // ISO date string (YYYY-MM-DD)
   pageNumber?: number;
   pageSize?: number;
+}
+
+export interface RecurringExpenseFilters {
+  status?: RecurringExpenseStatus;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface UpdateRecurringExpenseRequest {
+  categoryId: string;
+  description: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  startDate: string;
+  endDate?: string;
 }

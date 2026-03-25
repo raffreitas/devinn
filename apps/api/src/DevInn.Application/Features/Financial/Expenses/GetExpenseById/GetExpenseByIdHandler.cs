@@ -25,7 +25,8 @@ internal sealed class GetExpenseByIdHandler(IExpenseRepository expenseRepository
             expense.DueDate,
             expense.PaymentDate,
             expense.PaymentMethod,
-            expense.Status.ToString()
+            expense.Status.ToString(),
+            expense.RecurringExpenseId
         );
 
         return Result.Ok(response);

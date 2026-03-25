@@ -10,5 +10,6 @@ public sealed record ExpenseDetailResponse(
     DateOnly DueDate,
     DateOnly? PaymentDate,
     PaymentMethod PaymentMethod,
-    string Status
+    string Status,
+    Guid? RecurringExpenseId
 );
