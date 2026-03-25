@@ -57,6 +57,15 @@ export interface CreateExpenseRequest {
   paymentDate?: string; // ISO date string (YYYY-MM-DD)
 }
 
+export interface CreateRecurringExpenseRequest {
+  categoryId: string;
+  description: string;
+  amount: number;
+  paymentMethod: PaymentMethod;
+  startDate: string; // ISO date string (YYYY-MM-DD)
+  endDate?: string; // ISO date string (YYYY-MM-DD)
+}
+
 export interface UpdateExpenseRequest {
   categoryId: string;
   description: string;

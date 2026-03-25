@@ -32,6 +32,7 @@ import { ExpenseList } from "../components/expense-list";
 import { useExpenseCategories } from "../hooks/use-expense-categories";
 import {
   useCreateExpense,
+  useCreateRecurringExpense,
   useDeleteExpense,
   useExpenses,
   useUpdateExpense,
@@ -65,19 +66,23 @@ export function ExpensesPage() {
   const { categories, isLoading: isLoadingCategories } = useExpenseCategories();
 
   const { createExpense, isLoading: isCreating } = useCreateExpense();
+  const { createRecurringExpense, isLoading: isCreatingRecurring } =
+    useCreateRecurringExpense();
   const { updateExpense, isLoading: isUpdating } = useUpdateExpense();
   const { deleteExpense } = useDeleteExpense();
 
   const isLoading = isLoadingExpenses || isLoadingCategories;
-  const isSubmittingExpense = isCreating || isUpdating;
+  const isSubmittingExpense = isCreating || isCreatingRecurring || isUpdating;
   const expenseFormInitialData = editingExpense
     ? {
+        isRecurring: false,
         categoryId: editingExpense.categoryId,
         description: editingExpense.description,
         amount: editingExpense.amount,
         paymentMethod: editingExpense.paymentMethod,
         dueDate: editingExpense.dueDate,
         paymentDate: editingExpense.paymentDate ?? "",
+        endDate: "",
       }
     : undefined;
 
@@ -109,6 +114,15 @@ export function ExpensesPage() {
           paymentDate: data.paymentDate || undefined,
           paymentMethod: data.paymentMethod as PaymentMethod,
         },
+      });
+    } else if (data.isRecurring) {
+      await createRecurringExpense({
+        categoryId: data.categoryId,
+        description: data.description,
+        amount: data.amount,
+        paymentMethod: data.paymentMethod as PaymentMethod,
+        startDate: data.dueDate,
+        endDate: data.endDate || undefined,
       });
     } else {
       await createExpense({
@@ -296,7 +310,7 @@ export function ExpensesPage() {
         description={
           editingExpense
             ? "Atualize os dados da despesa selecionada."
-            : "Registre uma nova saída no seu fluxo de caixa."
+            : "Registre uma nova saída ou uma recorrência mensal no seu fluxo de caixa."
         }
         className="sm:max-w-md"
       >

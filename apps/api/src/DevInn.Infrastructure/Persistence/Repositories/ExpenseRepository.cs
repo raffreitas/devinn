@@ -18,6 +18,14 @@ internal sealed class ExpenseRepository(ApplicationDbContext dbContext) : IExpen
         return await dbContext.Expenses.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
+    public async Task<Expense?> GetByRecurringExpenseIdAndDueDateAsync(Guid recurringExpenseId, DateOnly dueDate,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Expenses.FirstOrDefaultAsync(
+            e => e.RecurringExpenseId == recurringExpenseId && e.DueDate == dueDate,
+            cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<Expense>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Expenses.AsNoTracking().ToListAsync(cancellationToken);

@@ -8,6 +8,7 @@ namespace DevInn.Domain.Aggregates.Financial;
 public sealed class Expense : Entity
 {
     public Guid CategoryId { get; private set; }
+    public Guid? RecurringExpenseId { get; private set; }
     public string Description { get; private set; }
     public Money Amount { get; private set; }
     public DateOnly DueDate { get; private set; }
@@ -21,13 +22,15 @@ public sealed class Expense : Entity
         Money amount,
         PaymentMethod paymentMethod,
         DateOnly dueDate,
-        DateOnly? paymentDate
+        DateOnly? paymentDate,
+        Guid? recurringExpenseId = null
     )
     {
         if (amount <= 0)
             throw new DomainException("O valor da despesa deve ser maior que zero.");
 
         CategoryId = categoryId;
+        RecurringExpenseId = recurringExpenseId;
         Description = description;
         DueDate = dueDate;
         Amount = amount;

@@ -219,6 +219,10 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("payment_method");
 
+                    b.Property<Guid?>("RecurringExpenseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recurring_expense_id");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -234,6 +238,9 @@ namespace DevInn.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CategoryId")
                         .HasDatabaseName("ix_expenses_category_id");
+
+                    b.HasIndex("RecurringExpenseId")
+                        .HasDatabaseName("ix_expenses_recurring_expense_id");
 
                     b.ToTable("expenses", (string)null);
                 });
@@ -272,6 +279,84 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasName("pk_expense_categories");
 
                     b.ToTable("expense_categories", (string)null);
+                });
+
+            modelBuilder.Entity("DevInn.Domain.Aggregates.Financial.RecurringExpense", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("category_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("DayOfMonth")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_of_month");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
+
+                    b.Property<int>("GeneratedOccurrencesCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("generated_occurrences_count");
+
+                    b.Property<Guid>("InnId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("inn_id");
+
+                    b.Property<DateTime?>("LastGeneratedDueDate")
+                        .HasColumnType("date")
+                        .HasColumnName("last_generated_due_date");
+
+                    b.Property<int?>("MaxOccurrences")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_occurrences");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("payment_method");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_recurring_expenses");
+
+                    b.HasIndex("CategoryId")
+                        .HasDatabaseName("ix_recurring_expenses_category_id");
+
+                    b.ToTable("recurring_expenses", (string)null);
                 });
 
             modelBuilder.Entity("DevInn.Domain.Aggregates.Inns.Inn", b =>
@@ -634,6 +719,22 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_expenses_expense_categories_category_id");
+
+                    b.HasOne("DevInn.Domain.Aggregates.Financial.RecurringExpense", null)
+                        .WithMany()
+                        .HasForeignKey("RecurringExpenseId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_expenses_recurring_expenses_recurring_expense_id");
+                });
+
+            modelBuilder.Entity("DevInn.Domain.Aggregates.Financial.RecurringExpense", b =>
+                {
+                    b.HasOne("DevInn.Domain.Aggregates.Financial.ExpenseCategory", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_recurring_expenses_expense_categories_category_id");
                 });
 
             modelBuilder.Entity("DevInn.Domain.Aggregates.Inventory.Room", b =>

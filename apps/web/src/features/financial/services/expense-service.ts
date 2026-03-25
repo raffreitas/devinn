@@ -2,6 +2,7 @@ import { api } from "@/shared/lib/http-client";
 import type { ApiResponse } from "@/shared/types";
 import type {
   CreateExpenseRequest,
+  CreateRecurringExpenseRequest,
   Expense,
   ExpenseFilters,
   UpdateExpenseRequest,
@@ -31,6 +32,16 @@ export const expenseService = {
   create: async (data: CreateExpenseRequest): Promise<{ id: string }> => {
     const response = await api.post<ApiResponse<{ id: string }>>(
       "/api/v1/expenses",
+      data,
+    );
+    return response.data.data;
+  },
+
+  createRecurring: async (
+    data: CreateRecurringExpenseRequest,
+  ): Promise<{ id: string }> => {
+    const response = await api.post<ApiResponse<{ id: string }>>(
+      "/api/v1/recurring-expenses",
       data,
     );
     return response.data.data;

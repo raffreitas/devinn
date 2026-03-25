@@ -8,4 +8,5 @@ internal sealed record BackgroundJobsOptions
     public bool Enabled { get; init; } = true;
 
     [Required] public string CronExpression { get; init; } = "0 */15 * * * ?";
+    [Required] public string RecurringExpensesCronExpression { get; init; } = "0 0 1 * * ?";
 }

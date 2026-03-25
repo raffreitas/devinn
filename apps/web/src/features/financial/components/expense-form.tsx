@@ -27,6 +27,7 @@ import { CategorySelect } from "./category-select";
 
 const expenseFormSchema = z
   .object({
+    isRecurring: z.boolean(),
     categoryId: z.string().min(1, "Categoria é obrigatória"),
     description: z
       .string()
@@ -36,10 +37,32 @@ const expenseFormSchema = z
     paymentMethod: z.string({ error: "Método de pagamento é obrigatório" }),
     dueDate: z.string().min(1, "Data de vencimento é obrigatória"),
     paymentDate: z.string().optional(),
+    endDate: z.string().optional(),
   })
-  .refine((data) => !data.paymentDate || data.paymentDate >= data.dueDate, {
-    path: ["paymentDate"],
-    message: "Data de pagamento não pode ser anterior à data de vencimento",
+  .superRefine((data, ctx) => {
+    if (!data.isRecurring && data.paymentDate && data.paymentDate < data.dueDate) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["paymentDate"],
+        message: "Data de pagamento não pode ser anterior à data de vencimento",
+      });
+    }
+
+    if (data.isRecurring && data.paymentDate) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["paymentDate"],
+        message: "Despesa recorrente não aceita data de pagamento no cadastro da série",
+      });
+    }
+
+    if (data.isRecurring && data.endDate && data.endDate < data.dueDate) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["endDate"],
+        message: "Data final não pode ser anterior ao primeiro vencimento",
+      });
+    }
   });
 
 export type ExpenseFormData = z.infer<typeof expenseFormSchema>;
@@ -54,12 +77,14 @@ interface ExpenseFormProps {
 }
 
 const getDefaultExpenseFormData = (): ExpenseFormData => ({
+  isRecurring: false,
   categoryId: "",
   description: "",
   amount: 0,
   paymentMethod: "Cash",
   dueDate: new Date().toISOString().split("T")[0],
   paymentDate: "",
+  endDate: "",
 });
 
 export function ExpenseForm({
@@ -75,14 +100,52 @@ export function ExpenseForm({
     defaultValues: initialData || getDefaultExpenseFormData(),
   });
 
+  const isRecurring = form.watch("isRecurring");
+
   useEffect(() => {
     form.reset(initialData || getDefaultExpenseFormData());
   }, [form, initialData]);
+
+  useEffect(() => {
+    if (!isRecurring) {
+      return;
+    }
+
+    form.setValue("paymentDate", "", { shouldValidate: true });
+  }, [form, isRecurring]);
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {mode === "create" && (
+            <FormField
+              control={form.control}
+              name="isRecurring"
+              render={({ field }) => (
+                <FormItem className="md:col-span-2 rounded-lg border p-4">
+                  <div className="flex items-start gap-3">
+                    <FormControl>
+                      <Input
+                        type="checkbox"
+                        checked={field.value}
+                        onChange={(event) => field.onChange(event.target.checked)}
+                        className="mt-1 h-4 w-4"
+                      />
+                    </FormControl>
+                    <div className="space-y-1">
+                      <FormLabel>Despesa recorrente mensal</FormLabel>
+                      <FormDescription>
+                        O sistema criará uma série mensal usando o dia do primeiro vencimento.
+                      </FormDescription>
+                    </div>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
           <FormField
             control={form.control}
             name="description"
@@ -134,10 +197,17 @@ export function ExpenseForm({
             name="dueDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Data de vencimento</FormLabel>
+                <FormLabel>
+                  {isRecurring ? "Primeiro vencimento" : "Data de vencimento"}
+                </FormLabel>
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
+                {isRecurring && (
+                  <FormDescription>
+                    As próximas despesas serão geradas todo mês neste mesmo dia.
+                  </FormDescription>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -168,22 +238,41 @@ export function ExpenseForm({
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="paymentDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Data de pagamento</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} value={field.value ?? ""} />
-                </FormControl>
-                <FormDescription>
-                  Deixe em branco se a despesa ainda não foi paga.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {isRecurring ? (
+            <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data final da recorrência</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormDescription>
+                    Deixe em branco para manter a recorrência ativa por tempo indeterminado.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : (
+            <FormField
+              control={form.control}
+              name="paymentDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data de pagamento</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormDescription>
+                    Deixe em branco se a despesa ainda não foi paga.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         <div className="flex gap-2 justify-end">

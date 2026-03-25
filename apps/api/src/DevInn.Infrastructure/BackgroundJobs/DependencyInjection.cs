@@ -36,6 +36,16 @@ public static class DependencyInjection
                 .WithIdentity($"{nameof(SyncAllChannelsJob)}-trigger")
                 .WithCronSchedule(jobsOptions.CronExpression)
                 .WithDescription($"Sync all active channel integrations every {jobsOptions.CronExpression}"));
+
+            var recurringExpensesJobKey = new JobKey(nameof(GenerateRecurringExpensesJob));
+            q.AddJob<GenerateRecurringExpensesJob>(opts => opts.WithIdentity(recurringExpensesJobKey));
+
+            q.AddTrigger(opts => opts
+                .ForJob(recurringExpensesJobKey)
+                .WithIdentity($"{nameof(GenerateRecurringExpensesJob)}-trigger")
+                .WithCronSchedule(jobsOptions.RecurringExpensesCronExpression)
+                .WithDescription(
+                    $"Generate recurring expenses every {jobsOptions.RecurringExpensesCronExpression}"));
         });
 
         services.AddQuartzHostedService(options =>

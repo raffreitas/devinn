@@ -13,6 +13,7 @@ internal sealed class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedNever();
         builder.Property(e => e.CategoryId).IsRequired();
+        builder.Property(e => e.RecurringExpenseId);
         builder.Property(e => e.Description).HasMaxLength(500);
         builder.Property(e => e.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(e => e.Amount).HasPrecision(18, 2).IsRequired();
@@ -26,5 +27,10 @@ internal sealed class ExpenseConfiguration : IEntityTypeConfiguration<Expense>
             .WithMany()
             .HasForeignKey(e => e.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<RecurringExpense>()
+            .WithMany()
+            .HasForeignKey(e => e.RecurringExpenseId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

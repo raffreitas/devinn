@@ -22,6 +22,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<RecurringExpense> RecurringExpenses => Set<RecurringExpense>();
     public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
     public DbSet<ChannelIntegration> ChannelIntegrations => Set<ChannelIntegration>();
 
@@ -43,6 +44,9 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
 
         modelBuilder.ApplyConfiguration(new ExpenseConfiguration());
         modelBuilder.Entity<Expense>().HasQueryFilter(e => e.InnId == tenantContext.Tenant.Id);
+
+        modelBuilder.ApplyConfiguration(new RecurringExpenseConfiguration());
+        modelBuilder.Entity<RecurringExpense>().HasQueryFilter(e => e.InnId == tenantContext.Tenant.Id);
 
         modelBuilder.ApplyConfiguration(new ExpenseCategoryConfiguration());
         modelBuilder.Entity<ExpenseCategory>().HasQueryFilter(e => e.InnId == tenantContext.Tenant.Id);

@@ -42,6 +42,27 @@ export function useCreateExpense() {
   };
 }
 
+export function useCreateRecurringExpense() {
+  const queryClient = useQueryClient();
+  const { innId } = useAuth();
+
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: expenseService.createRecurring,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses", innId] });
+      toast.success("Despesa recorrente criada com sucesso");
+    },
+    onError: () => {
+      toast.error("Erro ao criar despesa recorrente");
+    },
+  });
+
+  return {
+    createRecurringExpense: mutateAsync,
+    isLoading: isPending,
+  };
+}
+
 export function useUpdateExpense() {
   const queryClient = useQueryClient();
   const { innId } = useAuth();
