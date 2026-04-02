@@ -4,6 +4,6 @@ public sealed record RoomCategoryResponse(
     Guid Id,
     string Name,
     int Capacity,
-    string Description,
+    string? Description,
     decimal BasePrice,
     decimal ExtraPersonPrice);
