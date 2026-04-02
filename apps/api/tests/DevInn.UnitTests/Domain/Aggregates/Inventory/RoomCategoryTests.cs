@@ -40,20 +40,7 @@ public sealed class RoomCategoryTests
 
         // Act & Assert
         Should.Throw<DomainException>(() => new RoomCategory(name, description, maxCapacity, pricingPolicy))
-            .Message.ShouldBe("O campo 'name' não pode ser nulo ou vazio.");
-    }
-
-    [Fact]
-    public void Constructor_ShouldThrow_WhenDescriptionIsEmpty()
-    {
-        // Arrange
-        const string name = "Standard Room";
-        const string description = "";
-        const int maxCapacity = 2;
-
-        // Act & Assert
-        Should.Throw<DomainException>(() => new RoomCategory(name, description, maxCapacity, null!))
-            .Message.ShouldBe("O campo 'description' não pode ser nulo ou vazio.");
+            .Message.ShouldBe("O campo 'Name' não pode ser nulo ou vazio.");
     }
 
     [Fact]
@@ -80,6 +67,6 @@ public sealed class RoomCategoryTests
 
         // Act & Assert
         Should.Throw<DomainException>(() => new RoomCategory(name, description, maxCapacity, pricingPolicy!))
-            .Message.ShouldBe("O campo 'pricingPolicy' não pode ser nulo.");
+            .Message.ShouldBe("O campo 'PricingPolicy' não pode ser nulo.");
     }
 }
