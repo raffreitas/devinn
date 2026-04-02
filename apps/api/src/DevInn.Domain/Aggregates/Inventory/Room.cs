@@ -10,7 +10,7 @@ public sealed class Room : Entity
     public int Number { get; private set; }
     public string? Name { get; private set; }
     public RoomStatus Status { get; private set; }
-    public ICalExportToken ICalExportToken { get; private set; }
+    public ICalExportToken ICalExportToken { get; private set; } = null!;
 
     private Room()
     {
