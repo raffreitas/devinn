@@ -98,9 +98,10 @@ internal sealed class ICalSyncService(
             integrationId,
             checkOutAfter: cutoffDate,
             cancellationToken);
+        var now = DateTimeOffset.UtcNow;
 
         var bookingsToCancel = existingBookings
-            .Where(b => b.ExternalId != null && !iCalEventUids.Contains(b.ExternalId))
+            .Where(b => ShouldCancelMissingImportedBooking(b, iCalEventUids, now))
             .ToList();
 
         foreach (var booking in bookingsToCancel)
@@ -222,6 +223,14 @@ internal sealed class ICalSyncService(
         => string.IsNullOrWhiteSpace(iCalEvent.Description)
             ? iCalEvent.Summary
             : $"{iCalEvent.Summary}\n{iCalEvent.Description}";
+
+    private static bool ShouldCancelMissingImportedBooking(
+        Booking booking,
+        HashSet<string> iCalEventUids,
+        DateTimeOffset now)
+        => booking.ExternalId is not null
+           && booking.StayPeriod.CheckIn > now
+           && !iCalEventUids.Contains(booking.ExternalId);
 
 
     private static bool CanUpdateImportedBlock(Booking existingBooking, ChannelIntegration integration)
