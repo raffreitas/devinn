@@ -190,4 +190,103 @@ public sealed class ICalSyncServiceTests
             existingBooking.Id,
             TestContext.Current.CancellationToken);
     }
+
+    [Fact]
+    public async Task SyncChannelIntegrationAsync_ShouldNotCancelPastImportedBlock_WhenUidIsMissingFromFeed()
+    {
+        var integration = new ChannelIntegration(ChannelType.Booking, "https://example.com/feed.ics", Guid.NewGuid());
+        var pastBooking = new Booking(
+            roomId: integration.RoomId,
+            guest: null,
+            stayPeriod: new StayPeriod(
+                DateTimeOffset.UtcNow.AddDays(-5),
+                DateTimeOffset.UtcNow.AddDays(-2)),
+            occupancy: null,
+            totalValue: new Money(0m),
+            source: BookingSource.BookingIcal,
+            notes: "Reserva passada",
+            externalId: "past-event",
+            channelIntegrationId: integration.Id);
+
+        _integrationRepository.GetByIdAsync(integration.Id, TestContext.Current.CancellationToken).Returns(integration);
+        _icalService.ParseICalFeedAsync(integration.ICalUrl, TestContext.Current.CancellationToken)
+            .Returns(Array.Empty<ICalEventDto>());
+        _bookingRepository.GetByChannelIntegrationIdAsync(
+                integration.Id,
+                Arg.Any<DateTimeOffset?>(),
+                TestContext.Current.CancellationToken)
+            .Returns([pastBooking]);
+
+        var result = await _sut.SyncChannelIntegrationAsync(integration.Id, TestContext.Current.CancellationToken);
+
+        result.ShouldBe(0);
+        pastBooking.Status.ShouldBe(BookingStatus.Scheduled);
+        pastBooking.CancellationReason.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task SyncChannelIntegrationAsync_ShouldNotCancelOngoingImportedBlock_WhenUidIsMissingFromFeed()
+    {
+        var integration = new ChannelIntegration(ChannelType.Booking, "https://example.com/feed.ics", Guid.NewGuid());
+        var ongoingBooking = new Booking(
+            roomId: integration.RoomId,
+            guest: null,
+            stayPeriod: new StayPeriod(
+                DateTimeOffset.UtcNow.AddHours(-6),
+                DateTimeOffset.UtcNow.AddHours(18)),
+            occupancy: null,
+            totalValue: new Money(0m),
+            source: BookingSource.BookingIcal,
+            notes: "Reserva em andamento",
+            externalId: "ongoing-event",
+            channelIntegrationId: integration.Id);
+
+        _integrationRepository.GetByIdAsync(integration.Id, TestContext.Current.CancellationToken).Returns(integration);
+        _icalService.ParseICalFeedAsync(integration.ICalUrl, TestContext.Current.CancellationToken)
+            .Returns(Array.Empty<ICalEventDto>());
+        _bookingRepository.GetByChannelIntegrationIdAsync(
+                integration.Id,
+                Arg.Any<DateTimeOffset?>(),
+                TestContext.Current.CancellationToken)
+            .Returns([ongoingBooking]);
+
+        var result = await _sut.SyncChannelIntegrationAsync(integration.Id, TestContext.Current.CancellationToken);
+
+        result.ShouldBe(0);
+        ongoingBooking.Status.ShouldBe(BookingStatus.Scheduled);
+        ongoingBooking.CancellationReason.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task SyncChannelIntegrationAsync_ShouldCancelFutureImportedBlock_WhenUidIsMissingFromFeed()
+    {
+        var integration = new ChannelIntegration(ChannelType.Booking, "https://example.com/feed.ics", Guid.NewGuid());
+        var futureBooking = new Booking(
+            roomId: integration.RoomId,
+            guest: null,
+            stayPeriod: new StayPeriod(
+                DateTimeOffset.UtcNow.AddDays(2),
+                DateTimeOffset.UtcNow.AddDays(4)),
+            occupancy: null,
+            totalValue: new Money(0m),
+            source: BookingSource.BookingIcal,
+            notes: "Reserva futura",
+            externalId: "future-event",
+            channelIntegrationId: integration.Id);
+
+        _integrationRepository.GetByIdAsync(integration.Id, TestContext.Current.CancellationToken).Returns(integration);
+        _icalService.ParseICalFeedAsync(integration.ICalUrl, TestContext.Current.CancellationToken)
+            .Returns(Array.Empty<ICalEventDto>());
+        _bookingRepository.GetByChannelIntegrationIdAsync(
+                integration.Id,
+                Arg.Any<DateTimeOffset?>(),
+                TestContext.Current.CancellationToken)
+            .Returns([futureBooking]);
+
+        var result = await _sut.SyncChannelIntegrationAsync(integration.Id, TestContext.Current.CancellationToken);
+
+        result.ShouldBe(0);
+        futureBooking.Status.ShouldBe(BookingStatus.Canceled);
+        futureBooking.CancellationReason.ShouldBe(CancellationReason.ExternalCancellation);
+    }
 }
