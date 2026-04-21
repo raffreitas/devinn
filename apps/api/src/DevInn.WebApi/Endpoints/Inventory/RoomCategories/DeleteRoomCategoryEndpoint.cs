@@ -1,4 +1,4 @@
-using DevInn.Application.Features.Inventory.RoomCategories.DeleteRoomCategory;
+using DevInn.Application.Features.Inventory.Commands.RoomCategories.DeleteRoomCategory;
 using DevInn.WebApi.Common;
 
 using Mediator;

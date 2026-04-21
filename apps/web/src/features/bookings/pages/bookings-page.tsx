@@ -124,7 +124,7 @@ const statusConfig: Record<
   }
 > = {
   Scheduled: { label: "Agendada", variant: "default" },
-  CheckedIn: { label: "Hospedando", variant: "secondary" },
+  CheckedIn: { label: "Hospedado", variant: "secondary" },
   Completed: { label: "Concluída", variant: "outline" },
   Canceled: { label: "Cancelada", variant: "destructive" },
 };
@@ -300,7 +300,7 @@ export function BookingsPage() {
                 <SelectContent>
                   <SelectItem value="all">Todos Status</SelectItem>
                   <SelectItem value="Scheduled">Agendada</SelectItem>
-                  <SelectItem value="CheckedIn">Hospedando</SelectItem>
+                  <SelectItem value="CheckedIn">Hospedado</SelectItem>
                   <SelectItem value="Completed">Concluída</SelectItem>
                   <SelectItem value="Canceled">Cancelada</SelectItem>
                 </SelectContent>
@@ -547,8 +547,8 @@ export function BookingsPage() {
               Tem certeza que deseja excluir esta reserva?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Essa ação não pode ser desfeita. Isso excluirá permanentemente a
-              reserva.
+              Essa ação removerá a reserva das listagens ativas, mas manterá o
+              histórico operacional para auditoria.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

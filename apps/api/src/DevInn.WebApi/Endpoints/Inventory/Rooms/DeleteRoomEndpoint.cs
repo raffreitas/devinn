@@ -1,4 +1,4 @@
-using DevInn.Application.Features.Inventory.Rooms.DeleteRoom;
+using DevInn.Application.Features.Inventory.Commands.Rooms.DeleteRoom;
 using DevInn.WebApi.Common;
 
 using Mediator;

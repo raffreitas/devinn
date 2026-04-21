@@ -137,6 +137,13 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   BankTransfer: "Transferência Bancária",
 };
 
+const auditActionLabels: Record<string, string> = {
+  Created: "Criação",
+  Updated: "Atualização",
+  SoftDeleted: "Exclusão lógica",
+  Deleted: "Exclusão",
+};
+
 export function BookingDetails({
   booking,
   onEdit,
@@ -236,8 +243,9 @@ export function BookingDetails({
                     : "Tem certeza que deseja excluir esta reserva?"}
                 </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Essa ação não pode ser desfeita. Isso excluirá permanentemente
-                  {bookingIsBlock ? " o bloqueio" : " a reserva"}.
+                  Essa ação removerá{" "}
+                  {bookingIsBlock ? "o bloqueio" : "a reserva"} das listagens
+                  ativas, preservando o histórico operacional para auditoria.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -250,6 +258,35 @@ export function BookingDetails({
           </AlertDialog>
         </div>
       </div>
+
+      {!bookingIsBlock && booking.lastAudit && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
+              <Info className="w-4 h-4 text-primary" />
+              Última atualização operacional
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            <p className="text-sm font-medium text-foreground">
+              {auditActionLabels[booking.lastAudit.action] ??
+                booking.lastAudit.action}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {booking.lastAudit.summary}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {format(
+                new Date(booking.lastAudit.occurredAt),
+                "dd/MM/yyyy 'às' HH:mm",
+                {
+                  locale: ptBR,
+                },
+              )}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {bookingIsBlock && (
         <Card className="border-2 border-dashed border-muted-foreground/30">

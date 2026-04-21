@@ -1,5 +1,6 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
+using DevInn.Application.Common.Identity.Abstractions;
 using DevInn.Application.Features.Bookings.Commands.DeleteBooking;
 using DevInn.Domain.Aggregates.Bookings;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
@@ -19,13 +20,15 @@ namespace DevInn.UnitTests.Application.Bookings.Commands.DeleteBooking;
 public sealed class DeleteBookingHandlerTests
 {
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
+    private readonly IUserContext _userContext = Substitute.For<IUserContext>();
     private readonly IUnitOfWork _uow = Substitute.For<IUnitOfWork>();
 
     private readonly DeleteBookingHandler _sut;
 
     public DeleteBookingHandlerTests()
     {
-        _sut = new DeleteBookingHandler(_bookingRepository, _uow);
+        _userContext.UserId.Returns(Guid.Parse("11111111-1111-1111-1111-111111111111"));
+        _sut = new DeleteBookingHandler(_bookingRepository, _userContext, _uow);
     }
 
     [Fact]
@@ -42,7 +45,7 @@ public sealed class DeleteBookingHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldRemoveBookingAndCommit_WhenBookingExists()
+    public async Task Handle_ShouldSoftDeleteBookingAndCommit_WhenBookingExists()
     {
         var booking = CreateBooking();
         var command = new DeleteBookingCommand(booking.Id);
@@ -51,7 +54,9 @@ public sealed class DeleteBookingHandlerTests
         var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
-        await _bookingRepository.Received(1).RemoveAsync(booking, TestContext.Current.CancellationToken);
+        booking.IsDeleted.ShouldBeTrue();
+        booking.DeletedBy.ShouldBe(_userContext.UserId);
+        await _bookingRepository.DidNotReceive().RemoveAsync(Arg.Any<Booking>(), TestContext.Current.CancellationToken);
         await _uow.Received(1).CommitAsync(TestContext.Current.CancellationToken);
     }
 

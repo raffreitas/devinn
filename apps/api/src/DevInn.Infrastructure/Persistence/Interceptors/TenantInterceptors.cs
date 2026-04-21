@@ -17,15 +17,7 @@ internal sealed class TenantInterceptors(ITenantContext tenantContext) : SaveCha
 
         if (context is null) return await base.SavingChangesAsync(eventData, result, cancellationToken);
 
-        var entries = context.ChangeTracker.Entries().Where(e => e.State is EntityState.Added);
-
-        foreach (var entry in entries)
-        {
-            if (entry.Entity is Entity entity)
-            {
-                entity.SetTenantId(tenantContext.Tenant.Id);
-            }
-        }
+        ApplyTenantAndTimestamps(context);
 
         return await base.SavingChangesAsync(eventData, result, cancellationToken);
     }
@@ -36,16 +28,29 @@ internal sealed class TenantInterceptors(ITenantContext tenantContext) : SaveCha
     {
         var context = eventData.Context;
         if (context is null) return base.SavingChanges(eventData, result);
-        var entries = context.ChangeTracker.Entries()
-            .Where(e => e.State is EntityState.Added or EntityState.Modified);
-        foreach (var entry in entries)
-        {
-            if (entry.Entity is Entity entity)
-            {
-                entity.SetTenantId(tenantContext.Tenant.Id);
-            }
-        }
+        ApplyTenantAndTimestamps(context);
 
         return base.SavingChanges(eventData, result);
+    }
+
+    private void ApplyTenantAndTimestamps(DbContext context)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var entries = context.ChangeTracker.Entries()
+            .Where(e => e.Entity is Entity && e.State is EntityState.Added or EntityState.Modified);
+
+        foreach (var entry in entries)
+        {
+            if (entry.Entity is not Entity entity)
+                continue;
+
+            if (entry.State == EntityState.Added)
+            {
+                entity.SetTenantId(tenantContext.Tenant.Id);
+                entry.Property(nameof(Entity.CreatedAt)).CurrentValue = now;
+            }
+
+            entry.Property(nameof(Entity.UpdatedAt)).CurrentValue = now;
+        }
     }
 }

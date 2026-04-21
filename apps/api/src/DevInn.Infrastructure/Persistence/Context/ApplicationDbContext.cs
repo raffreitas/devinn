@@ -6,6 +6,7 @@ using DevInn.Domain.Aggregates.Inns;
 using DevInn.Domain.Aggregates.Integrations;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Shared.ValueObjects;
+using DevInn.Infrastructure.Persistence.Auditing;
 using DevInn.Infrastructure.Persistence.Configurations;
 using DevInn.Infrastructure.Persistence.Converters;
 
@@ -21,6 +22,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<RoomCategory> RoomCategories => Set<RoomCategory>();
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<Payment> Payments => Set<Payment>();
+    internal DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
     public DbSet<ChannelIntegration> ChannelIntegrations => Set<ChannelIntegration>();
@@ -36,10 +38,13 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         modelBuilder.Entity<Room>().HasQueryFilter(r => r.InnId == tenantContext.Tenant.Id);
 
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
-        modelBuilder.Entity<Booking>().HasQueryFilter(b => b.InnId == tenantContext.Tenant.Id);
+        modelBuilder.Entity<Booking>().HasQueryFilter(b => b.InnId == tenantContext.Tenant.Id && b.DeletedAt == null);
 
         modelBuilder.ApplyConfiguration(new PaymentConfiguration());
         modelBuilder.Entity<Payment>().HasQueryFilter(p => p.InnId == tenantContext.Tenant.Id);
+
+        modelBuilder.ApplyConfiguration(new AuditLogConfiguration());
+        modelBuilder.Entity<AuditLog>().HasQueryFilter(a => a.InnId == tenantContext.Tenant.Id);
 
         modelBuilder.ApplyConfiguration(new ExpenseConfiguration());
         modelBuilder.Entity<Expense>().HasQueryFilter(e => e.InnId == tenantContext.Tenant.Id);

@@ -1,6 +1,6 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
-using DevInn.Application.Features.Inventory.Rooms.CreateRoom;
+using DevInn.Application.Features.Inventory.Commands.Rooms.CreateRoom;
 using DevInn.Domain.Aggregates.Integrations.Abstractions;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;

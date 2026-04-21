@@ -1,4 +1,4 @@
-using DevInn.Application.Features.Inventory.RoomCategories.GetRoomCategories;
+using DevInn.Application.Features.Inventory.Queries.RoomCategories.GetRoomCategories;
 using DevInn.WebApi.Common;
 
 using Mediator;

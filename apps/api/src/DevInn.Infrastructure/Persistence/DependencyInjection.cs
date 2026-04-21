@@ -15,6 +15,7 @@ using DevInn.Infrastructure.Persistence.Interceptors;
 using DevInn.Infrastructure.Persistence.Repositories;
 using DevInn.Infrastructure.Persistence.SeedData;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,11 +34,14 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             var tenantContext = sp.GetRequiredService<ITenantContext>();
+            var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
             options.UseNpgsql(
                     connectionString,
                     sqlOptions => sqlOptions.EnableRetryOnFailure())
                 .UseSnakeCaseNamingConvention()
-                .AddInterceptors(new TenantInterceptors(tenantContext));
+                .AddInterceptors(
+                    new AuditLogInterceptor(tenantContext, httpContextAccessor),
+                    new TenantInterceptors(tenantContext));
         });
 
         services.AddSingleton(new NpgsqlDataSourceBuilder(connectionString).Build());

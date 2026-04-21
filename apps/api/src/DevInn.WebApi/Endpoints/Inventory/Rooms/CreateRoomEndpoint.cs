@@ -1,4 +1,4 @@
-using DevInn.Application.Features.Inventory.Rooms.CreateRoom;
+using DevInn.Application.Features.Inventory.Commands.Rooms.CreateRoom;
 using DevInn.WebApi.Common;
 
 using Mediator;

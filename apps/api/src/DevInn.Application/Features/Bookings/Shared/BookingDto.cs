@@ -21,6 +21,12 @@ public sealed record PricingBreakdown(
     decimal Total
 );
 
+public sealed record AuditSummaryDto(
+    string Action,
+    DateTimeOffset OccurredAt,
+    string Summary
+);
+
 public sealed record BookingDto(
     Guid Id,
     Guid RoomId,
@@ -39,7 +45,10 @@ public sealed record BookingDto(
     decimal TotalPaid,
     decimal BalanceDue,
     IReadOnlyCollection<PaymentDto> Payments,
-    string? Notes
+    string? Notes,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    AuditSummaryDto? LastAudit
 );
 
 internal sealed record BookingProjection
@@ -64,6 +73,8 @@ internal sealed record BookingProjection
     public string Status { get; init; } = null!;
     public string Source { get; init; } = null!;
     public string? Notes { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
+    public DateTimeOffset UpdatedAt { get; init; }
 }
 
 internal sealed record PaymentProjection
@@ -73,4 +84,12 @@ internal sealed record PaymentProjection
     public string Method { get; init; } = null!;
     public DateTimeOffset PaymentDate { get; init; }
     public string? Notes { get; init; }
+}
+
+internal sealed record AuditLogProjection
+{
+    public Guid EntityId { get; init; }
+    public string Action { get; init; } = null!;
+    public DateTimeOffset OccurredAt { get; init; }
+    public string Summary { get; init; } = null!;
 }

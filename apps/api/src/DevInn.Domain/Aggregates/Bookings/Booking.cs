@@ -22,11 +22,14 @@ public sealed class Booking : Entity
     public CancellationReason? CancellationReason { get; private set; }
     public string? ExternalId { get; private set; }
     public Guid? ChannelIntegrationId { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
+    public Guid? DeletedBy { get; private set; }
     public IReadOnlyCollection<Payment> Payments => _payments.AsReadOnly();
     public int NumberOfNights => StayPeriod.TotalNights();
     public Money PaidValue => new(_payments.Sum(p => p.Amount.Value));
     public decimal BalanceDue => TotalValue - PaidValue;
     public PaymentStatus PaymentStatus => CalculatePaymentStatus();
+    public bool IsDeleted => DeletedAt.HasValue;
 
     public bool IsBlock => Guest is null;
     public bool IsRealBooking => Guest is not null;
@@ -67,6 +70,8 @@ public sealed class Booking : Entity
         BookingSource source,
         string? notes = null)
     {
+        EnsureNotDeleted();
+
         if (IsBlock)
             throw new DomainException("Bloqueios não podem ser editados. Apenas exclua e recrie se necessário.");
 
@@ -84,6 +89,8 @@ public sealed class Booking : Entity
 
     public void Enrich(Guest guest, Occupancy? occupancy, string? notes, Money totalValue)
     {
+        EnsureNotDeleted();
+
         if (!IsBlock)
             throw new DomainException(
                 "Enriquecimento de dados só é permitido para blocos criados via integração externa.");
@@ -100,6 +107,8 @@ public sealed class Booking : Entity
         BookingSource source,
         string? notes = null)
     {
+        EnsureNotDeleted();
+
         if (!IsBlock)
             throw new DomainException("A sincronização externa só pode atualizar bloqueios importados.");
 
@@ -116,12 +125,12 @@ public sealed class Booking : Entity
             Status = BookingStatus.Scheduled;
             CancellationReason = null;
         }
-
-        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     public void AddPayment(Money amount, PaymentMethod method, DateTimeOffset paymentDate, string? notes = null)
     {
+        EnsureNotDeleted();
+
         if (IsBlock)
             throw new DomainException("Não é possível adicionar pagamentos a bloqueios.");
 
@@ -134,11 +143,14 @@ public sealed class Booking : Entity
 
     public void ClearPayments()
     {
+        EnsureNotDeleted();
         _payments.Clear();
     }
 
     public void Cancel(CancellationReason reason)
     {
+        EnsureNotDeleted();
+
         if (Status == BookingStatus.Canceled)
             return; // Already canceled, idempotent operation
 
@@ -147,6 +159,27 @@ public sealed class Booking : Entity
 
         Status = BookingStatus.Canceled;
         CancellationReason = reason;
+    }
+
+    public void SoftDelete(Guid actorId)
+    {
+        if (IsDeleted)
+            return;
+
+        if (Status == BookingStatus.CheckedIn)
+            throw new DomainException("Não é possível excluir uma reserva com hospedagem em andamento.");
+
+        if (Status == BookingStatus.Completed)
+            throw new DomainException("Não é possível excluir uma reserva concluída.");
+
+        DeletedAt = DateTimeOffset.UtcNow;
+        DeletedBy = actorId;
+    }
+
+    private void EnsureNotDeleted()
+    {
+        if (IsDeleted)
+            throw new DomainException("Não é possível alterar uma reserva excluída.");
     }
 
     private PaymentStatus CalculatePaymentStatus()

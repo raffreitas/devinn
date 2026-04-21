@@ -23,6 +23,12 @@ internal sealed class BookingRepository(ApplicationDbContext dbContext) : IBooki
             .Include(x => x.Payments)
             .FirstOrDefaultAsync(x => x.Id == bookingId, cancellationToken);
 
+    public async Task<bool> HasLinkedRoomBookingsAsync(Guid roomId, CancellationToken cancellationToken = default)
+        => await dbContext.Bookings
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .AnyAsync(x => x.RoomId == roomId, cancellationToken);
+
     public async Task<Booking?> GetByExternalIdAsync(string externalId, CancellationToken cancellationToken = default)
         => await dbContext.Bookings
             .FirstOrDefaultAsync(x => x.ExternalId == externalId, cancellationToken);
