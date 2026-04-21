@@ -47,7 +47,13 @@ internal sealed class TenantInterceptors(ITenantContext tenantContext) : SaveCha
             if (entry.State == EntityState.Added)
             {
                 entity.SetTenantId(tenantContext.Tenant.Id);
-                entry.Property(nameof(Entity.CreatedAt)).CurrentValue = now;
+
+                var createdAtProperty = entry.Property(nameof(Entity.CreatedAt));
+                if (createdAtProperty.CurrentValue is null ||
+                    createdAtProperty.CurrentValue.Equals(default(DateTimeOffset)))
+                {
+                    createdAtProperty.CurrentValue = now;
+                }
             }
 
             entry.Property(nameof(Entity.UpdatedAt)).CurrentValue = now;

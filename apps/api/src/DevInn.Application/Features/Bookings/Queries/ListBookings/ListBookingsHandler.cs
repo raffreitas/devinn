@@ -77,16 +77,26 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                                         """;
 
         const string latestAuditsSql = """
-                                       SELECT DISTINCT ON (entity_id)
-                                              entity_id   AS "EntityId",
+                                       WITH ranked_audits AS (
+                                           SELECT entity_id,
+                                                  action,
+                                                  occurred_at,
+                                                  summary,
+                                                  ROW_NUMBER() OVER (
+                                                      PARTITION BY entity_id
+                                                      ORDER BY occurred_at DESC
+                                                  ) AS rn
+                                           FROM audit_logs
+                                           WHERE inn_id = @TenantId
+                                             AND entity_name = 'Booking'
+                                             AND entity_id = ANY(@BookingIds)
+                                       )
+                                       SELECT entity_id   AS "EntityId",
                                               action      AS "Action",
                                               occurred_at AS "OccurredAt",
                                               summary     AS "Summary"
-                                       FROM audit_logs
-                                       WHERE inn_id = @TenantId
-                                         AND entity_name = 'Booking'
-                                         AND entity_id = ANY(@BookingIds)
-                                       ORDER BY entity_id, occurred_at DESC;
+                                       FROM ranked_audits
+                                       WHERE rn = 1;
                                        """;
 
         var parameters = new
