@@ -13,6 +13,7 @@ on:
 env:
   NODE_VERSION: "24"
   PNPM_VERSION: 10
+  DOTNET_VERSION: "10.0.x"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-web
@@ -81,3 +82,25 @@ jobs:
           fi
           echo "✅ Build successful"
           ls -lah dist/
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install Playwright browsers
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run smoke E2E suite
+        working-directory: apps/web
+        run: pnpm run test:e2e:smoke
+
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
