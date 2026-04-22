@@ -67,6 +67,12 @@ export interface Payment {
   notes?: string;
 }
 
+export interface AuditSummary {
+  action: string;
+  occurredAt: string;
+  summary: string;
+}
+
 export interface Booking {
   id: string;
   innId: string;
@@ -89,6 +95,7 @@ export interface Booking {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  lastAudit?: AuditSummary | null;
 }
 
 export interface CreateBookingRequest {

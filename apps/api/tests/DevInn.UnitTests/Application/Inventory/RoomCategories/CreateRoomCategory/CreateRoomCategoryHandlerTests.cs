@@ -1,6 +1,6 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
-using DevInn.Application.Features.Inventory.RoomCategories.CreateRoomCategory;
+using DevInn.Application.Features.Inventory.Commands.RoomCategories.CreateRoomCategory;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 using DevInn.Domain.Aggregates.Inventory.ValueObjects;

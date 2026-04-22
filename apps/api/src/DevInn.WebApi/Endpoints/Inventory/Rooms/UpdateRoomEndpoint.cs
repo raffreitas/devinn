@@ -1,4 +1,4 @@
-using DevInn.Application.Features.Inventory.Rooms.UpdateRoom;
+using DevInn.Application.Features.Inventory.Commands.Rooms.UpdateRoom;
 using DevInn.WebApi.Common;
 
 using Mediator;

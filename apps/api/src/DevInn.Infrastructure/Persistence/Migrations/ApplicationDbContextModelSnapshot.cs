@@ -42,6 +42,14 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("deleted_by");
+
                     b.Property<string>("ExternalId")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
@@ -110,14 +118,14 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_bookings_external_id");
 
-                    b.HasIndex("InnId")
-                        .HasDatabaseName("ix_bookings_inn_id");
-
-                    b.HasIndex("RoomId")
-                        .HasDatabaseName("ix_bookings_room_id");
-
                     b.HasIndex("Source")
                         .HasDatabaseName("ix_bookings_source");
+
+                    b.HasIndex("InnId", "DeletedAt")
+                        .HasDatabaseName("ix_bookings_inn_id_deleted_at");
+
+                    b.HasIndex("RoomId", "DeletedAt", "Status")
+                        .HasDatabaseName("ix_bookings_room_id_deleted_at_status");
 
                     b.ToTable("bookings", (string)null);
                 });
@@ -524,6 +532,68 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_room_categories_inn_id");
 
                     b.ToTable("room_categories", (string)null);
+                });
+
+            modelBuilder.Entity("DevInn.Infrastructure.Persistence.Auditing.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("action");
+
+                    b.Property<Guid?>("ActorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_id");
+
+                    b.Property<string>("Changes")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("changes");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entity_id");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("entity_name");
+
+                    b.Property<Guid>("InnId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("inn_id");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("module");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("summary");
+
+                    b.HasKey("Id")
+                        .HasName("pk_audit_logs");
+
+                    b.HasIndex("InnId", "Module", "OccurredAt")
+                        .HasDatabaseName("ix_audit_logs_inn_id_module_occurred_at");
+
+                    b.HasIndex("InnId", "EntityName", "EntityId", "OccurredAt")
+                        .HasDatabaseName("ix_audit_logs_inn_id_entity_name_entity_id_occurred_at");
+
+                    b.ToTable("audit_logs", (string)null);
                 });
 
             modelBuilder.Entity("DevInn.Domain.Aggregates.Bookings.Booking", b =>

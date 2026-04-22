@@ -5,6 +5,7 @@ public interface IBookingRepository
     Task AddAsync(Booking booking, CancellationToken cancellationToken = default);
     Task RemoveAsync(Booking booking, CancellationToken cancellationToken = default);
     Task<Booking?> GetByIdAsync(Guid bookingId, CancellationToken cancellationToken = default);
+    Task<bool> HasLinkedRoomBookingsAsync(Guid roomId, CancellationToken cancellationToken = default);
     Task<Booking?> GetByExternalIdAsync(string externalId, CancellationToken cancellationToken = default);
     Task<IReadOnlyCollection<Booking>> GetByChannelIntegrationIdAsync(
         Guid channelIntegrationId,

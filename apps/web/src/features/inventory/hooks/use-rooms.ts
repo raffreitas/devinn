@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/contexts/auth-context";
+import { getHttpErrorMessage } from "@/shared/lib/http-error";
 import { roomService } from "../services/room-service";
 import type { CreateRoomRequest, RoomStatus } from "../types";
 
@@ -48,8 +49,8 @@ export function useCreateRoom() {
       queryClient.invalidateQueries({ queryKey: ["rooms", innId] });
       toast.success("Quarto criado com sucesso");
     },
-    onError: () => {
-      toast.error("Erro ao criar quarto");
+    onError: (error) => {
+      toast.error(getHttpErrorMessage(error, "Erro ao criar quarto"));
     },
   });
 
@@ -70,8 +71,8 @@ export function useUpdateRoom() {
       queryClient.invalidateQueries({ queryKey: ["rooms", innId] });
       toast.success("Quarto atualizado com sucesso");
     },
-    onError: () => {
-      toast.error("Erro ao atualizar quarto");
+    onError: (error) => {
+      toast.error(getHttpErrorMessage(error, "Erro ao atualizar quarto"));
     },
   });
 

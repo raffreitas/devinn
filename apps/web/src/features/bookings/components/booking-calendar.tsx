@@ -285,7 +285,7 @@ export function BookingCalendar() {
                     : [];
                   return (
                     <div key={room.id} className="flex border-border">
-                      <div className="w-28 shrink-0 p-3 flex items-center border-r border-border sticky left-0 z-10 bg-muted">
+                      <div className="w-28 shrink-0 p-3 flex items-center border-r border-border sticky left-0 z-10 bg-muted truncate">
                         <div>
                           <div className="font-medium text-sm">
                             {room.number}

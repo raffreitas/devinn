@@ -1,6 +1,7 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Errors;
-using DevInn.Application.Features.Inventory.Rooms.DeleteRoom;
+using DevInn.Application.Features.Inventory.Commands.Rooms.DeleteRoom;
+using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
 
@@ -15,6 +16,7 @@ namespace DevInn.UnitTests.Application.Inventory.Rooms.DeleteRoom;
 [Trait("Category", "Application")]
 public sealed class DeleteRoomHandlerTests
 {
+    private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
     private readonly IRoomRepository _roomRepository = Substitute.For<IRoomRepository>();
     private readonly IUnitOfWork _uow = Substitute.For<IUnitOfWork>();
 
@@ -22,7 +24,7 @@ public sealed class DeleteRoomHandlerTests
 
     public DeleteRoomHandlerTests()
     {
-        _sut = new DeleteRoomHandler(_roomRepository, _uow);
+        _sut = new DeleteRoomHandler(_bookingRepository, _roomRepository, _uow);
     }
 
     [Fact]
@@ -53,11 +55,29 @@ public sealed class DeleteRoomHandlerTests
         var room = new Room(Guid.NewGuid(), 301);
         var command = new DeleteRoomCommand(room.Id);
         _roomRepository.GetByIdAsync(command.Id, TestContext.Current.CancellationToken).Returns(room);
+        _bookingRepository.HasLinkedRoomBookingsAsync(room.Id, TestContext.Current.CancellationToken).Returns(false);
 
         var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         await _roomRepository.Received(1).DeleteAsync(room, TestContext.Current.CancellationToken);
         await _uow.Received(1).CommitAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnConflict_WhenRoomHasLinkedBookings()
+    {
+        var room = new Room(Guid.NewGuid(), 302);
+        var command = new DeleteRoomCommand(room.Id);
+        _roomRepository.GetByIdAsync(command.Id, TestContext.Current.CancellationToken).Returns(room);
+        _bookingRepository.HasLinkedRoomBookingsAsync(room.Id, TestContext.Current.CancellationToken).Returns(true);
+
+        var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
+
+        result.IsFailed.ShouldBeTrue();
+        result.Errors[0].ShouldBeAssignableTo<ConflictError>();
+        result.Errors[0].Message.ShouldBe("Não é possível excluir o quarto porque existem reservas vinculadas.");
+        await _roomRepository.DidNotReceive().DeleteAsync(Arg.Any<Room>(), TestContext.Current.CancellationToken);
+        await _uow.DidNotReceive().CommitAsync(TestContext.Current.CancellationToken);
     }
 }

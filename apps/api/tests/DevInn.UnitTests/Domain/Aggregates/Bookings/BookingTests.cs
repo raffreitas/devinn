@@ -141,6 +141,40 @@ public sealed class BookingTests
         booking.CancellationReason.ShouldBe(CancellationReason.Manual);
     }
 
+    [Fact]
+    public void SoftDelete_ShouldMarkBookingAsDeleted_WhenStatusAllows()
+    {
+        var booking = CreateRegularBooking();
+        var actorId = Guid.NewGuid();
+
+        booking.SoftDelete(actorId);
+
+        booking.IsDeleted.ShouldBeTrue();
+        booking.DeletedBy.ShouldBe(actorId);
+        booking.DeletedAt.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void SoftDelete_ShouldThrow_WhenBookingIsCompleted()
+    {
+        var booking = CreateRegularBooking();
+        booking.AddPayment(new Money(300m), PaymentMethod.Pix, DateTimeOffset.UtcNow);
+        typeof(Booking).GetProperty(nameof(Booking.Status))!.SetValue(booking, BookingStatus.Completed);
+
+        Should.Throw<DomainException>(() => booking.SoftDelete(Guid.NewGuid()))
+            .Message.ShouldBe("Não é possível excluir uma reserva concluída.");
+    }
+
+    [Fact]
+    public void SoftDelete_ShouldThrow_WhenBookingIsCheckedIn()
+    {
+        var booking = CreateRegularBooking();
+        typeof(Booking).GetProperty(nameof(Booking.Status))!.SetValue(booking, BookingStatus.CheckedIn);
+
+        Should.Throw<DomainException>(() => booking.SoftDelete(Guid.NewGuid()))
+            .Message.ShouldBe("Não é possível excluir uma reserva com hospedagem em andamento.");
+    }
+
     private static Booking CreateRegularBooking(decimal total = 300m)
     {
         return new Booking(

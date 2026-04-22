@@ -1,7 +1,9 @@
-﻿using DevInn.Domain.SeedWork;
+using DevInn.Domain.SeedWork;
 using DevInn.Infrastructure.Common.Exceptions;
 
 using Microsoft.AspNetCore.Diagnostics;
+
+using Npgsql;
 
 namespace DevInn.WebApi.Common.ExceptionHandlers;
 
@@ -44,6 +46,26 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
                         Title = "Requisição inválida",
                         Status = StatusCodes.Status400BadRequest,
                         Detail = "Houve um erro na formatação da requisição. Verifique os dados enviados e tente novamente."
+                    }, cancellationToken: cancellationToken);
+                return true;
+            case PostgresException { SqlState: PostgresErrorCodes.ExclusionViolation }:
+                httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
+                await httpContext.Response.WriteAsJsonAsync(
+                    new ApiProblemDetails
+                    {
+                        Title = "Conflito de recurso",
+                        Status = StatusCodes.Status409Conflict,
+                        Detail = "O quarto não está disponível nas datas solicitadas."
+                    }, cancellationToken: cancellationToken);
+                return true;
+            case PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation }:
+                httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
+                await httpContext.Response.WriteAsJsonAsync(
+                    new ApiProblemDetails
+                    {
+                        Title = "Conflito de recurso",
+                        Status = StatusCodes.Status409Conflict,
+                        Detail = "Não foi possível concluir a operação porque existem registros vinculados."
                     }, cancellationToken: cancellationToken);
                 return true;
             default:

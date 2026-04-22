@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/contexts/auth-context";
+import { getHttpErrorMessage } from "@/shared/lib/http-error";
 import { bookingService } from "../services/booking-service";
 import type {
   BookingStatus,
@@ -69,8 +70,8 @@ export function useCreateBooking() {
       queryClient.invalidateQueries({ queryKey: ["bookings", innId] });
       toast.success("Reserva criada com sucesso");
     },
-    onError: () => {
-      toast.error("Erro ao criar reserva");
+    onError: (error) => {
+      toast.error(getHttpErrorMessage(error, "Erro ao criar reserva"));
     },
   });
 
@@ -91,8 +92,8 @@ export function useUpdateBooking() {
       queryClient.invalidateQueries({ queryKey: ["bookings", innId] });
       toast.success("Reserva atualizada com sucesso");
     },
-    onError: () => {
-      toast.error("Erro ao atualizar reserva");
+    onError: (error) => {
+      toast.error(getHttpErrorMessage(error, "Erro ao atualizar reserva"));
     },
   });
 
@@ -110,10 +111,10 @@ export function useDeleteBooking() {
     mutationFn: bookingService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookings", innId] });
-      toast.success("Reserva excluída com sucesso");
+      toast.success("Reserva removida das listagens ativas");
     },
-    onError: () => {
-      toast.error("Erro ao excluir reserva");
+    onError: (error) => {
+      toast.error(getHttpErrorMessage(error, "Erro ao excluir reserva"));
     },
   });
 
