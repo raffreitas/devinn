@@ -11,9 +11,9 @@ internal static class HealthCheckConfiguration
     public static IServiceCollection AddHealthCheckConfiguration(this IServiceCollection services)
     {
         services.AddHealthChecks()
-            .AddCheck("live", check: () => HealthCheckResult.Healthy(), tags: new[] { "live" })
-            .AddDbContextCheck<ApplicationDbContext>(name: "app-db", tags: new[] { "ready" })
-            .AddDbContextCheck<IdentityDbContext>(name: "identity-db", tags: new[] { "ready" });
+            .AddCheck("live", check: () => HealthCheckResult.Healthy(), tags: ["live"])
+            .AddDbContextCheck<ApplicationDbContext>(name: "app-db", tags: ["ready"])
+            .AddDbContextCheck<IdentityDbContext>(name: "identity-db", tags: ["ready"]);
         return services;
     }
 
