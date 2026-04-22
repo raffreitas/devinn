@@ -23,16 +23,16 @@ internal static class HealthCheckConfiguration
         app.MapHealthChecks("/health/live", new HealthCheckOptions
         {
             Predicate = registration => registration.Tags.Contains("live"),
-        });
+        }).AllowAnonymous();
 
         // Readiness probe - check if application is ready to handle requests
         app.MapHealthChecks("/health/ready", new HealthCheckOptions
         {
             Predicate = registration => registration.Tags.Contains("ready"),
-        });
+        }).AllowAnonymous();
 
         // Legacy endpoint - maps to readiness probe
-        app.MapHealthChecks("/health");
+        app.MapHealthChecks("/health").AllowAnonymous();
 
         return app;
     }
