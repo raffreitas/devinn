@@ -11,9 +11,9 @@ const webServer = process.env.PLAYWRIGHT_DISABLE_WEBSERVER
       {
         command:
           "dotnet run --project ../api/src/DevInn.WebApi/DevInn.WebApi.csproj --launch-profile http",
-        url: `${apiURL}/health/live`,
+        url: `${apiURL}/health`,
         reuseExistingServer: !process.env.CI,
-        timeout: 45_000,
+        timeout: 120_000,
         env: {
           ASPNETCORE_ENVIRONMENT: "Development",
           ALLOWED_ORIGINS: baseURL,
@@ -24,7 +24,7 @@ const webServer = process.env.PLAYWRIGHT_DISABLE_WEBSERVER
         command: `pnpm dev --host localhost --port ${webPort}`,
         url: baseURL,
         reuseExistingServer: !process.env.CI,
-        timeout: 45_000,
+        timeout: 120_000,
         env: {
           VITE_API_URL: apiURL,
         },

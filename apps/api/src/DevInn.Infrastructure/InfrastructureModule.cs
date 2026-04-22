@@ -1,16 +1,13 @@
-using DevInn.Infrastructure.BackgroundJobs;
+﻿using DevInn.Infrastructure.BackgroundJobs;
 using DevInn.Infrastructure.Email;
 using DevInn.Infrastructure.Identity;
-using DevInn.Infrastructure.Identity.Context;
 using DevInn.Infrastructure.Observability;
 using DevInn.Infrastructure.Persistence;
-using DevInn.Infrastructure.Persistence.Context;
 using DevInn.Infrastructure.Persistence.SeedData;
 using DevInn.Infrastructure.Time;
 using DevInn.Infrastructure.Tokens;
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -39,9 +36,6 @@ public static class InfrastructureModule
         if (!app.Environment.IsDevelopment()) return app;
 
         using var scope = app.Services.CreateScope();
-        scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Database.Migrate();
-        scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
-
         var seeder = scope.ServiceProvider.GetService<DatabaseSeed>();
         seeder?.SeedAsync().GetAwaiter().GetResult();
 

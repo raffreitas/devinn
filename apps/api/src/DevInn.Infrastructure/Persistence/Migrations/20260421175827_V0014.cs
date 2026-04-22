@@ -11,56 +11,77 @@ namespace DevInn.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("""
-                                 DROP INDEX IF EXISTS ix_bookings_inn_id;
-                                 DROP INDEX IF EXISTS ix_bookings_room_id;
+            migrationBuilder.DropIndex(
+                name: "ix_bookings_inn_id",
+                table: "bookings");
 
-                                 ALTER TABLE bookings
-                                 ADD COLUMN IF NOT EXISTS deleted_at timestamp with time zone;
+            migrationBuilder.DropIndex(
+                name: "ix_bookings_room_id",
+                table: "bookings");
 
-                                 ALTER TABLE bookings
-                                 ADD COLUMN IF NOT EXISTS deleted_by uuid;
-                                 """);
+            migrationBuilder.AddColumn<DateTimeOffset>(
+                name: "deleted_at",
+                table: "bookings",
+                type: "timestamp with time zone",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "deleted_by",
+                table: "bookings",
+                type: "uuid",
+                nullable: true);
 
             // The exclusion constraint below depends on btree_gist support in the target PostgreSQL instance.
             migrationBuilder.Sql("""
                                  CREATE EXTENSION IF NOT EXISTS btree_gist;
                                  """);
 
+            migrationBuilder.CreateTable(
+                name: "audit_logs",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    inn_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    module = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    entity_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    entity_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    action = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    actor_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    summary = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    changes = table.Column<string>(type: "jsonb", nullable: true),
+                    occurred_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_audit_logs", x => x.id);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_bookings_inn_id_deleted_at",
+                table: "bookings",
+                columns: new[] { "inn_id", "deleted_at" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_bookings_room_id_deleted_at_status",
+                table: "bookings",
+                columns: new[] { "room_id", "deleted_at", "status" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_audit_logs_inn_id_entity_name_entity_id_occurred_at",
+                table: "audit_logs",
+                columns: new[] { "inn_id", "entity_name", "entity_id", "occurred_at" });
+
+            migrationBuilder.CreateIndex(
+                name: "ix_audit_logs_inn_id_module_occurred_at",
+                table: "audit_logs",
+                columns: new[] { "inn_id", "module", "occurred_at" });
+
             migrationBuilder.Sql("""
-                                 CREATE TABLE IF NOT EXISTS audit_logs (
-                                     id uuid PRIMARY KEY,
-                                     inn_id uuid NOT NULL,
-                                     module character varying(50) NOT NULL,
-                                     entity_name character varying(100) NOT NULL,
-                                     entity_id uuid NOT NULL,
-                                     action character varying(50) NOT NULL,
-                                     actor_id uuid NULL,
-                                     summary character varying(500) NOT NULL,
-                                     changes jsonb NULL,
-                                     occurred_at timestamp with time zone NOT NULL
-                                 );
-
-                                 CREATE INDEX IF NOT EXISTS ix_bookings_inn_id_deleted_at
-                                     ON bookings (inn_id, deleted_at);
-
-                                 CREATE INDEX IF NOT EXISTS ix_bookings_room_id_deleted_at_status
-                                     ON bookings (room_id, deleted_at, status);
-
-                                 CREATE INDEX IF NOT EXISTS ix_audit_logs_inn_id_entity_name_entity_id_occurred_at
-                                     ON audit_logs (inn_id, entity_name, entity_id, occurred_at);
-
-                                 CREATE INDEX IF NOT EXISTS ix_audit_logs_inn_id_module_occurred_at
-                                     ON audit_logs (inn_id, module, occurred_at);
-
                                  ALTER TABLE bookings
-                                 DROP CONSTRAINT IF EXISTS bookings_no_overlapping_stays;
-
-                                 ALTER TABLE bookings
-                                  ADD CONSTRAINT bookings_no_overlapping_stays
-                                  EXCLUDE USING gist (
-                                      room_id WITH =,
-                                      tstzrange(check_in, check_out, '[)') WITH &&
+                                 ADD CONSTRAINT bookings_no_overlapping_stays
+                                 EXCLUDE USING gist (
+                                     room_id WITH =,
+                                     tstzrange(check_in, check_out, '[)') WITH &&
                                  )
                                  WHERE (deleted_at IS NULL AND status <> 'Canceled');
                                  """);
