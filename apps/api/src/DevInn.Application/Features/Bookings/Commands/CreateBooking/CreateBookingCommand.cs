@@ -74,7 +74,7 @@ internal sealed class CreateBookingInputValidation : AbstractValidator<CreateBoo
         RuleFor(x => x.Notes)
             .MaximumLength(1000).WithMessage("Observações não podem exceder 1000 caracteres.");
 
-        When(x => x.PaidAmount.HasValue, () =>
+        When(x => x.PaidAmount is > 0, () =>
         {
             RuleFor(x => x.PaidAmount!.Value)
                 .GreaterThan(0).WithMessage("Valor do pagamento deve ser maior que zero.");
