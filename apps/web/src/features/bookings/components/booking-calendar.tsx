@@ -1,28 +1,20 @@
 import {
+  addDays,
   addMonths,
+  addWeeks,
   eachDayOfInterval,
   endOfMonth,
   format,
-  isToday,
   startOfMonth,
+  startOfWeek,
   subMonths,
+  subWeeks,
 } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useRooms } from "@/features/inventory/hooks";
 import { Modal } from "@/shared/components/modal";
-import { Button } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
-import { cn, removeChars } from "@/shared/lib/utils";
-import { ReservationBar } from "../components/reservation-bar";
+import { removeChars } from "@/shared/lib/utils";
 import { useBookings, useDeleteBooking } from "../hooks/use-booking";
 import { bookingService } from "../services/booking-service";
 import {
@@ -35,59 +27,92 @@ import {
 import { isBlock, isICalSource } from "../utils/booking-helpers";
 import { BookingDetails } from "./booking-details";
 import { BookingForm } from "./booking-form";
+import { CalendarGrid } from "./calendar-grid";
+import { CalendarToolbar, type ViewMode } from "./calendar-toolbar";
+
+function computeDays(date: Date, viewMode: ViewMode): Date[] {
+  if (viewMode === "month") {
+    return eachDayOfInterval({
+      start: startOfMonth(date),
+      end: endOfMonth(date),
+    });
+  }
+  const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+  return eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 6) });
+}
 
 export function BookingCalendar() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>("month");
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [formDialogOpen, setFormDialogOpen] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [preselectedRoom, setPreselectedRoom] = useState<string | undefined>();
   const [preselectedDate, setPreselectedDate] = useState<Date | undefined>();
   const [editingBooking, setEditingBooking] = useState<Booking | undefined>();
   const [detailsBooking, setDetailsBooking] = useState<Booking | undefined>();
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-  // use flexible columns for days so the month fills the available space
+  const days = computeDays(currentDate, viewMode);
+  const startDate = format(days[0], "yyyy-MM-dd");
+  const endDate = format(days[days.length - 1], "yyyy-MM-dd");
 
   const { data: roomsData } = useRooms();
   const { data: bookings, refetch } = useBookings({
-    startDate: format(monthStart, "yyyy-MM-dd"),
-    endDate: format(monthEnd, "yyyy-MM-dd"),
+    startDate,
+    endDate,
+    pageSize: 200,
   });
   const { deleteBooking } = useDeleteBooking();
 
-  const handlePreviousMonth = () => {
-    setCurrentMonth((prev) => subMonths(prev, 1));
+  const handleNavigatePrev = () => {
+    if (viewMode === "month") {
+      setCurrentDate((prev) => subMonths(prev, 1));
+    } else {
+      setCurrentDate((prev) => subWeeks(prev, 1));
+    }
   };
 
-  const handleNextMonth = () => {
-    setCurrentMonth((prev) => addMonths(prev, 1));
+  const handleNavigateNext = () => {
+    if (viewMode === "month") {
+      setCurrentDate((prev) => addMonths(prev, 1));
+    } else {
+      setCurrentDate((prev) => addWeeks(prev, 1));
+    }
   };
 
   const handleToday = () => {
-    setCurrentMonth(new Date());
+    setCurrentDate(new Date());
+  };
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    setCurrentDate(new Date());
   };
 
   const handleCellClick = (roomId: string, date: Date) => {
-    // Check if date is in the past
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (date < today) {
       toast.error("Não é possível criar reservas em datas passadas");
       return;
     }
-
     setPreselectedRoom(roomId);
     setPreselectedDate(date);
     setFormDialogOpen(true);
   };
 
   const handleBookingClick = (booking: Booking) => {
-    // Open booking details first
     setDetailsBooking(booking);
     setIsDetailsModalOpen(true);
+  };
+
+  const handleBookingEdit = (booking: Booking) => {
+    setIsDetailsModalOpen(false);
+    setDetailsBooking(undefined);
+    setEditingBooking(booking);
+    setPreselectedRoom(booking.roomId);
+    setPreselectedDate(new Date(booking.checkIn));
+    setFormDialogOpen(true);
   };
 
   const handleFormSubmit = (data: BookingFormData) => {
@@ -123,10 +148,8 @@ export function BookingCalendar() {
       toast.error("Quarto não encontrado");
       return;
     }
-
     try {
       await bookingService.create(data);
-
       toast.success("Reserva criada com sucesso");
       setFormDialogOpen(false);
       refetch();
@@ -138,7 +161,6 @@ export function BookingCalendar() {
   const handleUpdate = async (id: string, data: UpdateBookingRequest) => {
     try {
       await bookingService.update(id, data);
-
       toast.success("Reserva atualizada com sucesso");
       setFormDialogOpen(false);
       setEditingBooking(undefined);
@@ -155,232 +177,75 @@ export function BookingCalendar() {
     setPreselectedDate(undefined);
   };
 
-  const handleEditFromDetails = (booking: Booking) => {
-    setIsDetailsModalOpen(false);
-    setEditingBooking(booking);
-    setPreselectedRoom(booking.roomId);
-    setPreselectedDate(new Date(booking.checkIn));
-    setFormDialogOpen(true);
-  };
-
   const handleDeleteFromDetails = (id: string) => {
     deleteBooking(id);
     setIsDetailsModalOpen(false);
   };
 
-  const getBookingsForRoomAndDate = (
-    roomId: string,
-    date: Date,
-  ): Booking | undefined => {
-    if (!bookings) return undefined;
-
-    return bookings.items.find((booking: Booking) => {
-      if (booking.roomId !== roomId) return false;
-      if (booking.status === "Canceled") return false;
-
-      const checkIn = booking.checkIn;
-      const checkOut = booking.checkOut;
-
-      return date >= checkIn && date < checkOut;
-    });
-  };
-
-  const DAY_COLUMN_WIDTH = 60;
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const today = new Date();
-    const isCurrentMonth =
-      today.getMonth() === currentMonth.getMonth() &&
-      today.getFullYear() === currentMonth.getFullYear();
-
-    if (isCurrentMonth) {
-      const todayPosition = (today.getDate() - 1) * DAY_COLUMN_WIDTH;
-      const centeredScroll =
-        todayPosition - container.clientWidth / 2 + DAY_COLUMN_WIDTH / 2;
-      container.scrollTo({
-        left: Math.max(0, centeredScroll),
-        behavior: "smooth",
-      });
-    } else {
-      container.scrollTo({ left: 0 });
-    }
-  }, [currentMonth]);
-
   const activeRooms =
     roomsData?.items.filter((room) => room.status === "Active") || [];
 
+  // Scroll to center "today" column whenever the visible days change
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const today = new Date();
+    const todayIsInView = days.some(
+      (d) =>
+        d.getFullYear() === today.getFullYear() &&
+        d.getMonth() === today.getMonth() &&
+        d.getDate() === today.getDate(),
+    );
+    const todayEl = todayIsInView
+      ? container.querySelector<HTMLElement>("[data-today]")
+      : null;
+    if (!todayEl) {
+      container.scrollTo({ left: 0 });
+      return;
+    }
+    const containerRect = container.getBoundingClientRect();
+    const elRect = todayEl.getBoundingClientRect();
+    const newScrollLeft =
+      container.scrollLeft +
+      elRect.left -
+      containerRect.left -
+      (containerRect.width - elRect.width) / 2;
+    container.scrollTo({
+      left: Math.max(0, newScrollLeft),
+      behavior: "smooth",
+    });
+  }, [days]);
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Reservas
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Visualize e gerencie as reservas da sua pousada em um calendário
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" onClick={handleToday} className="min-w-30">
-            {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
-          </Button>
-          <Button variant="outline" size="icon" onClick={handleNextMonth}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <CardTitle>Calendário de Reservas</CardTitle>
-              <CardDescription>
-                Visualize as reservas por quarto e data
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-hidden">
-            <div
-              ref={scrollContainerRef}
-              className="overflow-auto max-h-[68.8vh]"
-            >
-              <div className="inline-block min-w-full">
-                <div className="flex sticky top-0 z-20">
-                  <div className="w-28 shrink-0 p-3 font-semibold text-sm text-foreground border-r border-border border-b bg-muted sticky top-0 z-30 left-0">
-                    Quartos
-                  </div>
-                  <div className="flex">
-                    {daysInMonth.map((day) => (
-                      <div
-                        key={day.toISOString()}
-                        className={cn(
-                          "border-r p-2 text-center text-xs font-medium w-15 border-b border-border bg-muted",
-                          isToday(day) && "bg-primary/10",
-                        )}
-                      >
-                        <div className="font-semibold">{format(day, "d")}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase">
-                          {format(day, "EEE", { locale: ptBR })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {activeRooms.map((room) => {
-                  const roomBookings = bookings
-                    ? bookings.items.filter(
-                        (b: Booking) =>
-                          b.roomId === room.id && b.status !== "Canceled",
-                      )
-                    : [];
-                  return (
-                    <div key={room.id} className="flex border-border">
-                      <div className="w-28 shrink-0 p-3 flex items-center border-r border-border sticky left-0 z-10 bg-muted truncate">
-                        <div>
-                          <div className="font-medium text-sm">
-                            {room.number}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {room.categoryName}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex relative flex-1">
-                        {daysInMonth.map((day) => {
-                          const booking = getBookingsForRoomAndDate(
-                            room.id,
-                            day,
-                          );
-                          return (
-                            <button
-                              type="button"
-                              key={`${room.id}-${day.toISOString()}`}
-                              className={cn(
-                                "border-r p-1 relative h-15 w-15 cursor-pointer hover:bg-accent/50 transition-colors border-b",
-                                isToday(day) && "bg-primary/5",
-                              )}
-                              onClick={() =>
-                                !booking && handleCellClick(room.id, day)
-                              }
-                              title={`Quarto ${room.number} - ${format(day, "dd/MM/yyyy")}`}
-                            >
-                              {!booking && (
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                                  <Plus className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
-
-                        {roomBookings.map((booking) => {
-                          const checkIn = booking.checkIn;
-                          const checkOut = booking.checkOut;
-
-                          if (checkOut < monthStart || checkIn > monthEnd)
-                            return null;
-
-                          const startDay =
-                            checkIn < monthStart ? 1 : checkIn.getDate();
-                          const endDay =
-                            checkOut > monthEnd
-                              ? daysInMonth.length
-                              : checkOut.getDate() - 1;
-
-                          const totalDays = daysInMonth.length;
-                          const leftPercent =
-                            ((startDay - 1) / totalDays) * 100;
-                          const widthPercent =
-                            ((endDay - startDay + 1) / totalDays) * 100;
-
-                          return (
-                            <ReservationBar
-                              key={booking.id}
-                              booking={booking}
-                              onClick={() => handleBookingClick(booking)}
-                              left={`${leftPercent}%`}
-                              width={`${widthPercent}%`}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {activeRooms.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-muted-foreground">
-                Nenhum quarto ativo cadastrado. Cadastre quartos para começar a
-                usar o calendário.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Modal
-        isOpen={formDialogOpen}
-        onClose={() => {
-          setFormDialogOpen(false);
+      <CalendarToolbar
+        currentDate={currentDate}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+        onNavigatePrev={handleNavigatePrev}
+        onNavigateNext={handleNavigateNext}
+        onToday={handleToday}
+        onCreateBooking={() => {
           setEditingBooking(undefined);
           setPreselectedRoom(undefined);
           setPreselectedDate(undefined);
+          setFormDialogOpen(true);
         }}
+      />
+
+      <CalendarGrid
+        days={days}
+        rooms={activeRooms}
+        bookings={bookings?.items ?? []}
+        scrollContainerRef={scrollContainerRef}
+        onCellClick={handleCellClick}
+        onBookingClick={handleBookingClick}
+        onBookingEdit={handleBookingEdit}
+      />
+
+      <Modal
+        isOpen={formDialogOpen}
+        onClose={handleCancel}
         title={editingBooking ? "Editar Reserva" : "Nova Reserva"}
         description={
           editingBooking
@@ -417,7 +282,7 @@ export function BookingCalendar() {
         {detailsBooking && (
           <BookingDetails
             booking={detailsBooking}
-            onEdit={handleEditFromDetails}
+            onEdit={handleBookingEdit}
             onDelete={handleDeleteFromDetails}
           />
         )}

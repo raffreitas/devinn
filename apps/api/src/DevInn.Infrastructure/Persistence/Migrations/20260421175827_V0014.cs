@@ -11,13 +11,10 @@ namespace DevInn.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "ix_bookings_inn_id",
-                table: "bookings");
-
-            migrationBuilder.DropIndex(
-                name: "ix_bookings_room_id",
-                table: "bookings");
+            migrationBuilder.Sql("""
+                                 DROP INDEX IF EXISTS ix_bookings_inn_id;
+                                 DROP INDEX IF EXISTS ix_bookings_room_id;
+                                 """);
 
             migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "deleted_at",

@@ -67,7 +67,6 @@ clean:
 # --- Database Migrations ---
 migrate-all: 
 	make db-update && make id-update
-	@echo All migrations applied successfully.
 
 # --- Database Migrations (App) ---
 
