@@ -121,7 +121,7 @@ function ErrorFallbackContent({
           <CardContent className="space-y-4">
             <Alert>
               <AlertCircle className="size-4" />
-              <AlertTitle>O que voce pode fazer agora</AlertTitle>
+              <AlertTitle>O que você pode fazer agora</AlertTitle>
               <AlertDescription>
                 <p>Recarregue a pagina para tentar novamente.</p>
                 <p>
@@ -136,7 +136,7 @@ function ErrorFallbackContent({
                 <summary className="cursor-pointer font-medium text-foreground">
                   Detalhes tecnicos
                 </summary>
-                <pre className="mt-3 overflow-x-auto whitespace-pre-wrap break-words text-xs text-muted-foreground">
+                <pre className="mt-3 overflow-x-auto whitespace-pre-wrap wrap-break-word text-xs text-muted-foreground">
                   {details}
                 </pre>
               </details>
