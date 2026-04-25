@@ -1,4 +1,4 @@
-import { AlertCircle, Check, Link, Lock } from "lucide-react";
+import { AlertCircle, Check, Link, Lock, Pencil } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { Booking, PaymentStatus } from "../types";
 import { getBlockLabel, isBlock } from "../utils/booking-helpers";
@@ -12,6 +12,7 @@ const paymentStatusColors: Record<PaymentStatus, string> = {
 interface ReservationBarProps {
   booking: Booking;
   onClick?: () => void;
+  onEdit?: () => void;
   left?: number | string;
   width?: number | string;
 }
@@ -19,6 +20,7 @@ interface ReservationBarProps {
 export function ReservationBar({
   booking,
   onClick,
+  onEdit,
   left,
   width,
 }: ReservationBarProps) {
@@ -68,7 +70,9 @@ export function ReservationBar({
       title={tooltip}
     >
       <span className="text-xs font-medium truncate flex-1">{label}</span>
-      <div className="flex items-center gap-0.5 ml-1">
+
+      {/* Status icon — hidden on hover to make room for quick actions */}
+      <div className="flex items-center gap-0.5 ml-1 group-hover:hidden">
         {bookingIsBlock ? (
           booking.source.includes("Ical") ? (
             <Link className="w-3 h-3" />
@@ -79,6 +83,23 @@ export function ReservationBar({
           <Check className="w-3 h-3" />
         ) : (
           <AlertCircle className="w-3 h-3" />
+        )}
+      </div>
+
+      {/* Quick actions — visible on hover */}
+      <div className="hidden group-hover:flex items-center gap-0.5 ml-1">
+        {!bookingIsBlock && onEdit && (
+          <button
+            type="button"
+            className="p-0.5 rounded hover:bg-white/30 transition-colors"
+            title="Editar reserva"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
         )}
       </div>
     </div>
