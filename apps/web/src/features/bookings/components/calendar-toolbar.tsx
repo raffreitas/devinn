@@ -48,13 +48,13 @@ export function CalendarToolbar({
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
         {/* View mode toggle */}
-        <div className="flex rounded-md border border-border overflow-hidden">
+        <div className="grid w-full grid-cols-2 overflow-hidden rounded-md border border-border sm:flex sm:w-auto">
           <button
             type="button"
             className={cn(
-              "px-3 py-1.5 text-sm font-medium transition-colors",
+              "px-3 py-1.5 text-sm font-medium transition-colors sm:px-4",
               viewMode === "week"
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted text-muted-foreground",
@@ -66,7 +66,7 @@ export function CalendarToolbar({
           <button
             type="button"
             className={cn(
-              "px-3 py-1.5 text-sm font-medium border-l border-border transition-colors",
+              "border-l border-border px-3 py-1.5 text-sm font-medium transition-colors sm:px-4",
               viewMode === "month"
                 ? "bg-primary text-primary-foreground"
                 : "hover:bg-muted text-muted-foreground",
@@ -78,14 +78,14 @@ export function CalendarToolbar({
         </div>
 
         {/* Period navigation */}
-        <div className="flex items-center gap-1">
+        <div className="flex w-full items-center gap-1 sm:w-auto">
           <Button variant="outline" size="icon" onClick={onNavigatePrev}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
             onClick={onToday}
-            className="min-w-36 capitalize"
+            className="flex-1 min-w-0 capitalize sm:min-w-36 sm:flex-none"
           >
             {getPeriodLabel(currentDate, viewMode)}
           </Button>
@@ -94,7 +94,7 @@ export function CalendarToolbar({
           </Button>
         </div>
 
-        <Button onClick={onCreateBooking}>
+        <Button onClick={onCreateBooking} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-1" />
           Nova Reserva
         </Button>
