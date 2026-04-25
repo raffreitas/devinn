@@ -16,13 +16,13 @@ internal sealed class GetBookingByIdHandler(IDbConnectionFactory dbConnectionFac
 {
     public async ValueTask<Result<BookingDto>> Handle(GetBookingByIdQuery query, CancellationToken cancellationToken)
     {
-        string sql = $"""
-                      {BookingMapper.BookingProjectionSql}
-                      WHERE b.inn_id = @TenantId
-                        AND b.deleted_at IS NULL
-                        AND b.id = @Id
-                      LIMIT 1;
-                      """;
+        const string sql = $"""
+                            {BookingMapper.BookingProjectionSql}
+                            WHERE b.inn_id = @TenantId
+                              AND b.deleted_at IS NULL
+                              AND b.id = @Id
+                            LIMIT 1;
+                            """;
 
         const string latestAuditSql = """
                                       SELECT entity_id   AS "EntityId",
