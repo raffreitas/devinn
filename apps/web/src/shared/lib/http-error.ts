@@ -1,7 +1,4 @@
-export function getHttpErrorMessage(
-  error: unknown,
-  fallback: string,
-): string {
+export function getHttpErrorMessage(error: unknown, fallback: string): string {
   if (
     typeof error === "object" &&
     error !== null &&
