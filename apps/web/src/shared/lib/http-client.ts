@@ -1,5 +1,6 @@
 import axios from "axios";
 import { env } from "@/env";
+import { asApiProblem, getApiProblemMessage } from "@/shared/lib/http-error";
 import { STORAGE_KEYS, storage } from "@/shared/lib/storage";
 
 export const api = axios.create({
@@ -30,6 +31,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
+    const problem = asApiProblem(error?.response?.data, status);
+
     if (status === 401) {
       storage.remove(STORAGE_KEYS.TOKEN);
       storage.remove(STORAGE_KEYS.TENANT_ID);
@@ -45,8 +48,15 @@ api.interceptors.response.use(
 
     return Promise.reject({
       ...error,
-      message:
-        error?.response?.data?.detail || "Falha ao processar sua requisição",
+      config: error?.config,
+      request: error?.request,
+      response: error?.response,
+      status: problem?.status ?? status,
+      title: problem?.title,
+      detail: problem?.detail,
+      problem,
+      validationErrors: problem?.errors,
+      message: getApiProblemMessage(problem, error?.message),
     });
   },
 );

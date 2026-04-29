@@ -6,8 +6,6 @@ using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Infrastructure.Common.Constants;
 using DevInn.WebApi.Common;
 
-using Microsoft.AspNetCore.Mvc;
-
 namespace DevInn.WebApi.Middlewares;
 
 public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<TenantMiddleware> logger) : IMiddleware
@@ -50,7 +48,7 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
         {
             logger.LogWarning("Nenhum tenant identificado na requisição para {Path}", context.Request.Path);
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            await context.Response.WriteAsJsonAsync(new ApiProblemDetails
             {
                 Title = "Requisição inválida",
                 Status = StatusCodes.Status400BadRequest,
@@ -68,9 +66,11 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
         {
             logger.LogError(ex, "Erro ao definir tenant para a requisição");
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            await context.Response.WriteAsJsonAsync(new ApiProblemDetails
             {
-                Title = "Erro interno do servidor", Status = StatusCodes.Status500InternalServerError,
+                Title = "Erro interno do servidor",
+                Status = StatusCodes.Status500InternalServerError,
+                Detail = "Houve um erro inesperado ao processar a requisição."
             });
             return;
         }

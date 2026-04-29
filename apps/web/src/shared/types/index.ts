@@ -1,8 +1,10 @@
+export type ApiValidationErrors = Record<string, string>;
+
 export type ApiProblem = {
-  title: string;
-  detail: string;
-  status: number;
-  errors: Record<string, string>;
+  title?: string;
+  detail?: string;
+  status?: number;
+  errors?: ApiValidationErrors;
 };
 
 export type ApiResponse<T> = {
