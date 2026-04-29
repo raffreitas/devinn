@@ -84,7 +84,7 @@ export function CalendarGrid({
             <div className="inline-block min-w-full">
               {/* Header row */}
               <div className="flex sticky top-0 z-20">
-                <div className="w-16 sm:w-28 shrink-0 p-3 font-semibold text-sm text-foreground border-r border-border border-b bg-muted sticky top-0 z-30 left-0">
+                <div className="w-20 sm:w-28 shrink-0 p-3 font-semibold text-xs sm:text-sm whitespace-nowrap text-foreground border-r border-border border-b bg-muted sticky top-0 z-30 left-0">
                   Quartos
                 </div>
                 <div className="flex flex-1">
@@ -114,7 +114,7 @@ export function CalendarGrid({
 
                 return (
                   <div key={room.id} className="flex min-h-14 border-b border-border">
-                    <div className="w-16 sm:w-28 shrink-0 h-14 p-3 flex items-center border-r border-border sticky left-0 z-10 bg-muted truncate">
+                    <div className="w-20 sm:w-28 shrink-0 h-14 p-3 flex items-center border-r border-border sticky left-0 z-10 bg-muted truncate">
                       <div>
                         <div className="font-medium text-sm">{room.number}</div>
                         <div className="text-xs text-muted-foreground hidden sm:block">
