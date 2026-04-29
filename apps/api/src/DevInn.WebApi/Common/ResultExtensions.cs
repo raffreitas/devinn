@@ -75,11 +75,53 @@ public static class ResultExtensions
             Title = title,
             Detail = error.Message,
             Status = (int)statusCode,
-            Errors = error is ValidationError err && err.Errors.Length != 0
-                ? err.Errors.DistinctBy(e => e.Field)
-                    .ToDictionary(e => e.Field.ToLowerInvariant(), e => e.Message)
-                : null
+            Errors = ToProblemErrors(error)
         };
         return TypedResults.Problem(problemDetails);
+    }
+
+    private static Dictionary<string, string>? ToProblemErrors(IError error)
+    {
+        if (error is not ValidationError validationError || validationError.Errors.Length == 0)
+            return null;
+
+        return validationError.Errors
+            .Select(e => (Field: NormalizeValidationFieldPath(e.Field), e.Message))
+            .DistinctBy(e => e.Field, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(e => e.Field, e => e.Message, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeValidationFieldPath(string field)
+    {
+        if (string.IsNullOrWhiteSpace(field))
+            return field;
+
+        var segments = field.Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+        return string.Join('.', segments.Select(NormalizeSegment));
+    }
+
+    private static string NormalizeSegment(string segment)
+    {
+        var bracketIndex = segment.IndexOf('[');
+
+        if (bracketIndex < 0)
+            return ToCamelCase(segment);
+
+        var property = segment[..bracketIndex];
+        var suffix = segment[bracketIndex..];
+
+        return $"{ToCamelCase(property)}{suffix}";
+    }
+
+    private static string ToCamelCase(string value)
+    {
+        if (string.IsNullOrEmpty(value) || !char.IsUpper(value[0]))
+            return value;
+
+        if (value.Length == 1)
+            return value.ToLowerInvariant();
+
+        return char.ToLowerInvariant(value[0]) + value[1..];
     }
 }
