@@ -56,7 +56,7 @@ export function BookingCalendar() {
   const startDate = format(days[0], "yyyy-MM-dd");
   const endDate = format(days[days.length - 1], "yyyy-MM-dd");
 
-  const { data: roomsData } = useRooms();
+  const { data: roomsData } = useRooms({ pageSize: 100 });
   const { data: bookings, refetch } = useBookings({
     startDate,
     endDate,
