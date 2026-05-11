@@ -43,7 +43,7 @@ export function IntegrationForm({
   fixedRoomId,
   inline,
 }: IntegrationFormProps) {
-  const { data: rooms } = useRooms();
+  const { data: rooms } = useRooms({ pageSize: 100 });
 
   const form = useForm<IntegrationFormData>({
     resolver: zodResolver(integrationSchema),
