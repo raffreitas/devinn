@@ -133,7 +133,7 @@ export function BookingForm({
     defaultValue: form.getValues("paidAmount"),
   });
 
-  const { data: roomsData } = useRooms();
+  const { data: roomsData } = useRooms({ pageSize: 100 });
 
   const selectedRoom = roomsData?.items.find((r) => r.id === selectedRoomId);
 
