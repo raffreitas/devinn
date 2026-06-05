@@ -1,14 +1,14 @@
-using Dapper;
-
-using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.Tenancy;
 using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Application.Features.Integrations.Commands.SyncChannelIntegration;
+using DevInn.Infrastructure.BackgroundJobs.Options;
+using DevInn.Infrastructure.BackgroundJobs.Stores;
 
 using Mediator;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using Quartz;
 
@@ -16,41 +16,44 @@ namespace DevInn.Infrastructure.BackgroundJobs.Jobs;
 
 [DisallowConcurrentExecution]
 internal sealed class SyncAllChannelsJob(
-    IDbConnectionFactory dbConnectionFactory,
+    IChannelIntegrationSyncWorkStore syncWorkStore,
     ILogger<SyncAllChannelsJob> logger,
+    IOptions<BackgroundJobsOptions> options,
     IServiceScopeFactory serviceScopeFactory
 ) : IJob
 {
-    private const int MaxDegreeOfParallelism = 5;
-
     public async Task Execute(IJobExecutionContext context)
     {
         logger.LogInformation("Starting SyncAllChannelsJob execution");
 
-        const string query = """
-                             SELECT id AS "Id", room_id as "RoomId", "inn_id" as "InnId"
-                             FROM channel_integrations
-                             WHERE is_active = true
-                             """;
+        var integrations = await syncWorkStore.ClaimDueAsync(
+            options.Value.ChannelSyncBatchSize,
+            context.CancellationToken);
 
-        await using var dbConnection = await dbConnectionFactory.OpenConnectionAsync(context.CancellationToken);
-        var activeIntegrations = await dbConnection.QueryAsync<IntegrationRow>(query, context.CancellationToken);
+        if (integrations.Count == 0)
+        {
+            logger.LogInformation("No channel integrations due for sync");
+            return;
+        }
 
-        using var semaphore = new SemaphoreSlim(MaxDegreeOfParallelism);
-        var tasks = activeIntegrations.Select(integration =>
-            SyncIntegrationAsync(integration, semaphore, context.CancellationToken));
+        logger.LogInformation("Claimed {Count} channel integrations for sync", integrations.Count);
 
-        await Task.WhenAll(tasks);
+        await Parallel.ForEachAsync(
+            integrations,
+            new ParallelOptions
+            {
+                MaxDegreeOfParallelism = options.Value.ChannelSyncMaxDegreeOfParallelism,
+                CancellationToken = context.CancellationToken
+            },
+            async (integration, cancellationToken) => await SyncIntegrationAsync(integration, cancellationToken));
 
         logger.LogInformation("SyncAllChannelsJob execution completed");
     }
 
     private async Task SyncIntegrationAsync(
-        IntegrationRow integration,
-        SemaphoreSlim semaphore,
+        ChannelIntegrationSyncWorkItem integration,
         CancellationToken cancellationToken)
     {
-        await semaphore.WaitAsync(cancellationToken);
         try
         {
             logger.LogInformation("Syncing integration {IntegrationId} for room {RoomId}",
@@ -81,11 +84,5 @@ internal sealed class SyncAllChannelsJob(
         {
             logger.LogError(ex, "Error syncing integration {IntegrationId}", integration.Id);
         }
-        finally
-        {
-            semaphore.Release();
-        }
     }
-
-    private sealed record IntegrationRow(Guid Id, Guid RoomId, Guid InnId);
 }

@@ -7,6 +7,7 @@ namespace DevInn.Infrastructure.Integrations;
 
 internal sealed class ICalService(IHttpClientFactory httpClientFactory) : IICalService
 {
+    internal const string HttpClientName = "ICal";
     private const int AllDayNormalizationHourUtc = 12;
 
     public async Task<IReadOnlyList<ICalEventDto>> ParseICalFeedAsync(string iCalUrl,
@@ -14,8 +15,7 @@ internal sealed class ICalService(IHttpClientFactory httpClientFactory) : IICalS
     {
         try
         {
-            using var httpClient = httpClientFactory.CreateClient();
-            httpClient.Timeout = TimeSpan.FromSeconds(30);
+            var httpClient = httpClientFactory.CreateClient(HttpClientName);
 
             var response = await httpClient.GetAsync(iCalUrl, cancellationToken);
             response.EnsureSuccessStatusCode();
