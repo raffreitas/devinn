@@ -8,6 +8,7 @@ using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.Aggregates.Inventory;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
+using DevInn.Domain.Aggregates.Inventory.Enums;
 using DevInn.Domain.Aggregates.Inventory.ValueObjects;
 using DevInn.Domain.Shared.Enums;
 using DevInn.Domain.Shared.ValueObjects;
@@ -86,6 +87,20 @@ public sealed class CreateBookingHandlerTests
         result.IsFailed.ShouldBeTrue();
         result.Errors[0].ShouldBeAssignableTo<ConflictError>();
         result.Errors[0].Message.ShouldBe("Número de hóspedes excede a capacidade do quarto.");
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnConflict_WhenRoomIsNotActive()
+    {
+        var room = new Room(Guid.NewGuid(), 101, status: RoomStatus.Inactive);
+        var command = CreateValidCommand(room.Id) with { Adults = 2, Children = 1, ChildrenAges = [7] };
+        _roomRepository.GetByIdAsync(command.RoomId, TestContext.Current.CancellationToken).Returns(room);
+
+        var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
+
+        result.IsFailed.ShouldBeTrue();
+        result.Errors[0].ShouldBeAssignableTo<ConflictError>();
+        result.Errors[0].Message.ShouldBe("O quarto selecionado não está disponível para reserva.");
     }
 
     [Fact]

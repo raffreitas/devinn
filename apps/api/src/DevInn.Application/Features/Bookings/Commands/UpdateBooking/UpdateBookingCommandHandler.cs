@@ -6,6 +6,7 @@ using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Bookings.Enums;
 using DevInn.Domain.Aggregates.Bookings.ValueObjects;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
+using DevInn.Domain.Aggregates.Inventory.Enums;
 using DevInn.Domain.Shared.ValueObjects;
 
 using FluentResults;
@@ -47,6 +48,9 @@ internal sealed class UpdateBookingCommandHandler(
         var room = await roomRepository.GetByIdAsync(booking.RoomId, cancellationToken);
         if (room is null)
             return Result.Fail(new NotFoundError("Quarto não encontrado"));
+
+        if (room.Status != RoomStatus.Active)
+            return Result.Fail(new ConflictError("O quarto selecionado não está disponível para reserva."));
 
         var category = await categoryRepository.GetByIdAsync(room.CategoryId, cancellationToken);
         if (category is null)
@@ -95,6 +99,9 @@ internal sealed class UpdateBookingCommandHandler(
         var room = await roomRepository.GetByIdAsync(command.RoomId, cancellationToken);
         if (room is null)
             return Result.Fail(new NotFoundError("Quarto não encontrado"));
+
+        if (room.Status != RoomStatus.Active)
+            return Result.Fail(new ConflictError("O quarto selecionado não está disponível para reserva."));
 
         var category = await categoryRepository.GetByIdAsync(room.CategoryId, cancellationToken);
         if (category is null)
