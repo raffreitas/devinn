@@ -23,7 +23,7 @@ builder.Services.AddResponseCompression(options =>
 builder.Services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
 
 builder.Services.AddCorsConfiguration();
-builder.Services.AddAuthRateLimitConfiguration();
+builder.Services.AddRateLimitConfiguration();
 builder.Services.AddHealthCheckConfiguration();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -51,7 +51,7 @@ app.UseHttpsRedirection();
 app.UseResponseCompression();
 app.UseExceptionHandler();
 app.UseHealthCheckConfiguration();
-app.UseAuthRateLimitConfiguration();
+app.UseRateLimitConfiguration();
 
 app.UseAuthentication();
 app.UseAuthorization();
