@@ -33,6 +33,20 @@ internal sealed class BookingRepository(ApplicationDbContext dbContext) : IBooki
         => await dbContext.Bookings
             .FirstOrDefaultAsync(x => x.ExternalId == externalId, cancellationToken);
 
+    public async Task<IReadOnlyCollection<Booking>> GetByExternalIdsAsync(
+        IReadOnlyCollection<string> externalIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (externalIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.Bookings
+            .Where(x => x.ExternalId != null && externalIds.Contains(x.ExternalId))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<Booking>> GetByChannelIntegrationIdAsync(
         Guid channelIntegrationId,
         DateTimeOffset? checkOutAfter = null,
@@ -48,6 +62,23 @@ internal sealed class BookingRepository(ApplicationDbContext dbContext) : IBooki
         }
 
         return await query.ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<Booking>> GetPotentialOverlapsAsync(
+        Guid roomId,
+        DateTimeOffset checkIn,
+        DateTimeOffset checkOut,
+        CancellationToken cancellationToken = default)
+    {
+        var checkInUtc = checkIn.ToUniversalTime();
+        var checkOutUtc = checkOut.ToUniversalTime();
+
+        return await dbContext.Bookings
+            .Where(b => b.RoomId == roomId &&
+                        b.Status != BookingStatus.Canceled &&
+                        b.StayPeriod.CheckIn < checkOutUtc &&
+                        b.StayPeriod.CheckOut > checkInUtc)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<bool> HasOverlappingAsync(Guid roomId, DateTimeOffset checkIn, DateTimeOffset checkOut,

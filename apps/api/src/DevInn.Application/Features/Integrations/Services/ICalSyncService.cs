@@ -43,19 +43,29 @@ internal sealed class ICalSyncService(
         try
         {
             integration.MarkSyncStarted();
-            await uow.CommitAsync(cancellationToken);
 
             var events = await iCalService.ParseICalFeedAsync(integration.ICalUrl, cancellationToken);
             var iCalEventUids = events.Select(e => e.Uid).ToHashSet();
+            var existingBookingsByExternalId = await LoadExistingBookingsByExternalIdAsync(
+                iCalEventUids,
+                cancellationToken);
+            var potentialOverlaps = await LoadPotentialOverlapsAsync(
+                integration.RoomId,
+                events,
+                cancellationToken);
 
             var importedCount = 0;
 
-            // Process new/existing iCal events
             foreach (var iCalEvent in events)
             {
                 try
                 {
-                    await ProcessICalEventAsync(iCalEvent, integration, cancellationToken);
+                    await ProcessICalEventAsync(
+                        iCalEvent,
+                        integration,
+                        existingBookingsByExternalId,
+                        potentialOverlaps,
+                        cancellationToken);
                     importedCount++;
                 }
                 catch (Exception ex)
@@ -87,6 +97,33 @@ internal sealed class ICalSyncService(
         }
     }
 
+    private async Task<Dictionary<string, Booking>> LoadExistingBookingsByExternalIdAsync(
+        HashSet<string> externalIds,
+        CancellationToken cancellationToken)
+    {
+        var existingBookings = await bookingRepository.GetByExternalIdsAsync(externalIds, cancellationToken);
+
+        return existingBookings
+            .Where(b => b.ExternalId is not null)
+            .ToDictionary(b => b.ExternalId!);
+    }
+
+    private async Task<IReadOnlyCollection<Booking>> LoadPotentialOverlapsAsync(
+        Guid roomId,
+        IReadOnlyList<ICalEventDto> events,
+        CancellationToken cancellationToken)
+    {
+        if (events.Count == 0)
+        {
+            return [];
+        }
+
+        var checkIn = events.Min(e => e.Start);
+        var checkOut = events.Max(e => e.End);
+
+        return await bookingRepository.GetPotentialOverlapsAsync(roomId, checkIn, checkOut, cancellationToken);
+    }
+
     private async Task<int> ReconcileBookingsAsync(
         Guid integrationId,
         HashSet<string> iCalEventUids,
@@ -115,7 +152,9 @@ internal sealed class ICalSyncService(
 
         if (bookingsToCancel.Count > 0)
         {
-            await uow.CommitAsync(cancellationToken);
+            logger.LogInformation(
+                "Canceled {Count} imported bookings for integration {IntegrationId}",
+                bookingsToCancel.Count, integrationId);
         }
 
         return bookingsToCancel.Count;
@@ -124,28 +163,25 @@ internal sealed class ICalSyncService(
     private async Task ProcessICalEventAsync(
         ICalEventDto iCalEvent,
         ChannelIntegration integration,
+        IReadOnlyDictionary<string, Booking> existingBookingsByExternalId,
+        IReadOnlyCollection<Booking> potentialOverlaps,
         CancellationToken cancellationToken)
     {
         var source = GetBookingSource(integration);
         var stay = new StayPeriod(iCalEvent.Start, iCalEvent.End);
         var notes = BuildEventNotes(iCalEvent);
 
-        // Check if booking with this ExternalId already exists
-        var existingBooking = await bookingRepository.GetByExternalIdAsync(iCalEvent.Uid, cancellationToken);
-
-        if (existingBooking is not null)
+        if (existingBookingsByExternalId.TryGetValue(iCalEvent.Uid, out var existingBooking))
         {
-            await UpdateExistingICalBookingAsync(existingBooking, integration, iCalEvent, stay, source, notes,
-                cancellationToken);
+            UpdateExistingICalBooking(existingBooking, integration, iCalEvent, stay, source, notes, potentialOverlaps);
             return;
         }
 
-        // Check for conflicts with manual bookings (policy: manual bookings have priority)
-        var hasConflict = await bookingRepository.HasOverlappingAsync(
+        var hasConflict = HasOverlapping(
+            potentialOverlaps,
             integration.RoomId,
             iCalEvent.Start,
-            iCalEvent.End,
-            cancellationToken: cancellationToken);
+            iCalEvent.End);
 
         if (hasConflict)
         {
@@ -174,14 +210,14 @@ internal sealed class ICalSyncService(
             iCalEvent.Uid, integration.RoomId);
     }
 
-    private async Task UpdateExistingICalBookingAsync(
+    private void UpdateExistingICalBooking(
         Booking existingBooking,
         ChannelIntegration integration,
         ICalEventDto iCalEvent,
         StayPeriod stay,
         BookingSource source,
         string? notes,
-        CancellationToken cancellationToken)
+        IReadOnlyCollection<Booking> potentialOverlaps)
     {
         if (!CanUpdateImportedBlock(existingBooking, integration))
         {
@@ -191,12 +227,12 @@ internal sealed class ICalSyncService(
             return;
         }
 
-        var hasConflict = await bookingRepository.HasOverlappingAsync(
+        var hasConflict = HasOverlapping(
+            potentialOverlaps,
             integration.RoomId,
             iCalEvent.Start,
             iCalEvent.End,
-            existingBooking.Id,
-            cancellationToken);
+            existingBooking.Id);
 
         if (hasConflict)
         {
@@ -210,6 +246,24 @@ internal sealed class ICalSyncService(
 
         logger.LogInformation("Updated booking from iCal event {EventUid} for room {RoomId}",
             iCalEvent.Uid, integration.RoomId);
+    }
+
+    private static bool HasOverlapping(
+        IReadOnlyCollection<Booking> bookings,
+        Guid roomId,
+        DateTimeOffset checkIn,
+        DateTimeOffset checkOut,
+        Guid? excludeBookingId = null)
+    {
+        var checkInUtc = checkIn.ToUniversalTime();
+        var checkOutUtc = checkOut.ToUniversalTime();
+
+        return bookings.Any(b =>
+            b.RoomId == roomId &&
+            (excludeBookingId == null || b.Id != excludeBookingId) &&
+            b.Status != BookingStatus.Canceled &&
+            b.StayPeriod.CheckIn < checkOutUtc &&
+            b.StayPeriod.CheckOut > checkInUtc);
     }
 
     private static BookingSource GetBookingSource(ChannelIntegration integration)
