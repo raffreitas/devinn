@@ -4,12 +4,12 @@ using DevInn.WebApi.Common;
 
 namespace DevInn.WebApi.Configuration;
 
-internal static class AuthRateLimitConfiguration
+internal static class RateLimitConfiguration
 {
     public const string ForgotPasswordPolicyName = "forgot-password";
     public const string ResetPasswordPolicyName = "reset-password";
 
-    public static IServiceCollection AddAuthRateLimitConfiguration(this IServiceCollection services)
+    public static IServiceCollection AddRateLimitConfiguration(this IServiceCollection services)
     {
         services.AddRateLimiter(options =>
         {
@@ -27,6 +27,18 @@ internal static class AuthRateLimitConfiguration
                     },
                     cancellationToken);
             };
+
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: GetClientIp(context, "global"),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    })
+            );
 
             options.AddPolicy(ForgotPasswordPolicyName, httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
@@ -48,7 +60,7 @@ internal static class AuthRateLimitConfiguration
         return services;
     }
 
-    public static IApplicationBuilder UseAuthRateLimitConfiguration(this IApplicationBuilder app)
+    public static IApplicationBuilder UseRateLimitConfiguration(this IApplicationBuilder app)
     {
         app.UseRateLimiter();
 

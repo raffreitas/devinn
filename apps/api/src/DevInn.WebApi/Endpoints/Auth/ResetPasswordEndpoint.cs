@@ -22,7 +22,7 @@ public sealed class ResetPasswordEndpoint : IEndpoint
             .Produces<ApiProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ApiProblemDetails>(StatusCodes.Status422UnprocessableEntity)
             .Produces<ApiProblemDetails>(StatusCodes.Status429TooManyRequests)
-            .RequireRateLimiting(AuthRateLimitConfiguration.ResetPasswordPolicyName)
+            .RequireRateLimiting(RateLimitConfiguration.ResetPasswordPolicyName)
             .AllowAnonymous();
     }
 }
