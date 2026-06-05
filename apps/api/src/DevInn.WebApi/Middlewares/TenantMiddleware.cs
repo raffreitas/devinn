@@ -42,7 +42,23 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
             return;
         }
 
-        var tenantId = ExtractTenantId(context);
+        var tenantResolution = ResolveTenantId(context);
+        if (tenantResolution.IsFailure)
+        {
+            logger.LogWarning("Tenant inválido na requisição para {Path}: {Reason}",
+                context.Request.Path,
+                tenantResolution.Detail);
+            context.Response.StatusCode = tenantResolution.StatusCode;
+            await context.Response.WriteAsJsonAsync(new ApiProblemDetails
+            {
+                Title = tenantResolution.Title,
+                Status = tenantResolution.StatusCode,
+                Detail = tenantResolution.Detail
+            });
+            return;
+        }
+
+        var tenantId = tenantResolution.TenantId;
 
         if (tenantId == Guid.Empty && !context.User.IsInRole(nameof(UserRole.SuperAdmin)))
         {
@@ -60,7 +76,7 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
         try
         {
             tenantContext.SetTenant(new Tenant(tenantId));
-            Activity.Current?.SetTag("tenant.id", tenantId);
+            Activity.Current?.SetTag("tenant.id", tenantId.ToString());
         }
         catch (Exception ex)
         {
@@ -78,23 +94,76 @@ public sealed class TenantMiddleware(ITenantContext tenantContext, ILogger<Tenan
         await next(context);
     }
 
-    private static Guid ExtractTenantId(HttpContext context)
+    private static TenantResolution ResolveTenantId(HttpContext context)
     {
-        // 1. Verificar header customizado
-        if (context.Request.Headers.TryGetValue(TenantKeys.InnHeader, out var tenantHeader) &&
-            Guid.TryParse(tenantHeader.ToString(), out var tenantFromHeader))
+        var headerResult = GetTenantFromHeader(context);
+        if (headerResult.IsMalformed)
         {
-            return tenantFromHeader;
+            return TenantResolution.Failure(
+                StatusCodes.Status400BadRequest,
+                "Requisição inválida",
+                "O tenant informado no cabeçalho é inválido.");
         }
 
-        // 2. Verificar claim do JWT
+        var isSuperAdmin = context.User.IsInRole(nameof(UserRole.SuperAdmin));
+        if (isSuperAdmin)
+        {
+            return TenantResolution.Success(headerResult.TenantId ?? Guid.Empty);
+        }
+
+        var tenantFromClaim = GetTenantFromClaim(context);
+        if (tenantFromClaim is null)
+        {
+            return TenantResolution.Success(Guid.Empty);
+        }
+
+        if (headerResult.TenantId is not null && headerResult.TenantId != tenantFromClaim)
+        {
+            return TenantResolution.Failure(
+                StatusCodes.Status403Forbidden,
+                "Acesso negado",
+                "O tenant informado não corresponde ao tenant do usuário autenticado.");
+        }
+
+        return TenantResolution.Success(tenantFromClaim.Value);
+    }
+
+    private static HeaderTenantResult GetTenantFromHeader(HttpContext context)
+    {
+        if (!context.Request.Headers.TryGetValue(TenantKeys.InnHeader, out var tenantHeader))
+            return HeaderTenantResult.Empty;
+
+        return Guid.TryParse(tenantHeader.ToString(), out var tenantFromHeader)
+            ? HeaderTenantResult.Valid(tenantFromHeader)
+            : HeaderTenantResult.Malformed;
+    }
+
+    private static Guid? GetTenantFromClaim(HttpContext context)
+    {
         var tenantClaim = context.User.FindFirst(TenantKeys.InnClaim)?.Value;
+        return Guid.TryParse(tenantClaim, out var tenantFromClaim)
+            ? tenantFromClaim
+            : null;
+    }
 
-        if (tenantClaim != null && Guid.TryParse(tenantClaim, out var tenantFromClaim))
-        {
-            return tenantFromClaim;
-        }
+    private readonly record struct HeaderTenantResult(Guid? TenantId, bool IsMalformed)
+    {
+        public static HeaderTenantResult Empty => new(null, false);
+        public static HeaderTenantResult Malformed => new(null, true);
+        public static HeaderTenantResult Valid(Guid tenantId) => new(tenantId, false);
+    }
 
-        return Guid.Empty;
+    private readonly record struct TenantResolution(
+        bool IsFailure,
+        Guid TenantId,
+        int StatusCode,
+        string Title,
+        string Detail)
+    {
+        public static TenantResolution Success(Guid tenantId) =>
+            new(false, tenantId, StatusCodes.Status200OK, string.Empty, string.Empty);
+
+        public static TenantResolution Failure(int statusCode, string title, string detail) =>
+            new(true, Guid.Empty, statusCode, title, detail);
     }
 }

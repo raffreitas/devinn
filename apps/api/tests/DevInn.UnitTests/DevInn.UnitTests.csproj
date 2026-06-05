@@ -31,6 +31,7 @@
         <ProjectReference Include="..\..\src\DevInn.Application\DevInn.Application.csproj"/>
         <ProjectReference Include="..\..\src\DevInn.Domain\DevInn.Domain.csproj"/>
         <ProjectReference Include="..\..\src\DevInn.Infrastructure\DevInn.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\src\DevInn.WebApi\DevInn.WebApi.csproj"/>
     </ItemGroup>
 
 </Project>
