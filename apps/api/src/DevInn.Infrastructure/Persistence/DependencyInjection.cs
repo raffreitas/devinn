@@ -6,6 +6,7 @@ using DevInn.Domain.Aggregates.Financial.Abstractions;
 using DevInn.Domain.Aggregates.Inns.Abstractions;
 using DevInn.Domain.Aggregates.Integrations.Abstractions;
 using DevInn.Domain.Aggregates.Inventory.Abstractions;
+using DevInn.Infrastructure.BackgroundJobs.Options;
 using DevInn.Infrastructure.Common.Constants;
 using DevInn.Infrastructure.Common.Extensions;
 using DevInn.Infrastructure.Integrations;
@@ -56,8 +57,16 @@ public static class DependencyInjection
         services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
         services.AddScoped<IChannelIntegrationRepository, ChannelIntegrationRepository>();
 
+        var jobsOptions = configuration
+            .GetSection(BackgroundJobsOptions.SectionName)
+            .Get<BackgroundJobsOptions>() ?? new BackgroundJobsOptions();
+
         // External Services
-        services.AddHttpClient();
+        services.AddHttpClient(ICalService.HttpClientName, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(jobsOptions.ICalHttpTimeoutSeconds);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("DevInn/1.0 iCalSync");
+        });
         services.AddScoped<IICalService, ICalService>();
         services.AddScoped<IICalExportService, ICalExportService>();
 
