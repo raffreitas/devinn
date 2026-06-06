@@ -8,9 +8,18 @@ import { SidebarTrigger } from "./ui/sidebar";
 import { Skeleton } from "./ui/skeleton";
 
 export function AppHeader() {
-  const { user, innId } = useAuth();
+  const { user, innId, isLoading: isAuthLoading } = useAuth();
 
   const { data, isLoading } = useInn(innId || "");
+  const isResolvingSelection = isAuthLoading || Boolean(innId && isLoading);
+
+  const title = (() => {
+    if (data?.name) return data.name;
+    if (innId) return `ID: ${innId}`;
+    if (user?.role === "SuperAdmin") return "Selecione uma pousada";
+    return "Pousada não identificada";
+  })();
+
   return (
     <header className="sticky top-0 z-20 flex h-12 sm:h-14 items-center gap-3 border-b bg-background/80 px-3 sm:px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
       <SidebarTrigger />
@@ -23,16 +32,10 @@ export function AppHeader() {
         </Link>
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">
-            {isLoading ? (
+            {isResolvingSelection ? (
               <Skeleton className="h-4 w-32 sm:w-52" />
-            ) : data?.name ? (
-              data.name
-            ) : innId ? (
-              <>(ID: {innId})</>
-            ) : user?.role === "SuperAdmin" ? (
-              "Selecione uma pousada"
             ) : (
-              "Pousada não identificada"
+              title
             )}
           </div>
         </div>

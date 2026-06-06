@@ -10,6 +10,7 @@ import { AppLayout } from "./shared/components/app-layout";
 import { RequireAuth } from "./shared/components/auth-guard";
 import { GlobalError } from "./shared/components/global-error";
 import { RequireGuest } from "./shared/components/guest-guard";
+import { RequireInnSelection } from "./shared/components/require-inn-selection";
 import { NotFoundPage } from "./shared/pages/not-found-page";
 
 export const router = createBrowserRouter([
@@ -28,24 +29,29 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           {
-            index: true,
-            element: <BookingCalendar />,
-          },
-          {
-            path: "/inventory",
-            children: inventoryRoutes,
-          },
-          {
-            path: "/bookings",
-            children: bookingRoutes,
-          },
-          {
-            path: "/financial",
-            children: financialRoutes,
-          },
-          {
-            path: "/settings",
-            element: <SettingsPage />,
+            element: <RequireInnSelection />,
+            children: [
+              {
+                index: true,
+                element: <BookingCalendar />,
+              },
+              {
+                path: "/inventory",
+                children: inventoryRoutes,
+              },
+              {
+                path: "/bookings",
+                children: bookingRoutes,
+              },
+              {
+                path: "/financial",
+                children: financialRoutes,
+              },
+              {
+                path: "/settings",
+                element: <SettingsPage />,
+              },
+            ],
           },
           {
             path: "/profile",
