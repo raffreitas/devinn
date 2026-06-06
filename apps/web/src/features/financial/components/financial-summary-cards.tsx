@@ -1,6 +1,10 @@
 import { DollarSign, PiggyBank, TrendingDown, TrendingUp } from "lucide-react";
 import type { Booking } from "@/features/bookings/types";
 import type { Expense } from "../types";
+import {
+  calculateFinancialSummary,
+  getReceivedRevenueMessage,
+} from "../utils/financial-summary";
 
 interface FinancialSummaryCardsProps {
   bookings: Booking[];
@@ -11,17 +15,14 @@ export function FinancialSummaryCards({
   bookings,
   expenses,
 }: FinancialSummaryCardsProps) {
-  // Calcula receitas do mês
-  const totalRevenue = bookings.reduce((sum, b) => sum + b.pricing.total, 0);
-  const receivedRevenue = bookings.reduce((sum, b) => sum + b.totalPaid, 0);
-  const pendingRevenue = totalRevenue - receivedRevenue;
+  const financialSummary = calculateFinancialSummary(bookings);
 
   // Calcula despesas do mês
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
 
   // Balanço
-  const balance = receivedRevenue - totalExpenses;
-  const projectedBalance = totalRevenue - totalExpenses;
+  const balance = financialSummary.receivedRevenue - totalExpenses;
+  const projectedBalance = financialSummary.reconciledRevenue - totalExpenses;
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString("pt-BR", {
@@ -30,25 +31,35 @@ export function FinancialSummaryCards({
     });
   };
 
+  const receivedRevenueMessage = getReceivedRevenueMessage(
+    financialSummary,
+    formatCurrency,
+  );
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Receita Total */}
+      {/* Receita conciliada */}
       <div className="bg-card rounded-xl p-5 border border-border shadow-sm flex flex-col justify-between hover:border-primary/50 transition-colors">
         <div className="flex items-center justify-between mb-3">
           <div className="p-2 bg-primary/10 rounded-lg">
             <TrendingUp className="w-5 h-5 text-primary" />
           </div>
           <span className="text-muted-foreground font-medium text-xs uppercase tracking-wider">
-            Receita Total
+            Receita conciliada
           </span>
         </div>
         <div>
           <p className="text-2xl font-bold text-foreground">
-            {formatCurrency(totalRevenue)}
+            {formatCurrency(financialSummary.reconciledRevenue)}
           </p>
           <p className="text-xs text-muted-foreground mt-1 font-medium">
-            {bookings.length} reservas no período
+            {financialSummary.reconciledBookingsCount} reservas conciliadas
           </p>
+          {financialSummary.pendingPricingCount > 0 && (
+            <p className="text-xs text-amber-500 mt-1 font-medium">
+              {financialSummary.pendingPricingCount} importações sem valor
+            </p>
+          )}
         </div>
       </div>
 
@@ -64,14 +75,17 @@ export function FinancialSummaryCards({
         </div>
         <div>
           <p className="text-2xl font-bold text-foreground">
-            {formatCurrency(receivedRevenue)}
+            {formatCurrency(financialSummary.receivedRevenue)}
           </p>
           <p
-            className={`text-xs mt-1 font-medium ${pendingRevenue > 0 ? "text-amber-500" : "text-primary"}`}
+            className={`text-xs mt-1 font-medium ${
+              financialSummary.receivableRevenue > 0 ||
+              financialSummary.pendingPricingCount > 0
+                ? "text-amber-500"
+                : "text-primary"
+            }`}
           >
-            {pendingRevenue > 0
-              ? `${formatCurrency(pendingRevenue)} pendente`
-              : "100% recebido"}
+            {receivedRevenueMessage}
           </p>
         </div>
       </div>

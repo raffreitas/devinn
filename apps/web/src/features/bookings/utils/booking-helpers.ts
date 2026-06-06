@@ -12,6 +12,14 @@ export function isICalSource(source: BookingSource): boolean {
   return source === "BookingIcal" || source === "AirbnbIcal";
 }
 
+export function isImportedUnpricedBlock(booking: Booking): boolean {
+  return (
+    isBlock(booking) &&
+    isICalSource(booking.source) &&
+    booking.pricing.total === 0
+  );
+}
+
 export function getBookingSourceLabel(source: BookingSource): string {
   const labels: Record<BookingSource, string> = {
     Manual: "Manual",
