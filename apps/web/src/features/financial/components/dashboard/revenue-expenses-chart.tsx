@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import type { Booking } from "@/features/bookings/types";
+import { isImportedUnpricedBlock } from "@/features/bookings/utils/booking-helpers";
 import type { Expense } from "@/features/financial/types";
 import {
   Card,
@@ -27,7 +28,7 @@ interface RevenueExpensesChartProps {
 
 const chartConfig = {
   revenue: {
-    label: "Receitas",
+    label: "Receita conciliada",
     color: "var(--primary)",
   },
   expenses: {
@@ -61,25 +62,29 @@ export function RevenueExpensesChart({
       { date: string; revenue: number; expenses: number }
     >();
 
-    bookings.forEach((booking) => {
-      // Use check-in date for revenue recognition in this chart, or payment date if available
-      // For simplicity using checkIn date for now
-      const date = new Date(booking.checkIn).toISOString();
-      if (!dataMap.has(date)) {
-        dataMap.set(date, { date, revenue: 0, expenses: 0 });
-      }
-      const entry = dataMap.get(date)!;
-      entry.revenue += booking.pricing.total; // Total booking value
-    });
+    bookings
+      .filter((booking) => !isImportedUnpricedBlock(booking))
+      .forEach((booking) => {
+        // Use check-in date for revenue recognition in this chart, or payment date if available
+        // For simplicity using checkIn date for now
+        const date = new Date(booking.checkIn).toISOString();
+        let entry = dataMap.get(date);
+        if (!entry) {
+          entry = { date, revenue: 0, expenses: 0 };
+          dataMap.set(date, entry);
+        }
+        entry.revenue += booking.pricing.total; // Total booking value
+      });
 
     expenses.forEach((expense) => {
       const date = new Date(
         expense.paymentDate || expense.dueDate,
       ).toISOString();
-      if (!dataMap.has(date)) {
-        dataMap.set(date, { date, revenue: 0, expenses: 0 });
+      let entry = dataMap.get(date);
+      if (!entry) {
+        entry = { date, revenue: 0, expenses: 0 };
+        dataMap.set(date, entry);
       }
-      const entry = dataMap.get(date)!;
       entry.expenses += expense.amount;
     });
 
@@ -104,7 +109,7 @@ export function RevenueExpensesChart({
   return (
     <Card className="col-span-1 lg:col-span-2 border-none shadow-sm ring-1 ring-border overflow-hidden bg-card/50 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle>Receitas vs Despesas</CardTitle>
+        <CardTitle>Receita conciliada vs Despesas</CardTitle>
       </CardHeader>
       <CardContent className="h-75">
         {data.length > 0 ? (

@@ -60,6 +60,43 @@ export function useBookings({
   };
 }
 
+export function useAllBookings({
+  status,
+  paymentStatus,
+  startDate,
+  endDate,
+}: Omit<UseBookingsParams, "page" | "pageSize"> = {}) {
+  const { innId } = useAuth();
+
+  const { data, refetch, isLoading } = useQuery({
+    queryKey: [
+      "bookings",
+      innId,
+      "all",
+      status,
+      paymentStatus,
+      startDate,
+      endDate,
+    ],
+    queryFn: () => {
+      return bookingService.getAllPages({
+        status: status,
+        paymentStatus: paymentStatus,
+        startDate,
+        endDate,
+      });
+    },
+    enabled: !!innId,
+    staleTime: 30_000,
+  });
+
+  return {
+    data,
+    isLoading,
+    refetch,
+  };
+}
+
 export function useCreateBooking() {
   const queryClient = useQueryClient();
   const { innId } = useAuth();

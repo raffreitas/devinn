@@ -7,6 +7,7 @@
   "scripts": {
     "dev:web": "pnpm --filter web dev",
     "build:web": "pnpm --filter web build",
+    "test:web:financial": "pnpm --filter web test:financial",
     "dev:api": "pnpm --filter api dev",
     "build:api": "pnpm --filter api build",
     "prepare": "husky"

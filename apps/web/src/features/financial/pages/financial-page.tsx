@@ -1,7 +1,7 @@
 import { endOfMonth, format, startOfMonth } from "date-fns";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { useBookings } from "@/features/bookings/hooks/use-booking";
+import { useAllBookings } from "@/features/bookings/hooks/use-booking";
 import { DateRangePicker } from "@/shared/components/date-range-picker";
 import { LoadingOverlay } from "@/shared/components/loading-overlay";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -28,7 +28,7 @@ export function FinancialPage() {
       ? format(dateRange.from, "yyyy-MM-dd")
       : format(endOfMonth(new Date()), "yyyy-MM-dd");
 
-  const { data: bookings, isLoading: isLoadingBookings } = useBookings({
+  const { data: bookings, isLoading: isLoadingBookings } = useAllBookings({
     startDate,
     endDate,
   });
@@ -72,7 +72,7 @@ export function FinancialPage() {
           </div>
         ) : (
           <FinancialSummaryCards
-            bookings={bookings?.items || []}
+            bookings={bookings || []}
             expenses={expenses || []}
           />
         )}
@@ -81,7 +81,7 @@ export function FinancialPage() {
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <RevenueExpensesChart
-          bookings={bookings?.items || []}
+          bookings={bookings || []}
           expenses={expenses || []}
           isLoading={isLoading}
         />
