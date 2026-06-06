@@ -65,13 +65,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const role = coerceRole(payload.role);
 
     if (id) setUser({ id, role });
-    if (payload.inn_id) setInnId(payload.inn_id);
-
     if (role === "SuperAdmin") {
       const storedInnId = storage.get(STORAGE_KEYS.TENANT_ID);
       if (storedInnId && typeof storedInnId === "string") {
         setInnId(storedInnId);
       }
+    } else if (payload.inn_id) {
+      storage.set(STORAGE_KEYS.TENANT_ID, payload.inn_id);
+      setInnId(payload.inn_id);
     }
     setIsLoading(false);
 
