@@ -51,6 +51,35 @@ export const bookingService = {
     };
   },
 
+  getAllPages: async (
+    filters?: Omit<BookingFilters, "page" | "pageSize">,
+  ): Promise<Booking[]> => {
+    const firstPage = await bookingService.getAll({
+      ...filters,
+      page: 1,
+      pageSize: 100,
+    });
+
+    if (firstPage.totalPages <= 1) {
+      return firstPage.items;
+    }
+
+    const remainingPages = await Promise.all(
+      Array.from({ length: firstPage.totalPages - 1 }, (_, index) =>
+        bookingService.getAll({
+          ...filters,
+          page: index + 2,
+          pageSize: firstPage.pageSize,
+        }),
+      ),
+    );
+
+    return [
+      ...firstPage.items,
+      ...remainingPages.flatMap((page) => page.items),
+    ];
+  },
+
   getById: async (id: string): Promise<Booking | null> => {
     const response = await api.get<ApiResponse<Booking>>(
       `/api/v1/bookings/${id}`,
