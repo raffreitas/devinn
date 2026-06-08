@@ -18,7 +18,7 @@ namespace DevInn.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -64,14 +64,14 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("notes");
 
-                    b.Property<Guid>("RoomId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("room_id");
-
                     b.Property<string>("ReconciliationStatus")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
                         .HasColumnName("reconciliation_status");
+
+                    b.Property<Guid>("RoomId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("room_id");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -123,11 +123,11 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_bookings_external_id");
 
-                    b.HasIndex("Source")
-                        .HasDatabaseName("ix_bookings_source");
-
                     b.HasIndex("ReconciliationStatus")
                         .HasDatabaseName("ix_bookings_reconciliation_status");
+
+                    b.HasIndex("Source")
+                        .HasDatabaseName("ix_bookings_source");
 
                     b.HasIndex("InnId", "DeletedAt")
                         .HasDatabaseName("ix_bookings_inn_id_deleted_at");
