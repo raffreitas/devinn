@@ -11,6 +11,8 @@ import type {
   ChannelIntegration,
   CreateChannelIntegrationRequest,
 } from "@/features/integrations/types";
+import { AirbnbIcon } from "@/shared/components/icons/airbnb-icon";
+import { BookingIcon } from "@/shared/components/icons/booking-icon";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { IntegrationCard } from "./integration-card";
@@ -41,8 +43,8 @@ function getChannelName(channelType: string) {
   return channelType === "Booking" ? "Booking.com" : "Airbnb";
 }
 
-function getChannelEmoji(channelType: string) {
-  return channelType === "Booking" ? "🅱️" : "🏠";
+function getChannelIcon(channelType: string) {
+  return channelType === "Booking" ? <BookingIcon /> : <AirbnbIcon />;
 }
 
 function PendingIntegrationCard({
@@ -58,7 +60,7 @@ function PendingIntegrationCard({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <span className="text-xl shrink-0" aria-hidden>
-              {getChannelEmoji(integration.channelType)}
+              {getChannelIcon(integration.channelType)}
             </span>
             <div className="min-w-0 flex-1">
               <span className="font-medium text-sm">
