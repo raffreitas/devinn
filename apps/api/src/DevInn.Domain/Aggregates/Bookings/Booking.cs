@@ -19,6 +19,7 @@ public sealed class Booking : Entity
     public Money TotalValue { get; private set; }
     public BookingSource Source { get; private set; }
     public BookingStatus Status { get; private set; }
+    public BookingReconciliationStatus? ReconciliationStatus { get; private set; }
     public CancellationReason? CancellationReason { get; private set; }
     public string? ExternalId { get; private set; }
     public Guid? ChannelIntegrationId { get; private set; }
@@ -57,6 +58,7 @@ public sealed class Booking : Entity
         Source = source;
         RoomId = roomId;
         Status = BookingStatus.Scheduled;
+        ReconciliationStatus = IsICalSource(source) ? BookingReconciliationStatus.NeedsReview : null;
         ExternalId = externalId;
         ChannelIntegrationId = channelIntegrationId;
     }
@@ -99,6 +101,8 @@ public sealed class Booking : Entity
         Occupancy = occupancy;
         Notes = notes;
         TotalValue = totalValue;
+        if (IsICalSource(Source))
+            ReconciliationStatus = BookingReconciliationStatus.Reconciled;
     }
 
     public void ResyncExternalBlock(
@@ -120,11 +124,26 @@ public sealed class Booking : Entity
         Source = source;
         Notes = notes;
         TotalValue = new Money(0);
+        if (ReconciliationStatus != BookingReconciliationStatus.IgnoredExternalBlock)
+            ReconciliationStatus = BookingReconciliationStatus.NeedsReview;
         if (Status == BookingStatus.Canceled)
         {
             Status = BookingStatus.Scheduled;
             CancellationReason = null;
         }
+    }
+
+    public void IgnoreExternalBlock()
+    {
+        EnsureNotDeleted();
+
+        if (!IsBlock || !IsICalSource(Source))
+            throw new DomainException("Somente bloqueios importados via iCal podem ser ignorados na conciliação.");
+
+        if (Status == BookingStatus.Canceled)
+            throw new DomainException("Bloqueios cancelados não podem ser ignorados na conciliação.");
+
+        ReconciliationStatus = BookingReconciliationStatus.IgnoredExternalBlock;
     }
 
     public void AddPayment(Money amount, PaymentMethod method, DateTimeOffset paymentDate, string? notes = null)
@@ -187,4 +206,7 @@ public sealed class Booking : Entity
         if (PaidValue == 0) return PaymentStatus.Pending;
         return PaidValue < TotalValue ? PaymentStatus.Partial : PaymentStatus.Paid;
     }
+
+    private static bool IsICalSource(BookingSource source)
+        => source is BookingSource.BookingIcal or BookingSource.AirbnbIcal;
 }

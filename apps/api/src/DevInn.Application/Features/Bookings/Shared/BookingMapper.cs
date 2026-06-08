@@ -26,6 +26,7 @@ SELECT b.id                      AS "Id",
        b.children_ages           AS "ChildrenAges",
        b.total_value             AS "TotalValue",
        b.status                  AS "Status",
+       b.reconciliation_status   AS "ReconciliationStatus",
        b.source                  AS "Source",
        b.notes                   AS "Notes",
        b.created_at              AS "CreatedAt",
@@ -76,6 +77,9 @@ ORDER BY payment_date DESC;
             DeserializeChildrenAges(r.ChildrenAges),
             pricing,
             Enum.Parse<BookingStatus>(r.Status),
+            string.IsNullOrWhiteSpace(r.ReconciliationStatus)
+                ? null
+                : Enum.Parse<BookingReconciliationStatus>(r.ReconciliationStatus),
             paymentStatus,
             paidValue,
             r.TotalValue - paidValue,

@@ -19,9 +19,18 @@ public sealed class BookingTests
         var booking = CreateRegularBooking();
 
         booking.Status.ShouldBe(BookingStatus.Scheduled);
+        booking.ReconciliationStatus.ShouldBeNull();
         booking.IsRealBooking.ShouldBeTrue();
         booking.NumberOfNights.ShouldBe(2);
         booking.PaymentStatus.ShouldBe(PaymentStatus.Pending);
+    }
+
+    [Fact]
+    public void Constructor_ShouldCreateICalBlockWithNeedsReviewReconciliationStatus()
+    {
+        var block = CreateBlockBooking();
+
+        block.ReconciliationStatus.ShouldBe(BookingReconciliationStatus.NeedsReview);
     }
 
     [Fact]
@@ -52,6 +61,7 @@ public sealed class BookingTests
         block.Guest.ShouldBe(guest);
         block.Occupancy.ShouldBe(occupancy);
         block.TotalValue.ShouldBe(new Money(450m));
+        block.ReconciliationStatus.ShouldBe(BookingReconciliationStatus.Reconciled);
     }
 
     [Fact]
@@ -70,6 +80,44 @@ public sealed class BookingTests
         block.Source.ShouldBe(BookingSource.AirbnbIcal);
         block.Notes.ShouldBe("Atualizado pelo feed");
         block.TotalValue.ShouldBe(new Money(0m));
+        block.ReconciliationStatus.ShouldBe(BookingReconciliationStatus.NeedsReview);
+    }
+
+    [Fact]
+    public void ResyncExternalBlock_ShouldPreserveIgnoredExternalBlock()
+    {
+        var block = CreateBlockBooking();
+        var roomId = Guid.NewGuid();
+        var stay = new StayPeriod(
+            new DateTimeOffset(2026, 03, 14, 12, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 03, 15, 12, 0, 0, TimeSpan.Zero));
+
+        block.IgnoreExternalBlock();
+        block.ResyncExternalBlock(roomId, stay, BookingSource.BookingIcal, "Atualizado pelo feed");
+
+        block.ReconciliationStatus.ShouldBe(BookingReconciliationStatus.IgnoredExternalBlock);
+        block.Status.ShouldBe(BookingStatus.Scheduled);
+    }
+
+    [Fact]
+    public void IgnoreExternalBlock_ShouldMarkICalBlockAsIgnored()
+    {
+        var block = CreateBlockBooking();
+
+        block.IgnoreExternalBlock();
+
+        block.ReconciliationStatus.ShouldBe(BookingReconciliationStatus.IgnoredExternalBlock);
+        block.Status.ShouldBe(BookingStatus.Scheduled);
+        block.IsBlock.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IgnoreExternalBlock_ShouldThrow_WhenBookingIsNotICalBlock()
+    {
+        var booking = CreateRegularBooking();
+
+        Should.Throw<DomainException>(() => booking.IgnoreExternalBlock())
+            .Message.ShouldBe("Somente bloqueios importados via iCal podem ser ignorados na conciliação.");
     }
 
     [Fact]

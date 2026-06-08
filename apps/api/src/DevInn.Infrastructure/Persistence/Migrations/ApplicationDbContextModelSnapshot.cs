@@ -68,6 +68,11 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("room_id");
 
+                    b.Property<string>("ReconciliationStatus")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("reconciliation_status");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -120,6 +125,9 @@ namespace DevInn.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Source")
                         .HasDatabaseName("ix_bookings_source");
+
+                    b.HasIndex("ReconciliationStatus")
+                        .HasDatabaseName("ix_bookings_reconciliation_status");
 
                     b.HasIndex("InnId", "DeletedAt")
                         .HasDatabaseName("ix_bookings_inn_id_deleted_at");
