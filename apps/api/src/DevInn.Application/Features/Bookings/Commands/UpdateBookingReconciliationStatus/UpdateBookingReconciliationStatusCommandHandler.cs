@@ -26,14 +26,7 @@ internal sealed class UpdateBookingReconciliationStatusCommandHandler(
         if (command.ReconciliationStatus != BookingReconciliationStatus.IgnoredExternalBlock)
             return Result.Fail(new ValidationError("Apenas bloqueios externos podem ser ignorados nesta operação."));
 
-        try
-        {
-            booking.IgnoreExternalBlock();
-        }
-        catch (DomainException ex)
-        {
-            return Result.Fail(new ValidationError(ex.Message));
-        }
+        booking.IgnoreExternalBlock();
 
         await uow.CommitAsync(cancellationToken);
         return Result.Ok();
