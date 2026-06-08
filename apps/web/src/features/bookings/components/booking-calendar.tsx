@@ -15,7 +15,11 @@ import { toast } from "sonner";
 import { useRooms } from "@/features/inventory/hooks";
 import { Modal } from "@/shared/components/modal";
 import { removeChars } from "@/shared/lib/utils";
-import { useBookings, useDeleteBooking } from "../hooks/use-booking";
+import {
+  useBookings,
+  useDeleteBooking,
+  useUpdateBookingReconciliationStatus,
+} from "../hooks/use-booking";
 import { bookingService } from "../services/booking-service";
 import {
   type Booking,
@@ -63,6 +67,10 @@ export function BookingCalendar() {
     pageSize: 200,
   });
   const { deleteBooking } = useDeleteBooking();
+  const {
+    ignoreExternalBlock,
+    isLoading: isIgnoringExternalBlock,
+  } = useUpdateBookingReconciliationStatus();
 
   const handleNavigatePrev = () => {
     if (viewMode === "month") {
@@ -182,6 +190,13 @@ export function BookingCalendar() {
     setIsDetailsModalOpen(false);
   };
 
+  const handleIgnoreExternalBlock = async (id: string) => {
+    await ignoreExternalBlock({ id });
+    setIsDetailsModalOpen(false);
+    setDetailsBooking(undefined);
+    refetch();
+  };
+
   const activeRooms =
     roomsData?.items.filter((room) => room.status === "Active") || [];
 
@@ -284,6 +299,8 @@ export function BookingCalendar() {
             booking={detailsBooking}
             onEdit={handleBookingEdit}
             onDelete={handleDeleteFromDetails}
+            onIgnoreExternalBlock={handleIgnoreExternalBlock}
+            isIgnoringExternalBlock={isIgnoringExternalBlock}
           />
         )}
       </Modal>

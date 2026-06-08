@@ -18,6 +18,8 @@ export const bookingService = {
     if (filters?.startDate) params.append("startDate", filters.startDate);
     if (filters?.endDate) params.append("endDate", filters.endDate);
     if (filters?.status) params.append("status", filters.status);
+    if (filters?.reconciliationStatus)
+      params.append("reconciliationStatus", filters.reconciliationStatus);
     if (filters?.paymentStatus)
       params.append("paymentStatus", filters.paymentStatus);
 
@@ -116,6 +118,15 @@ export const bookingService = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/api/v1/bookings/${id}`);
+  },
+
+  updateReconciliationStatus: async (
+    id: string,
+    reconciliationStatus: "IgnoredExternalBlock",
+  ): Promise<void> => {
+    await api.patch(`/api/v1/bookings/${id}/reconciliation-status`, {
+      reconciliationStatus,
+    });
   },
 
   addPayment: async (

@@ -1,5 +1,9 @@
 import type { Booking } from "../../bookings/types";
-import { isImportedUnpricedBlock } from "../../bookings/utils/booking-helpers.ts";
+import {
+  isFinanciallyReconciled,
+  isIgnoredExternalBlock,
+  needsReconciliation,
+} from "../../bookings/utils/booking-helpers.ts";
 
 export interface FinancialSummary {
   reconciledRevenue: number;
@@ -14,8 +18,12 @@ export function calculateFinancialSummary(
 ): FinancialSummary {
   const summary = bookings.reduce<FinancialSummary>(
     (summary, booking) => {
-      if (isImportedUnpricedBlock(booking)) {
+      if (needsReconciliation(booking)) {
         summary.pendingPricingCount += 1;
+        return summary;
+      }
+
+      if (isIgnoredExternalBlock(booking) || !isFinanciallyReconciled(booking)) {
         return summary;
       }
 

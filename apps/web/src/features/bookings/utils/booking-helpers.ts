@@ -1,4 +1,8 @@
-import type { Booking, BookingSource } from "../types";
+import type {
+  Booking,
+  BookingReconciliationStatus,
+  BookingSource,
+} from "../types";
 
 export function isBlock(booking: Booking): boolean {
   return booking.guest === null;
@@ -13,11 +17,35 @@ export function isICalSource(source: BookingSource): boolean {
 }
 
 export function isImportedUnpricedBlock(booking: Booking): boolean {
+  return needsReconciliation(booking);
+}
+
+export function needsReconciliation(booking: Booking): boolean {
+  return booking.reconciliationStatus === "NeedsReview";
+}
+
+export function isIgnoredExternalBlock(booking: Booking): boolean {
+  return booking.reconciliationStatus === "IgnoredExternalBlock";
+}
+
+export function isFinanciallyReconciled(booking: Booking): boolean {
   return (
-    isBlock(booking) &&
-    isICalSource(booking.source) &&
-    booking.pricing.total === 0
+    booking.reconciliationStatus === undefined ||
+    booking.reconciliationStatus === null ||
+    booking.reconciliationStatus === "Reconciled"
   );
+}
+
+export function getReconciliationStatusLabel(
+  status: BookingReconciliationStatus,
+): string {
+  const labels: Record<BookingReconciliationStatus, string> = {
+    Imported: "Importada",
+    NeedsReview: "Revisar",
+    Reconciled: "Conciliada",
+    IgnoredExternalBlock: "Bloqueio ignorado",
+  };
+  return labels[status];
 }
 
 export function getBookingSourceLabel(source: BookingSource): string {
