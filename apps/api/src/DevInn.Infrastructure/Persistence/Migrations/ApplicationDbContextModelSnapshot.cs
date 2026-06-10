@@ -18,7 +18,7 @@ namespace DevInn.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -63,6 +63,11 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("notes");
+
+                    b.Property<string>("ReconciliationStatus")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("reconciliation_status");
 
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uuid")
@@ -117,6 +122,9 @@ namespace DevInn.Infrastructure.Persistence.Migrations
                     b.HasIndex("ExternalId")
                         .IsUnique()
                         .HasDatabaseName("ix_bookings_external_id");
+
+                    b.HasIndex("ReconciliationStatus")
+                        .HasDatabaseName("ix_bookings_reconciliation_status");
 
                     b.HasIndex("Source")
                         .HasDatabaseName("ix_bookings_source");

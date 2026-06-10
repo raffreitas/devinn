@@ -2,6 +2,7 @@ import { differenceInDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   AlertTriangle,
+  Ban,
   Bed,
   CakeIcon,
   CalendarDays,
@@ -49,11 +50,17 @@ import {
 import { formatCpf, formatPhone } from "@/shared/lib/utils";
 import type {
   Booking,
+  BookingReconciliationStatus,
   BookingStatus,
   PaymentMethod,
   PaymentStatus,
 } from "../types";
-import { getBlockLabel, isBlock, isICalSource } from "../utils/booking-helpers";
+import {
+  getBlockLabel,
+  getReconciliationStatusLabel,
+  isBlock,
+  isICalSource,
+} from "../utils/booking-helpers";
 import { BookingReceiptPrinter } from "./booking-receipt-printer";
 import { BookingSourceBadge } from "./booking-source-badge";
 
@@ -61,6 +68,8 @@ interface BookingDetailsProps {
   booking: Booking;
   onEdit: (booking: Booking) => void;
   onDelete: (id: string) => void;
+  onIgnoreExternalBlock?: (id: string) => void;
+  isIgnoringExternalBlock?: boolean;
 }
 
 const statusConfig: Record<
@@ -137,6 +146,28 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   BankTransfer: "Transferência Bancária",
 };
 
+const reconciliationStatusConfig: Record<
+  BookingReconciliationStatus,
+  { className: string }
+> = {
+  Imported: {
+    className:
+      "bg-sky-500/20 text-sky-700 hover:bg-sky-500/30 border-none dark:bg-sky-500/10 dark:text-sky-400",
+  },
+  NeedsReview: {
+    className:
+      "bg-amber-500/20 text-amber-700 hover:bg-amber-500/30 border-none dark:bg-amber-500/10 dark:text-amber-400",
+  },
+  Reconciled: {
+    className:
+      "bg-emerald-500/20 text-emerald-700 hover:bg-emerald-500/30 border-none dark:bg-emerald-500/10 dark:text-emerald-400",
+  },
+  IgnoredExternalBlock: {
+    className:
+      "bg-muted text-muted-foreground border-none dark:bg-muted/10 dark:text-muted-foreground/60",
+  },
+};
+
 const auditActionLabels: Record<string, string> = {
   Created: "Criação",
   Updated: "Atualização",
@@ -148,6 +179,8 @@ export function BookingDetails({
   booking,
   onEdit,
   onDelete,
+  onIgnoreExternalBlock,
+  isIgnoringExternalBlock = false,
 }: BookingDetailsProps) {
   const { innId } = useAuth();
   const { data: innData } = useInn(innId || "");
@@ -167,6 +200,10 @@ export function BookingDetails({
   const nights = differenceInDays(checkOut, checkIn);
 
   const bookingIsBlock = isBlock(booking);
+  const canIgnoreExternalBlock =
+    bookingIsBlock &&
+    isICalSource(booking.source) &&
+    booking.reconciliationStatus !== "IgnoredExternalBlock";
 
   return (
     <div className="space-y-6">
@@ -179,6 +216,16 @@ export function BookingDetails({
           </h3>
           <div className="flex flex-wrap items-center gap-2">
             <BookingSourceBadge source={booking.source} />
+            {booking.reconciliationStatus && (
+              <Badge
+                className={
+                  reconciliationStatusConfig[booking.reconciliationStatus]
+                    .className
+                }
+              >
+                {getReconciliationStatusLabel(booking.reconciliationStatus)}
+              </Badge>
+            )}
             {!bookingIsBlock && (
               <>
                 <Badge variant={status.variant} className={status.className}>
@@ -224,6 +271,39 @@ export function BookingDetails({
               )}
             </Tooltip>
           </TooltipProvider>
+          {canIgnoreExternalBlock && onIgnoreExternalBlock && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  title="Ignorar no financeiro"
+                  disabled={isIgnoringExternalBlock}
+                >
+                  <Ban className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Ignorar este bloqueio no financeiro?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    O período continuará ocupando o calendário, mas deixará de
+                    aparecer como pendência de conciliação financeira.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onIgnoreExternalBlock(booking.id)}
+                  >
+                    Ignorar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -311,7 +391,8 @@ export function BookingDetails({
                 {isICalSource(booking.source) && (
                   <p className="text-xs text-muted-foreground mt-1">
                     Clique em editar para adicionar dados do hóspede, pagamento
-                    e observações.
+                    e observações, ou ignore no financeiro quando for apenas um
+                    bloqueio externo.
                   </p>
                 )}
               </div>

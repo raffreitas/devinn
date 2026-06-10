@@ -4,6 +4,7 @@ import { useAuth } from "@/features/auth/contexts/auth-context";
 import { getHttpErrorMessage } from "@/shared/lib/http-error";
 import { bookingService } from "../services/booking-service";
 import type {
+  BookingReconciliationStatus,
   BookingStatus,
   PaymentStatus,
   UpdateBookingRequest,
@@ -11,6 +12,7 @@ import type {
 
 type UseBookingsParams = {
   status?: BookingStatus;
+  reconciliationStatus?: BookingReconciliationStatus;
   paymentStatus?: PaymentStatus;
   startDate?: string;
   endDate?: string;
@@ -20,6 +22,7 @@ type UseBookingsParams = {
 
 export function useBookings({
   status,
+  reconciliationStatus,
   paymentStatus,
   startDate,
   endDate,
@@ -33,6 +36,7 @@ export function useBookings({
       "bookings",
       innId,
       status,
+      reconciliationStatus,
       paymentStatus,
       startDate,
       endDate,
@@ -42,6 +46,7 @@ export function useBookings({
     queryFn: () => {
       return bookingService.getAll({
         status: status,
+        reconciliationStatus,
         paymentStatus: paymentStatus,
         startDate,
         endDate,
@@ -62,6 +67,7 @@ export function useBookings({
 
 export function useAllBookings({
   status,
+  reconciliationStatus,
   paymentStatus,
   startDate,
   endDate,
@@ -74,6 +80,7 @@ export function useAllBookings({
       innId,
       "all",
       status,
+      reconciliationStatus,
       paymentStatus,
       startDate,
       endDate,
@@ -81,6 +88,7 @@ export function useAllBookings({
     queryFn: () => {
       return bookingService.getAllPages({
         status: status,
+        reconciliationStatus,
         paymentStatus: paymentStatus,
         startDate,
         endDate,
@@ -157,6 +165,28 @@ export function useDeleteBooking() {
 
   return {
     deleteBooking: mutateAsync,
+    isLoading: isPending,
+  };
+}
+
+export function useUpdateBookingReconciliationStatus() {
+  const queryClient = useQueryClient();
+  const { innId } = useAuth();
+
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: ({ id }: { id: string }) =>
+      bookingService.updateReconciliationStatus(id, "IgnoredExternalBlock"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bookings", innId] });
+      toast.success("Bloqueio ignorado no financeiro");
+    },
+    onError: (error) => {
+      toast.error(getHttpErrorMessage(error, "Erro ao atualizar conciliação"));
+    },
+  });
+
+  return {
+    ignoreExternalBlock: mutateAsync,
     isLoading: isPending,
   };
 }

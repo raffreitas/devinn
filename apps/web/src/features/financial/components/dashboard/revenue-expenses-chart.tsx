@@ -2,7 +2,10 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import type { Booking } from "@/features/bookings/types";
-import { isImportedUnpricedBlock } from "@/features/bookings/utils/booking-helpers";
+import {
+  isFinanciallyReconciled,
+  isIgnoredExternalBlock,
+} from "@/features/bookings/utils/booking-helpers";
 import type { Expense } from "@/features/financial/types";
 import {
   Card,
@@ -63,7 +66,10 @@ export function RevenueExpensesChart({
     >();
 
     bookings
-      .filter((booking) => !isImportedUnpricedBlock(booking))
+      .filter(
+        (booking) =>
+          isFinanciallyReconciled(booking) && !isIgnoredExternalBlock(booking),
+      )
       .forEach((booking) => {
         // Use check-in date for revenue recognition in this chart, or payment date if available
         // For simplicity using checkIn date for now

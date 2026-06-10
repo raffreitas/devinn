@@ -28,6 +28,11 @@ export type BookingStatus =
   | "Completed"
   | "Canceled";
 export type PaymentStatus = "Pending" | "Partial" | "Paid";
+export type BookingReconciliationStatus =
+  | "Imported"
+  | "NeedsReview"
+  | "Reconciled"
+  | "IgnoredExternalBlock";
 export type PaymentMethod =
   | "Cash"
   | "Pix"
@@ -88,6 +93,7 @@ export interface Booking {
   childrenAges?: number[];
   pricing: PricingBreakdown;
   status: BookingStatus;
+  reconciliationStatus?: BookingReconciliationStatus | null;
   paymentStatus: PaymentStatus;
   payments: Payment[];
   totalPaid: number;
@@ -131,6 +137,7 @@ export interface BookingFilters {
   startDate?: string;
   endDate?: string;
   status?: BookingStatus;
+  reconciliationStatus?: BookingReconciliationStatus;
   paymentStatus?: PaymentStatus;
   page?: number;
   pageSize?: number;

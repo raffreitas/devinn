@@ -118,6 +118,7 @@ public sealed class UpdateBookingCommandHandlerTests
 
         result.IsSuccess.ShouldBeTrue();
         booking.IsRealBooking.ShouldBeTrue();
+        booking.ReconciliationStatus.ShouldBe(BookingReconciliationStatus.Reconciled);
         await _uow.Received(1).CommitAsync(TestContext.Current.CancellationToken);
     }
 

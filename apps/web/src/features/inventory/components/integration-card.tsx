@@ -1,6 +1,8 @@
 import { RefreshCw, Trash2 } from "lucide-react";
 import { SyncStatusBadge } from "@/features/integrations/components/sync-status-badge";
 import type { ChannelIntegration } from "@/features/integrations/types";
+import { AirbnbIcon } from "@/shared/components/icons/airbnb-icon";
+import { BookingIcon } from "@/shared/components/icons/booking-icon";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -17,8 +19,8 @@ function getChannelName(channelType: string) {
   return channelType === "Booking" ? "Booking.com" : "Airbnb";
 }
 
-function getChannelEmoji(channelType: string) {
-  return channelType === "Booking" ? "🅱️" : "🏠";
+function getChannelIcon(channelType: string) {
+  return channelType === "Booking" ? <BookingIcon /> : <AirbnbIcon />;
 }
 
 export function IntegrationCard({
@@ -34,7 +36,7 @@ export function IntegrationCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0 flex-1">
             <span className="text-xl shrink-0 mt-0.5" aria-hidden>
-              {getChannelEmoji(integration.channelType)}
+              {getChannelIcon(integration.channelType)}
             </span>
             <div className="min-w-0 flex-1 space-y-1.5">
               <div className="flex items-center gap-2 flex-wrap">

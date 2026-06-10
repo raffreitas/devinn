@@ -71,15 +71,24 @@ import {
   useBookings,
   useCreateBooking,
   useDeleteBooking,
+  useUpdateBookingReconciliationStatus,
   useUpdateBooking,
 } from "../hooks/use-booking";
 import {
   type Booking,
   type BookingFormData,
+  type BookingReconciliationStatus,
   type BookingStatus,
   mapToFormData,
   type PaymentStatus,
 } from "../types";
+
+import {
+  getBlockLabel,
+  getReconciliationStatusLabel,
+  isBlock,
+  isICalSource,
+} from "../utils/booking-helpers";
 
 function generatePaginationPages(currentPage: number, totalPages: number) {
   const pages: (number | string)[] = [];
@@ -114,8 +123,6 @@ function generatePaginationPages(currentPage: number, totalPages: number) {
   return pages;
 }
 
-import { getBlockLabel, isBlock, isICalSource } from "../utils/booking-helpers";
-
 const statusConfig: Record<
   BookingStatus,
   {
@@ -136,6 +143,16 @@ const paymentStatusConfig: Record<
   Paid: { label: "Pago", variant: "default" },
   Partial: { label: "Parcial", variant: "secondary" },
   Pending: { label: "Pendente", variant: "destructive" },
+};
+
+const reconciliationStatusConfig: Record<
+  BookingReconciliationStatus,
+  { variant: "default" | "secondary" | "outline" | "destructive" }
+> = {
+  Imported: { variant: "secondary" },
+  NeedsReview: { variant: "destructive" },
+  Reconciled: { variant: "default" },
+  IgnoredExternalBlock: { variant: "outline" },
 };
 
 export function BookingsPage() {
@@ -161,6 +178,9 @@ export function BookingsPage() {
   const [filterPaymentStatus, setFilterPaymentStatus] = useState<
     PaymentStatus | "all"
   >("all");
+  const [filterReconciliationStatus, setFilterReconciliationStatus] = useState<
+    BookingReconciliationStatus | "all"
+  >("all");
 
   // Serializar datas para formato YYYY-MM-DD esperado pela API
   const startDate = dateRange?.from
@@ -173,11 +193,21 @@ export function BookingsPage() {
   // Gerenciar paginação sincronizada com URL
   const { page, pageSize, goToPage } = usePagination({
     defaultPageSize: 10,
-    dependencies: [filterStatus, filterPaymentStatus, startDate, endDate],
+    dependencies: [
+      filterStatus,
+      filterPaymentStatus,
+      filterReconciliationStatus,
+      startDate,
+      endDate,
+    ],
   });
 
   const { data: bookings, isLoading } = useBookings({
     status: filterStatus === "all" ? undefined : filterStatus,
+    reconciliationStatus:
+      filterReconciliationStatus === "all"
+        ? undefined
+        : filterReconciliationStatus,
     paymentStatus:
       filterPaymentStatus === "all" ? undefined : filterPaymentStatus,
     startDate,
@@ -188,6 +218,10 @@ export function BookingsPage() {
   const { createBooking, isLoading: isCreating } = useCreateBooking();
   const { updateBooking, isLoading: isUpdating } = useUpdateBooking();
   const { deleteBooking } = useDeleteBooking();
+  const {
+    ignoreExternalBlock,
+    isLoading: isIgnoringExternalBlock,
+  } = useUpdateBookingReconciliationStatus();
 
   const handleCreateOrUpdate = async (data: BookingFormData) => {
     const payload = {
@@ -236,6 +270,11 @@ export function BookingsPage() {
   const handleDelete = async (id: string) => {
     await deleteBooking(id);
   };
+  const handleIgnoreExternalBlock = async (id: string) => {
+    await ignoreExternalBlock({ id });
+    setIsDetailsModalOpen(false);
+    setSelectedBooking(undefined);
+  };
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setIsDetailsModalOpen(false);
@@ -251,6 +290,7 @@ export function BookingsPage() {
     });
     setFilterStatus("Scheduled");
     setFilterPaymentStatus("all");
+    setFilterReconciliationStatus("all");
     goToPage(1);
   };
 
@@ -324,6 +364,28 @@ export function BookingsPage() {
                 </SelectContent>
               </Select>
 
+              <Select
+                value={filterReconciliationStatus}
+                onValueChange={(v) =>
+                  setFilterReconciliationStatus(
+                    v as BookingReconciliationStatus | "all",
+                  )
+                }
+              >
+                <SelectTrigger className="w-full sm:w-45">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toda Conciliação</SelectItem>
+                  <SelectItem value="NeedsReview">Revisar</SelectItem>
+                  <SelectItem value="Reconciled">Conciliada</SelectItem>
+                  <SelectItem value="IgnoredExternalBlock">
+                    Bloqueio ignorado
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
               <Button
                 variant="outline"
                 onClick={handleClearFilters}
@@ -353,6 +415,9 @@ export function BookingsPage() {
                         <TableHead>Check-in</TableHead>
                         <TableHead>Check-out</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Conciliação
+                        </TableHead>
                         <TableHead className="hidden sm:table-cell">
                           Pagamento
                         </TableHead>
@@ -381,6 +446,25 @@ export function BookingsPage() {
                             >
                               {statusConfig[booking.status].label}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {booking.reconciliationStatus ? (
+                              <Badge
+                                variant={
+                                  reconciliationStatusConfig[
+                                    booking.reconciliationStatus
+                                  ].variant
+                                }
+                              >
+                                {getReconciliationStatusLabel(
+                                  booking.reconciliationStatus,
+                                )}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">
+                                -
+                              </span>
+                            )}
                           </TableCell>
                           <TableCell className="hidden sm:table-cell">
                             <Badge
@@ -533,6 +617,8 @@ export function BookingsPage() {
             booking={selectedBooking}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onIgnoreExternalBlock={handleIgnoreExternalBlock}
+            isIgnoringExternalBlock={isIgnoringExternalBlock}
           />
         )}
       </Modal>

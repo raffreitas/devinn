@@ -30,6 +30,7 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                                  WHERE b.inn_id = @TenantId
                                      AND b.deleted_at IS NULL
                                      AND (@Status IS NULL OR b.status = @Status)
+                                     AND (@ReconciliationStatus IS NULL OR b.reconciliation_status = @ReconciliationStatus)
                                      AND (@StartDate IS NULL OR b.check_out > @StartDate)
                                      AND (@EndDate IS NULL OR b.check_in < @EndDate)
                                     AND (
@@ -51,6 +52,7 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
                        WHERE b.inn_id = @TenantId
                            AND b.deleted_at IS NULL
                            AND (@Status IS NULL OR b.status = @Status)
+                           AND (@ReconciliationStatus IS NULL OR b.reconciliation_status = @ReconciliationStatus)
                            AND (@StartDate IS NULL OR b.check_out > @StartDate)
                            AND (@EndDate IS NULL OR b.check_in < @EndDate)
                           AND (
@@ -103,6 +105,7 @@ internal sealed class ListBookingsHandler(IDbConnectionFactory dbConnectionFacto
         {
             TenantId = tenantContext.Tenant.Id,
             Status = query.Status?.ToString(),
+            ReconciliationStatus = query.ReconciliationStatus?.ToString(),
             PaymentStatus = query.PaymentStatus?.ToString(),
             query.StartDate,
             query.EndDate,

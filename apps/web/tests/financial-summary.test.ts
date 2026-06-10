@@ -43,11 +43,12 @@ function booking(overrides: Partial<Booking>): Booking {
 
 const formatCurrency = (value: number) => `R$ ${value.toFixed(2)}`;
 
-test("marks unpriced iCal blocks as pending financial reconciliation", () => {
+test("marks iCal blocks with NeedsReview as pending financial reconciliation", () => {
   const summary = calculateFinancialSummary([
     booking({
       guest: null,
       source: "BookingIcal",
+      reconciliationStatus: "NeedsReview",
       pricing: {
         basePrice: 0,
         extraGuestPrice: 0,
@@ -80,6 +81,7 @@ test("sums only reconciled bookings while preserving pending iCal count", () => 
     booking({
       guest: null,
       source: "AirbnbIcal",
+      reconciliationStatus: "NeedsReview",
       pricing: { ...booking({}).pricing, total: 0 },
       balanceDue: 0,
     }),
@@ -93,6 +95,23 @@ test("sums only reconciled bookings while preserving pending iCal count", () => 
     getReceivedRevenueMessage(summary, formatCurrency),
     "R$ 200.00 a receber",
   );
+});
+
+test("ignores external blocks marked as ignored in financial summary", () => {
+  const summary = calculateFinancialSummary([
+    booking({
+      guest: null,
+      source: "BookingIcal",
+      reconciliationStatus: "IgnoredExternalBlock",
+      pricing: { ...booking({}).pricing, total: 500 },
+      totalPaid: 500,
+      balanceDue: 0,
+    }),
+  ]);
+
+  assert.equal(summary.reconciledRevenue, 0);
+  assert.equal(summary.receivedRevenue, 0);
+  assert.equal(summary.pendingPricingCount, 0);
 });
 
 test("allows fully received message only when reconciled revenue exists", () => {

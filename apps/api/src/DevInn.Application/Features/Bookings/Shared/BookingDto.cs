@@ -41,6 +41,7 @@ public sealed record BookingDto(
     int[]? ChildrenAges,
     PricingBreakdown Pricing,
     BookingStatus Status,
+    BookingReconciliationStatus? ReconciliationStatus,
     PaymentStatus PaymentStatus,
     decimal TotalPaid,
     decimal BalanceDue,
@@ -71,6 +72,7 @@ internal sealed record BookingProjection
     public string? ChildrenAges { get; init; }
     public decimal TotalValue { get; init; }
     public string Status { get; init; } = null!;
+    public string? ReconciliationStatus { get; init; }
     public string Source { get; init; } = null!;
     public string? Notes { get; init; }
     public DateTimeOffset CreatedAt { get; init; }

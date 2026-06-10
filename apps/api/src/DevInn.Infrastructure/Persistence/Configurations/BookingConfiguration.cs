@@ -22,6 +22,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.Property(b => b.RoomId).IsRequired();
         builder.Property(b => b.Notes).HasMaxLength(1000);
         builder.Property(b => b.Status).IsRequired().HasConversion<string>().HasMaxLength(20);
+        builder.Property(b => b.ReconciliationStatus).HasConversion<string>().HasMaxLength(30);
         builder.Property(b => b.CancellationReason).HasConversion<string>().HasMaxLength(30);
         builder.Property(b => b.Source).IsRequired().HasConversion<string>().HasMaxLength(20);
         builder.Property(b => b.TotalValue).HasPrecision(18, 2).IsRequired();
@@ -38,6 +39,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasIndex(b => b.ExternalId).IsUnique();
         builder.HasIndex(b => b.ChannelIntegrationId);
         builder.HasIndex(b => b.Source);
+        builder.HasIndex(b => b.ReconciliationStatus);
         builder.HasIndex(b => new { b.RoomId, b.DeletedAt, b.Status });
         builder.HasIndex(b => new { b.InnId, b.DeletedAt });
         // Owned: StayPeriod (complex/owned type)

@@ -12,6 +12,7 @@ public record ListBookingsQuery(
     DateTimeOffset? StartDate,
     DateTimeOffset? EndDate,
     BookingStatus? Status,
+    BookingReconciliationStatus? ReconciliationStatus,
     PaymentStatus? PaymentStatus,
     int PageNumber = 1,
     int PageSize = 50

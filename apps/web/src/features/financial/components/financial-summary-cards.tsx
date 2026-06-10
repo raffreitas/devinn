@@ -57,7 +57,7 @@ export function FinancialSummaryCards({
           </p>
           {financialSummary.pendingPricingCount > 0 && (
             <p className="text-xs text-amber-500 mt-1 font-medium">
-              {financialSummary.pendingPricingCount} importações sem valor
+              {financialSummary.pendingPricingCount} conciliações pendentes
             </p>
           )}
         </div>

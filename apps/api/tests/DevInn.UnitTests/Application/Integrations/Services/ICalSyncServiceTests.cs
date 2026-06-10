@@ -220,7 +220,8 @@ public sealed class ICalSyncServiceTests
             Arg.Is<Booking>(booking =>
                 booking.ExternalId == "event-1" &&
                 booking.ChannelIntegrationId == integration.Id &&
-                booking.Source == BookingSource.AirbnbIcal),
+                booking.Source == BookingSource.AirbnbIcal &&
+                booking.ReconciliationStatus == BookingReconciliationStatus.NeedsReview),
             TestContext.Current.CancellationToken);
         await _bookingRepository.DidNotReceive().GetByExternalIdAsync(
             Arg.Any<string>(),
