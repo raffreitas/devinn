@@ -1,4 +1,5 @@
 using DevInn.Application.Common.Tenancy.Abstractions;
+using DevInn.Application.Features.Integrations.Abstractions;
 using DevInn.Application.Features.Integrations.Orchestrators;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Bookings.Services;

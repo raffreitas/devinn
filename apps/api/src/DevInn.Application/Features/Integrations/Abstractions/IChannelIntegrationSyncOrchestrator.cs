@@ -1,4 +1,4 @@
-namespace DevInn.Application.Features.Integrations.Orchestrators;
+namespace DevInn.Application.Features.Integrations.Abstractions;
 
 public interface IChannelIntegrationSyncOrchestrator
 {

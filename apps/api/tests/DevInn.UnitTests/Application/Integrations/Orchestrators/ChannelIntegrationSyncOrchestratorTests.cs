@@ -1,7 +1,7 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.ICal.Abstractions;
+using DevInn.Application.Features.Integrations.Abstractions;
 using DevInn.Application.Features.Integrations.Orchestrators;
-using DevInn.Application.Features.Integrations.Services;
 using DevInn.Domain.Aggregates.Bookings;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Bookings.Enums;
