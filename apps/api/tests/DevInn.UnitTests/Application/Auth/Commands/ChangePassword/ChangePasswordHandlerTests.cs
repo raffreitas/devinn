@@ -13,7 +13,7 @@ namespace DevInn.UnitTests.Application.Auth.Commands.ChangePassword;
 [Trait("Category", "Application")]
 public sealed class ChangePasswordHandlerTests
 {
-    private readonly IIdentityService _identityService = Substitute.For<IIdentityService>();
+    private readonly IIdentityGateway _identityService = Substitute.For<IIdentityGateway>();
     private readonly IUserContext _userContext = Substitute.For<IUserContext>();
 
     private readonly ChangePasswordHandler _sut;
@@ -35,7 +35,7 @@ public sealed class ChangePasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenIdentityServiceFails()
+    public async Task Handle_ShouldReturnFailure_WhenAspNetIdentityGatewayFails()
     {
         var userId = Guid.NewGuid();
         var command = new ChangePasswordCommand("Valid123!", "Strong123!");
@@ -51,7 +51,7 @@ public sealed class ChangePasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldPassCurrentUserIdAndPasswordsToIdentityService()
+    public async Task Handle_ShouldPassCurrentUserIdAndPasswordsToAspNetIdentityGateway()
     {
         var userId = Guid.NewGuid();
         var command = new ChangePasswordCommand("Valid123!", "Strong123!");

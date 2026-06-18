@@ -7,7 +7,7 @@ using Mediator;
 
 namespace DevInn.Application.Features.Auth.Commands.ResetPassword;
 
-internal sealed class ResetPasswordHandler(IIdentityService identityService)
+internal sealed class ResetPasswordHandler(IIdentityGateway identityService)
     : ICommandHandler<ResetPasswordCommand, Result>
 {
     public async ValueTask<Result> Handle(ResetPasswordCommand command, CancellationToken cancellationToken)

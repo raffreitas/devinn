@@ -1,4 +1,4 @@
-﻿using DevInn.Application.Common.Data.Abstractions;
+using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.ICal.Abstractions;
 using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
@@ -10,6 +10,7 @@ using DevInn.Infrastructure.BackgroundJobs.Options;
 using DevInn.Infrastructure.Common.Constants;
 using DevInn.Infrastructure.Common.Extensions;
 using DevInn.Infrastructure.Integrations;
+using DevInn.Infrastructure.Integrations.Gateways;
 using DevInn.Infrastructure.Persistence.Context;
 using DevInn.Infrastructure.Persistence.Factories;
 using DevInn.Infrastructure.Persistence.Interceptors;
@@ -62,12 +63,12 @@ public static class DependencyInjection
             .Get<BackgroundJobsOptions>() ?? new BackgroundJobsOptions();
 
         // External Services
-        services.AddHttpClient(ICalService.HttpClientName, client =>
+        services.AddHttpClient(HttpICalFeedGateway.HttpClientName, client =>
         {
             client.Timeout = TimeSpan.FromSeconds(jobsOptions.ICalHttpTimeoutSeconds);
             client.DefaultRequestHeaders.UserAgent.ParseAdd("DevInn/1.0 iCalSync");
         });
-        services.AddScoped<IICalService, ICalService>();
+        services.AddScoped<IICalFeedGateway, HttpICalFeedGateway>();
         services.AddScoped<IICalExportService, ICalExportService>();
 
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentNames.Development)

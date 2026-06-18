@@ -7,7 +7,7 @@ using Mediator;
 
 namespace DevInn.Application.Features.Auth.Commands.ForgotPassword;
 
-internal sealed class ForgotPasswordHandler(IIdentityService identityService)
+internal sealed class ForgotPasswordHandler(IIdentityGateway identityService)
     : ICommandHandler<ForgotPasswordCommand, Result>
 {
     public async ValueTask<Result> Handle(ForgotPasswordCommand command, CancellationToken cancellationToken)

@@ -1,4 +1,4 @@
-﻿using DevInn.Application.Common.Errors;
+using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.Identity.Abstractions;
 using DevInn.Application.Common.Validation;
 using DevInn.Domain.Aggregates.Inns.Abstractions;
@@ -9,7 +9,7 @@ using Mediator;
 
 namespace DevInn.Application.Features.Auth.Commands.Register;
 
-internal sealed class RegisterCommandHandler(IIdentityService identityService, IInnRepository innRepository)
+internal sealed class RegisterCommandHandler(IIdentityGateway identityService, IInnRepository innRepository)
     : ICommandHandler<RegisterCommand, Result>
 {
     public async ValueTask<Result> Handle(RegisterCommand command, CancellationToken cancellationToken)

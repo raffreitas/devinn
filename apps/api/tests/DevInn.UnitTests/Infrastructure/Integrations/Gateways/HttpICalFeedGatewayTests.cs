@@ -1,14 +1,14 @@
 using System.Net;
 
-using DevInn.Infrastructure.Integrations;
+using DevInn.Infrastructure.Integrations.Gateways;
 
 using Shouldly;
 
-namespace DevInn.UnitTests.Infrastructure.Integrations;
+namespace DevInn.UnitTests.Infrastructure.Integrations.Gateways;
 
 [Trait("Category", "Unit")]
 [Trait("Category", "Infrastructure")]
-public sealed class ICalServiceTests
+public sealed class HttpICalFeedGatewayTests
 {
     [Fact]
     public async Task ParseICalFeedAsync_ShouldNormalizeAllDayEventsToMiddayUtc()
@@ -58,9 +58,9 @@ public sealed class ICalServiceTests
         events[0].End.ShouldBe(new DateTimeOffset(2026, 3, 15, 11, 0, 0, TimeSpan.Zero));
     }
 
-    private static ICalService CreateSut(string icalContent)
+    private static HttpICalFeedGateway CreateSut(string icalContent)
     {
-        return new ICalService(new StubHttpClientFactory(icalContent));
+        return new HttpICalFeedGateway(new StubHttpClientFactory(icalContent));
     }
 
     private sealed class StubHttpClientFactory(string icalContent) : IHttpClientFactory

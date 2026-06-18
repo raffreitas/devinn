@@ -1,5 +1,6 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.ICal.Abstractions;
+using DevInn.Application.Features.Integrations.Abstractions;
 using DevInn.Domain.Aggregates.Bookings;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
 using DevInn.Domain.Aggregates.Bookings.Enums;
@@ -11,16 +12,16 @@ using DevInn.Domain.Shared.ValueObjects;
 
 using Microsoft.Extensions.Logging;
 
-namespace DevInn.Application.Features.Integrations.Services;
+namespace DevInn.Application.Features.Integrations.Orchestrators;
 
-internal sealed class ICalSyncService(
+internal sealed class ChannelIntegrationSyncOrchestrator(
     IChannelIntegrationRepository integrationRepository,
     IBookingRepository bookingRepository,
-    IICalService iCalService,
+    IICalFeedGateway iCalFeedGateway,
     INextSyncTimeProvider nextSyncTimeProvider,
     IUnitOfWork uow,
-    ILogger<ICalSyncService> logger
-) : IICalSyncService
+    ILogger<ChannelIntegrationSyncOrchestrator> logger
+) : IChannelIntegrationSyncOrchestrator
 {
     private const int ReconciliationWindowDays = 30;
 
@@ -44,7 +45,7 @@ internal sealed class ICalSyncService(
         {
             integration.MarkSyncStarted();
 
-            var events = await iCalService.ParseICalFeedAsync(integration.ICalUrl, cancellationToken);
+            var events = await iCalFeedGateway.ParseICalFeedAsync(integration.ICalUrl, cancellationToken);
             var iCalEventUids = events.Select(e => e.Uid).ToHashSet();
             var existingBookingsByExternalId = await LoadExistingBookingsByExternalIdAsync(
                 iCalEventUids,

@@ -1,7 +1,7 @@
-﻿using DevInn.Application.Common.Email.Abstractions;
+using DevInn.Application.Common.Email.Abstractions;
 using DevInn.Infrastructure.Common.Extensions;
+using DevInn.Infrastructure.Email.Gateways;
 using DevInn.Infrastructure.Email.Options;
-using DevInn.Infrastructure.Email.Services;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +27,7 @@ internal static class DependencyInjection
             o.ApiToken = emailOptions.ApiKey;
         });
         services.AddTransient<IResend, ResendClient>();
-        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IEmailGateway, ResendEmailGateway>();
 
         return services;
     }

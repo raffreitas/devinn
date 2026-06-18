@@ -10,9 +10,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace DevInn.Infrastructure.Tokens.Services;
+namespace DevInn.Infrastructure.Tokens.Providers;
 
-internal sealed class JwtTokenService(IOptions<JwtTokenOptions> options) : ITokenService
+internal sealed class JwtAccessTokenProvider(IOptions<JwtTokenOptions> options) : IAccessTokenProvider
 {
     public const string JwtAlgorithm = SecurityAlgorithms.HmacSha256;
     private readonly JwtTokenOptions _options = options.Value;

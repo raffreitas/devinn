@@ -1,6 +1,6 @@
 ﻿namespace DevInn.Application.Common.Email.Abstractions;
 
-public interface IEmailService
+public interface IEmailGateway
 {
     Task SendPasswordResetAsync(PasswordResetEmail message, CancellationToken cancellationToken = default);
 }

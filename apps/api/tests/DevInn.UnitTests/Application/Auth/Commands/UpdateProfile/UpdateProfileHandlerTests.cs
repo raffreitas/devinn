@@ -15,7 +15,7 @@ namespace DevInn.UnitTests.Application.Auth.Commands.UpdateProfile;
 [Trait("Category", "Application")]
 public sealed class UpdateProfileHandlerTests
 {
-    private readonly IIdentityService _identityService = Substitute.For<IIdentityService>();
+    private readonly IIdentityGateway _identityService = Substitute.For<IIdentityGateway>();
     private readonly IUserContext _userContext = Substitute.For<IUserContext>();
 
     private readonly UpdateProfileHandler _sut;
@@ -54,7 +54,7 @@ public sealed class UpdateProfileHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenIdentityServiceCannotUpdateProfile()
+    public async Task Handle_ShouldReturnFailure_WhenAspNetIdentityGatewayCannotUpdateProfile()
     {
         var userId = Guid.NewGuid();
         var existingUser = new User(userId, Guid.NewGuid(), "Nome Antigo", "user@test.com", [UserRole.InnAdmin]);

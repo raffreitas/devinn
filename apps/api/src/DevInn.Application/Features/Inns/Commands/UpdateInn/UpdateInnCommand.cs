@@ -19,12 +19,12 @@ public sealed record UpdateInnCommand(
     string Phone,
     string Email) : ICommand<Result>
 {
-    public Validation Validate() => new UpdateInnInputValidation().Validate(this).ToFailure();
+    public Validation Validate() => new UpdateInnCommandValidator().Validate(this).ToFailure();
 }
 
-public sealed class UpdateInnInputValidation : AbstractValidator<UpdateInnCommand>
+public sealed class UpdateInnCommandValidator : AbstractValidator<UpdateInnCommand>
 {
-    public UpdateInnInputValidation()
+    public UpdateInnCommandValidator()
     {
         RuleFor(x => x.Id).NotEmpty().WithMessage("Id da pousada é obrigatório.");
 

@@ -15,12 +15,12 @@ public sealed record CreateChannelIntegrationCommand(
     Guid RoomId
 ) : ICommand<Result<Guid>>
 {
-    public Validation Validate() => new CreateChannelIntegrationValidation().Validate(this).ToFailure();
+    public Validation Validate() => new CreateChannelIntegrationCommandValidator().Validate(this).ToFailure();
 }
 
-internal sealed class CreateChannelIntegrationValidation : AbstractValidator<CreateChannelIntegrationCommand>
+internal sealed class CreateChannelIntegrationCommandValidator : AbstractValidator<CreateChannelIntegrationCommand>
 {
-    public CreateChannelIntegrationValidation()
+    public CreateChannelIntegrationCommandValidator()
     {
         RuleFor(x => x.ICalUrl)
             .NotEmpty().WithMessage("iCal URL é obrigatória.")

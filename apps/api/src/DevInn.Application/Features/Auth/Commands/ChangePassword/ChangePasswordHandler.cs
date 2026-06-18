@@ -1,4 +1,4 @@
-﻿using DevInn.Application.Common.Identity.Abstractions;
+using DevInn.Application.Common.Identity.Abstractions;
 using DevInn.Application.Common.Validation;
 
 using FluentResults;
@@ -7,7 +7,7 @@ using Mediator;
 
 namespace DevInn.Application.Features.Auth.Commands.ChangePassword;
 
-internal sealed class ChangePasswordHandler(IIdentityService identityService, IUserContext userContext)
+internal sealed class ChangePasswordHandler(IIdentityGateway identityService, IUserContext userContext)
     : ICommandHandler<ChangePasswordCommand, Result>
 {
     public async ValueTask<Result> Handle(ChangePasswordCommand command, CancellationToken cancellationToken)

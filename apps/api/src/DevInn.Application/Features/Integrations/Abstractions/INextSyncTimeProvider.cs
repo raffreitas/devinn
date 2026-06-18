@@ -1,4 +1,4 @@
-namespace DevInn.Application.Features.Integrations.Services;
+namespace DevInn.Application.Features.Integrations.Abstractions;
 
 public interface INextSyncTimeProvider
 {

@@ -1,4 +1,4 @@
-using DevInn.Application.Features.Integrations.Services;
+using DevInn.Application.Features.Integrations.Abstractions;
 using DevInn.Infrastructure.BackgroundJobs.Jobs;
 using DevInn.Infrastructure.BackgroundJobs.Options;
 using DevInn.Infrastructure.BackgroundJobs.Providers;
