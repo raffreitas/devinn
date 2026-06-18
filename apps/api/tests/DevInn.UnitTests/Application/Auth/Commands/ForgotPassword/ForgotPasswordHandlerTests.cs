@@ -13,7 +13,7 @@ namespace DevInn.UnitTests.Application.Auth.Commands.ForgotPassword;
 [Trait("Category", "Application")]
 public sealed class ForgotPasswordHandlerTests
 {
-    private readonly IIdentityService _identityService = Substitute.For<IIdentityService>();
+    private readonly IIdentityGateway _identityService = Substitute.For<IIdentityGateway>();
 
     private readonly ForgotPasswordHandler _sut;
 
@@ -34,7 +34,7 @@ public sealed class ForgotPasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenIdentityServiceFails()
+    public async Task Handle_ShouldReturnFailure_WhenAspNetIdentityGatewayFails()
     {
         var command = new ForgotPasswordCommand("user@test.com");
         _identityService.RequestPasswordResetAsync(
@@ -50,7 +50,7 @@ public sealed class ForgotPasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldPassEmailToIdentityService()
+    public async Task Handle_ShouldPassEmailToAspNetIdentityGateway()
     {
         var command = new ForgotPasswordCommand("user@test.com");
         _identityService.RequestPasswordResetAsync(

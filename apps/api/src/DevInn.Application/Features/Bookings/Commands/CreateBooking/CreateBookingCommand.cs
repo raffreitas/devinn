@@ -26,22 +26,22 @@ public sealed record CreateBookingCommand(
     string? PaymentNotes = null
 ) : ICommand<Result<Guid>>
 {
-    public Validation Validate() => new CreateBookingInputValidation().Validate(this).ToFailure();
+    public Validation Validate() => new CreateBookingCommandValidator().Validate(this).ToFailure();
 }
 
-internal sealed class CreateBookingInputValidation : AbstractValidator<CreateBookingCommand>
+internal sealed class CreateBookingCommandValidator : AbstractValidator<CreateBookingCommand>
 {
-    public CreateBookingInputValidation()
+    public CreateBookingCommandValidator()
     {
         When(x => x.Source == BookingSource.Manual, () =>
         {
             RuleFor(command => command.Guest).NotNull().WithMessage("Informações do hóspede são obrigatórias para reservas manuais.");
-            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);
+            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidator()!);
         });
 
         When(x => x.Guest != null, () =>
         {
-            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);
+            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidator()!);
         });
 
         RuleFor(x => x.RoomId)
@@ -88,9 +88,9 @@ internal sealed class CreateBookingInputValidation : AbstractValidator<CreateBoo
     }
 }
 
-internal sealed class GuestDtoValidation : AbstractValidator<GuestDto>
+internal sealed class GuestDtoValidator : AbstractValidator<GuestDto>
 {
-    public GuestDtoValidation()
+    public GuestDtoValidator()
     {
         RuleFor(guest => guest.Name)
             .NotEmpty().WithMessage("Nome do hóspede é obrigatório.")

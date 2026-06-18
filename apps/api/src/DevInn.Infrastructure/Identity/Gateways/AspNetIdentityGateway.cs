@@ -14,15 +14,15 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace DevInn.Infrastructure.Identity.Services;
+namespace DevInn.Infrastructure.Identity.Gateways;
 
-internal sealed class IdentityService(
+internal sealed class AspNetIdentityGateway(
     UserManager<ApplicationUser> userManager,
     RoleManager<IdentityRole<Guid>> roleManager,
-    IEmailService emailService,
+    IEmailGateway emailGateway,
     IOptions<PasswordResetOptions> passwordResetOptions,
-    ILogger<IdentityService> logger)
-    : IIdentityService
+    ILogger<AspNetIdentityGateway> logger)
+    : IIdentityGateway
 {
     private readonly PasswordResetOptions _passwordResetOptions = passwordResetOptions.Value;
 
@@ -148,7 +148,7 @@ internal sealed class IdentityService(
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var resetUrl = BuildPasswordResetUrl(user.Id, encodedToken);
 
-        await emailService.SendPasswordResetAsync(
+        await emailGateway.SendPasswordResetAsync(
             new PasswordResetEmail(
                 user.Email!,
                 user.Name,

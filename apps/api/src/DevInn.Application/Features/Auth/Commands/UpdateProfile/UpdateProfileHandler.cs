@@ -1,4 +1,4 @@
-﻿using DevInn.Application.Common.Identity.Abstractions;
+using DevInn.Application.Common.Identity.Abstractions;
 using DevInn.Application.Common.Validation;
 
 using FluentResults;
@@ -8,7 +8,7 @@ using Mediator;
 namespace DevInn.Application.Features.Auth.Commands.UpdateProfile;
 
 internal sealed class UpdateProfileHandler(
-    IIdentityService identityService,
+    IIdentityGateway identityService,
     IUserContext userContext
 ) : ICommandHandler<UpdateProfileCommand, Result>
 {

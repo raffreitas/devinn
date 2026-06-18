@@ -3,9 +3,9 @@ using DevInn.Application.Common.ICal.Abstractions;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 
-namespace DevInn.Infrastructure.Integrations;
+namespace DevInn.Infrastructure.Integrations.Gateways;
 
-internal sealed class ICalService(IHttpClientFactory httpClientFactory) : IICalService
+internal sealed class HttpICalFeedGateway(IHttpClientFactory httpClientFactory) : IICalFeedGateway
 {
     internal const string HttpClientName = "ICal";
     private const int AllDayNormalizationHourUtc = 12;

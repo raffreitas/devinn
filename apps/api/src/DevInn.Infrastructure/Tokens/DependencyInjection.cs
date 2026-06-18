@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Text;
 
 using DevInn.Infrastructure.Common.Constants;
@@ -6,7 +6,7 @@ using DevInn.Application.Common.Tokens.Abstractions;
 using DevInn.Infrastructure.Common.Extensions;
 using DevInn.Infrastructure.Identity.Models;
 using DevInn.Infrastructure.Tokens.Options;
-using DevInn.Infrastructure.Tokens.Services;
+using DevInn.Infrastructure.Tokens.Providers;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -37,7 +37,7 @@ public static class DependencyInjection
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidAlgorithms = [JwtTokenService.JwtAlgorithm],
+                    ValidAlgorithms = [JwtAccessTokenProvider.JwtAlgorithm],
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtOptions.SecretKey)),
                     ValidateIssuer = true,
@@ -71,7 +71,7 @@ public static class DependencyInjection
                 };
             });
 
-        services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<IAccessTokenProvider, JwtAccessTokenProvider>();
 
         return services;
     }

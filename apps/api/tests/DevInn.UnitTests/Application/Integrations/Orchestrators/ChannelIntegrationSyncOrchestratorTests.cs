@@ -1,5 +1,6 @@
 using DevInn.Application.Common.Data.Abstractions;
 using DevInn.Application.Common.ICal.Abstractions;
+using DevInn.Application.Features.Integrations.Orchestrators;
 using DevInn.Application.Features.Integrations.Services;
 using DevInn.Domain.Aggregates.Bookings;
 using DevInn.Domain.Aggregates.Bookings.Abstractions;
@@ -17,24 +18,24 @@ using NSubstitute;
 
 using Shouldly;
 
-namespace DevInn.UnitTests.Application.Integrations.Services;
+namespace DevInn.UnitTests.Application.Integrations.Orchestrators;
 
 [Trait("Category", "Unit")]
 [Trait("Category", "Application")]
-public sealed class ICalSyncServiceTests
+public sealed class ChannelIntegrationSyncOrchestratorTests
 {
     private readonly IChannelIntegrationRepository _integrationRepository =
         Substitute.For<IChannelIntegrationRepository>();
 
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
-    private readonly IICalService _icalService = Substitute.For<IICalService>();
+    private readonly IICalFeedGateway _icalService = Substitute.For<IICalFeedGateway>();
     private readonly INextSyncTimeProvider _nextSyncTimeProvider = Substitute.For<INextSyncTimeProvider>();
     private readonly IUnitOfWork _uow = Substitute.For<IUnitOfWork>();
-    private readonly ILogger<ICalSyncService> _logger = NullLogger<ICalSyncService>.Instance;
+    private readonly ILogger<ChannelIntegrationSyncOrchestrator> _logger = NullLogger<ChannelIntegrationSyncOrchestrator>.Instance;
 
-    private readonly ICalSyncService _sut;
+    private readonly ChannelIntegrationSyncOrchestrator _sut;
 
-    public ICalSyncServiceTests()
+    public ChannelIntegrationSyncOrchestratorTests()
     {
         _nextSyncTimeProvider.GetNextSyncAt(Arg.Any<DateTimeOffset>())
             .Returns(new DateTimeOffset(2026, 03, 20, 15, 0, 0, TimeSpan.Zero));
@@ -53,7 +54,7 @@ public sealed class ICalSyncServiceTests
                 Arg.Any<DateTimeOffset?>(),
                 Arg.Any<CancellationToken>())
             .Returns([]);
-        _sut = new ICalSyncService(
+        _sut = new ChannelIntegrationSyncOrchestrator(
             _integrationRepository,
             _bookingRepository,
             _icalService,

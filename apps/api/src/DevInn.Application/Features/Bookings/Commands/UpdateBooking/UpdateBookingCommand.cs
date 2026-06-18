@@ -40,12 +40,12 @@ internal sealed class UpdateBookingCommandValidator : AbstractValidator<UpdateBo
         When(x => x.Source == BookingSource.Manual, () =>
         {
             RuleFor(command => command.Guest).NotNull().WithMessage("Informações do hóspede são obrigatórias para reservas manuais.");
-            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);
+            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidator()!);
         });
 
         When(x => x.Guest != null, () =>
         {
-            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidation()!);
+            RuleFor(command => command.Guest).SetValidator(new GuestDtoValidator()!);
         });
 
         RuleFor(x => x.RoomId)

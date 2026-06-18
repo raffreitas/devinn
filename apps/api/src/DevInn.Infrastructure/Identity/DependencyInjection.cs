@@ -1,6 +1,7 @@
-﻿using DevInn.Application.Common.Identity;
+using DevInn.Application.Common.Identity;
 using DevInn.Application.Common.Identity.Abstractions;
 using DevInn.Infrastructure.Common.Extensions;
+using DevInn.Infrastructure.Identity.Gateways;
 using DevInn.Infrastructure.Identity.Context;
 using DevInn.Infrastructure.Identity.Models;
 using DevInn.Infrastructure.Identity.Options;
@@ -16,7 +17,7 @@ namespace DevInn.Infrastructure.Identity;
 
 public static class DependencyInjection
 {
-    public static void ConfigureIdentityService(this IServiceCollection services, IConfiguration configuration)
+    public static void ConfigureIdentity(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<PasswordResetOptions>()
             .BindConfiguration(PasswordResetOptions.SectionName)
@@ -72,8 +73,8 @@ public static class DependencyInjection
         // Configure HTTP Context Accessor
         services.AddHttpContextAccessor();
 
-        // Add Services
-        services.AddScoped<IIdentityService, IdentityService>();
+        // Add gateways and providers
+        services.AddScoped<IIdentityGateway, AspNetIdentityGateway>();
         services.AddScoped<IUserContext, UserContextService>();
     }
 }

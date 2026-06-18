@@ -1,4 +1,4 @@
-﻿using DevInn.Application.Common.Validation;
+using DevInn.Application.Common.Validation;
 
 using FluentResults;
 
@@ -10,12 +10,12 @@ namespace DevInn.Application.Features.Auth.Commands.Login;
 
 public record LoginCommand(string Email, string Password) : ICommand<Result<LoginResult>>
 {
-    public Validation Validate() => new LoginInputValidator().Validate(this).ToFailure();
+    public Validation Validate() => new LoginCommandValidator().Validate(this).ToFailure();
 };
 
-public sealed class LoginInputValidator : AbstractValidator<LoginCommand>
+public sealed class LoginCommandValidator : AbstractValidator<LoginCommand>
 {
-    public LoginInputValidator()
+    public LoginCommandValidator()
     {
         RuleFor(x => x.Email).NotEmpty().WithMessage("Email é obrigatório.");
         RuleFor(x => x.Email).EmailAddress().WithMessage("Email inválido.");

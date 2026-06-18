@@ -13,7 +13,7 @@ namespace DevInn.UnitTests.Application.Auth.Commands.ResetPassword;
 [Trait("Category", "Application")]
 public sealed class ResetPasswordHandlerTests
 {
-    private readonly IIdentityService _identityService = Substitute.For<IIdentityService>();
+    private readonly IIdentityGateway _identityService = Substitute.For<IIdentityGateway>();
 
     private readonly ResetPasswordHandler _sut;
 
@@ -34,7 +34,7 @@ public sealed class ResetPasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnFailure_WhenIdentityServiceFails()
+    public async Task Handle_ShouldReturnFailure_WhenAspNetIdentityGatewayFails()
     {
         var command = new ResetPasswordCommand(Guid.NewGuid(), "token", "Strong123!");
         _identityService.ResetPasswordAsync(Arg.Any<ResetPasswordRequest>(), TestContext.Current.CancellationToken)
@@ -48,7 +48,7 @@ public sealed class ResetPasswordHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldPassResetPayloadToIdentityService()
+    public async Task Handle_ShouldPassResetPayloadToAspNetIdentityGateway()
     {
         var command = new ResetPasswordCommand(Guid.NewGuid(), "token", "Strong123!");
         _identityService.ResetPasswordAsync(Arg.Any<ResetPasswordRequest>(), TestContext.Current.CancellationToken)

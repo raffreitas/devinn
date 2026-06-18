@@ -1,6 +1,6 @@
 namespace DevInn.Application.Common.ICal.Abstractions;
 
-public interface IICalService
+public interface IICalFeedGateway
 {
     Task<IReadOnlyList<ICalEventDto>> ParseICalFeedAsync(string iCalUrl, CancellationToken cancellationToken = default);
 }

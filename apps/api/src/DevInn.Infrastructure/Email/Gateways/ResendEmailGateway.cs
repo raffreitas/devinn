@@ -8,9 +8,9 @@ using Microsoft.Extensions.Options;
 
 using Resend;
 
-namespace DevInn.Infrastructure.Email.Services;
+namespace DevInn.Infrastructure.Email.Gateways;
 
-internal sealed class EmailService(IResend client, IOptions<EmailOptions> options) : IEmailService
+internal sealed class ResendEmailGateway(IResend client, IOptions<EmailOptions> options) : IEmailGateway
 {
     private readonly EmailOptions _options = options.Value;
 

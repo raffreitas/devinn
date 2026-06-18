@@ -15,7 +15,7 @@ namespace DevInn.UnitTests.Application.Auth.Commands.Register;
 [Trait("Category", "Application")]
 public sealed class RegisterCommandHandlerTests
 {
-    private readonly IIdentityService _identityService = Substitute.For<IIdentityService>();
+    private readonly IIdentityGateway _identityService = Substitute.For<IIdentityGateway>();
     private readonly IInnRepository _innRepository = Substitute.For<IInnRepository>();
 
     private readonly RegisterCommandHandler _sut;

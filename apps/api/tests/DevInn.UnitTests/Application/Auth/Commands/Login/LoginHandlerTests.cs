@@ -16,8 +16,8 @@ namespace DevInn.UnitTests.Application.Auth.Commands.Login;
 [Trait("Category", "Application")]
 public sealed class LoginHandlerTests
 {
-    private readonly IIdentityService _identityService = Substitute.For<IIdentityService>();
-    private readonly ITokenService _tokenService = Substitute.For<ITokenService>();
+    private readonly IIdentityGateway _identityService = Substitute.For<IIdentityGateway>();
+    private readonly IAccessTokenProvider _tokenService = Substitute.For<IAccessTokenProvider>();
 
     private readonly LoginHandler _sut;
 

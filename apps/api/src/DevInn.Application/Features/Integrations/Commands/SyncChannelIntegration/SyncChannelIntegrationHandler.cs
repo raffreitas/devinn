@@ -1,4 +1,4 @@
-using DevInn.Application.Features.Integrations.Services;
+using DevInn.Application.Features.Integrations.Orchestrators;
 
 using FluentResults;
 
@@ -6,7 +6,7 @@ using Mediator;
 
 namespace DevInn.Application.Features.Integrations.Commands.SyncChannelIntegration;
 
-internal sealed class SyncChannelIntegrationHandler(IICalSyncService syncService)
+internal sealed class SyncChannelIntegrationHandler(IChannelIntegrationSyncOrchestrator syncService)
     : ICommandHandler<SyncChannelIntegrationCommand, Result<int>>
 {
     public async ValueTask<Result<int>> Handle(SyncChannelIntegrationCommand command,

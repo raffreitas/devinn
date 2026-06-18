@@ -15,12 +15,12 @@ public sealed record UpdateChannelIntegrationCommand(
     bool IsActive
 ) : ICommand<Result>
 {
-    public Validation Validate() => new UpdateChannelIntegrationValidation().Validate(this).ToFailure();
+    public Validation Validate() => new UpdateChannelIntegrationCommandValidator().Validate(this).ToFailure();
 }
 
-internal sealed class UpdateChannelIntegrationValidation : AbstractValidator<UpdateChannelIntegrationCommand>
+internal sealed class UpdateChannelIntegrationCommandValidator : AbstractValidator<UpdateChannelIntegrationCommand>
 {
-    public UpdateChannelIntegrationValidation()
+    public UpdateChannelIntegrationCommandValidator()
     {
         RuleFor(x => x.Id)
             .NotEmpty().WithMessage("ID da integração é obrigatório.");
