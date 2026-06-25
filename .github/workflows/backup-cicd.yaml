@@ -45,12 +45,12 @@ jobs:
 
       - name: Restore
         working-directory: apps/backup
-        run: dotnet restore tests/DevInn.Backup.Tests/DevInn.Backup.Tests.csproj --artifacts-path "$RUNNER_TEMP/backup-artifacts"
+        run: dotnet restore tests/DevInn.Backup.Tests/DevInn.Backup.Tests.csproj"
 
       - name: Build
         working-directory: apps/backup
-        run: dotnet build src/DevInn.Backup/DevInn.Backup.csproj --no-restore --configuration Release --verbosity minimal --artifacts-path "$RUNNER_TEMP/backup-artifacts"
+        run: dotnet build src/DevInn.Backup/DevInn.Backup.csproj --no-restore --configuration Release --verbosity minimal"
 
       - name: Test
         working-directory: apps/backup
-        run: dotnet test tests/DevInn.Backup.Tests/DevInn.Backup.Tests.csproj --no-restore --configuration Release --verbosity normal --artifacts-path "$RUNNER_TEMP/backup-artifacts"
+        run: dotnet test tests/DevInn.Backup.Tests/DevInn.Backup.Tests.csproj --no-restore --configuration Release --verbosity normal"
