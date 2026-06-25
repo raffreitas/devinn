@@ -1,4 +1,4 @@
-name: IaC Drift
+name: IaC Drift Check
 
 on:
   pull_request:
@@ -15,7 +15,6 @@ concurrency:
 
 jobs:
   plan:
-    if: false # Disabled for now
     name: Plan Railway config
     runs-on: ubuntu-latest
 

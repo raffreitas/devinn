@@ -71,7 +71,7 @@ If a plan proposes deleting services, variables, volumes, buckets, or domains, s
 
 ## CI drift check
 
-`.github/workflows/railway-iac-drift.yaml` runs `pnpm railway:plan:ci`, which uses `railway config plan --detailed-exit-code`. Exit code `0` means no drift. Exit code `2` means Railway has pending changes relative to `.railway/railway.ts`.
+`.github/workflows/iac-drift.yaml` runs `pnpm railway:plan:ci`, which uses `railway config plan --detailed-exit-code`. Exit code `0` means no drift. Exit code `2` means Railway has pending changes relative to `.railway/railway.ts`.
 
 The workflow requires `RAILWAY_TOKEN` in GitHub Actions secrets. It only plans; it never applies changes and never prints decrypted variable values.
 
