@@ -1,0 +1,56 @@
+name: CI Backup
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "apps/backup/**"
+      - ".github/workflows/backup-cicd.yaml"
+  pull_request:
+    paths:
+      - "apps/backup/**"
+      - ".github/workflows/backup-cicd.yaml"
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: "10.0.x"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-backup
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Build & Test Backup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.local/share/NuGet
+          key: backup-nuget-${{ runner.os }}-dotnet-${{ hashFiles('apps/backup/**/*.csproj') }}
+          restore-keys: |
+            backup-nuget-${{ runner.os }}-dotnet-
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        working-directory: apps/backup
+        run: dotnet restore tests/DevInn.Backup.Tests/DevInn.Backup.Tests.csproj --artifacts-path "$RUNNER_TEMP/backup-artifacts"
+
+      - name: Build
+        working-directory: apps/backup
+        run: dotnet build src/DevInn.Backup/DevInn.Backup.csproj --no-restore --configuration Release --verbosity minimal --artifacts-path "$RUNNER_TEMP/backup-artifacts"
+
+      - name: Test
+        working-directory: apps/backup
+        run: dotnet test tests/DevInn.Backup.Tests/DevInn.Backup.Tests.csproj --no-restore --configuration Release --verbosity normal --artifacts-path "$RUNNER_TEMP/backup-artifacts"

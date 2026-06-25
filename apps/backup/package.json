@@ -1,0 +1,10 @@
+{
+  "name": "@dev-inn/backup",
+  "version": "1.0.0",
+  "description": "DevInn PostgreSQL backup job",
+  "private": true,
+  "scripts": {
+    "build": "dotnet build src/DevInn.Backup/DevInn.Backup.csproj --configuration Release",
+    "test": "dotnet test tests/DevInn.Backup.Tests/DevInn.Backup.Tests.csproj --configuration Release"
+  }
+}

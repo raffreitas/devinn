@@ -10,6 +10,8 @@
     "test:web:financial": "pnpm --filter web test:financial",
     "dev:api": "pnpm --filter api dev",
     "build:api": "pnpm --filter api build",
+    "build:backup": "pnpm --filter @dev-inn/backup build",
+    "test:backup": "pnpm --filter @dev-inn/backup test",
     "prepare": "husky"
   },
   "engines": {
