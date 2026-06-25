@@ -5,13 +5,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev:web": "pnpm --filter web dev",
-    "build:web": "pnpm --filter web build",
-    "test:web:financial": "pnpm --filter web test:financial",
-    "dev:api": "pnpm --filter api dev",
-    "build:api": "pnpm --filter api build",
-    "build:backup": "pnpm --filter @dev-inn/backup build",
-    "test:backup": "pnpm --filter @dev-inn/backup test",
+    "railway:plan": "railway config plan",
+    "railway:plan:ci": "railway config plan --detailed-exit-code",
     "prepare": "husky"
   },
   "engines": {
@@ -19,7 +14,8 @@
     "pnpm": ">=10.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.4",
     "husky": "^9.1.7",
-    "@biomejs/biome": "2.4.4"
+    "railway": "3.4.1"
   }
 }
