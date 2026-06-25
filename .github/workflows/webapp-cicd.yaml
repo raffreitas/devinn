@@ -40,7 +40,7 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
 
       - name: Cache pnpm packages
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
