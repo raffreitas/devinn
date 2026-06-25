@@ -12,4 +12,5 @@
     <Project Path="src/DevInn.Domain/DevInn.Domain.csproj" />
     <Project Path="src/DevInn.Infrastructure/DevInn.Infrastructure.csproj" />
     <Project Path="src/DevInn.WebApi/DevInn.WebApi.csproj" />
+    <Project Path="src/DevInn.DatabaseMigrator/DevInn.DatabaseMigrator.csproj" />
 </Solution>
