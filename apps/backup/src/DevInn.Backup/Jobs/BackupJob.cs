@@ -7,24 +7,27 @@ using DevInn.Backup.Postgres;
 using DevInn.Backup.Retention;
 using DevInn.Backup.Storage;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DevInn.Backup.Jobs;
 
 internal sealed class BackupJob(
-    BackupOptions options,
+    IOptions<BackupOptions> options,
     IDumpService dumpService,
     IBackupStorage storage,
     ILogger<BackupJob> logger,
     BackupMetrics metrics)
 {
+    private readonly BackupOptions _options = options.Value;
+
     public async Task RunAsync(CancellationToken cancellationToken)
     {
         var startedAt = DateTimeOffset.UtcNow;
         var stopwatch = Stopwatch.StartNew();
         var fileName = BackupName.GenerateFileName(startedAt);
-        var key = BackupName.GenerateKey(options.S3Prefix, startedAt);
-        var manifestKey = BackupName.GenerateManifestKey(options.S3Prefix, startedAt);
-        var tempDirectory = Path.Combine(options.WorkingDirectory, "devinn-backups", Guid.NewGuid().ToString("N"));
+        var key = BackupName.GenerateKey(_options.S3Prefix, startedAt);
+        var manifestKey = BackupName.GenerateManifestKey(_options.S3Prefix, startedAt);
+        var tempDirectory = Path.Combine(_options.WorkingDirectory, "devinn-backups", Guid.NewGuid().ToString("N"));
         var dumpPath = Path.Combine(tempDirectory, fileName);
 
         logger.LogInformation("Backup started. ObjectKey={ObjectKey}", key);
@@ -33,7 +36,7 @@ internal sealed class BackupJob(
         {
             Directory.CreateDirectory(tempDirectory);
 
-            var connection = PostgresConnectionSettings.Parse(options.DatabaseUrl);
+            var connection = PostgresConnectionSettings.Parse(_options.DatabaseUrl);
             await dumpService.CreateDumpAsync(connection, dumpPath, cancellationToken);
             await dumpService.ValidateDumpAsync(dumpPath, cancellationToken);
 
@@ -51,7 +54,7 @@ internal sealed class BackupJob(
             var manifest = new BackupManifest(
                 Version: 1,
                 ApplicationName: "devinn",
-                BucketName: options.S3Bucket,
+                BucketName: _options.S3Bucket,
                 DumpObjectKey: key,
                 ManifestObjectKey: manifestKey,
                 StartedAtUtc: startedAt,
@@ -59,9 +62,9 @@ internal sealed class BackupJob(
                 DurationSeconds: stopwatch.Elapsed.TotalSeconds,
                 SizeBytes: dumpSize,
                 Sha256Checksum: checksum,
-                RetentionDaily: options.RetentionDaily,
-                RetentionWeekly: options.RetentionWeekly,
-                RetentionMonthly: options.RetentionMonthly,
+                RetentionDaily: _options.RetentionDaily,
+                RetentionWeekly: _options.RetentionWeekly,
+                RetentionMonthly: _options.RetentionMonthly,
                 DeletedExpiredCount: deleted);
 
             await storage.UploadJsonAsync(manifestKey, manifest, cancellationToken);
@@ -89,16 +92,16 @@ internal sealed class BackupJob(
 
     private async Task<int> ApplyRetentionAsync(CancellationToken cancellationToken)
     {
-        var objects = await storage.ListAsync(options.S3Prefix, cancellationToken);
+        var objects = await storage.ListAsync(_options.S3Prefix, cancellationToken);
         var backups = objects
             .Select(obj => new BackupObject(obj.Key, obj.LastModified, obj.SizeBytes))
             .ToArray();
 
         var expired = new RetentionPolicy(
-                options.RetentionDaily,
-                options.RetentionWeekly,
-                options.RetentionMonthly)
-            .SelectExpiredBackups(options.S3Prefix, backups);
+                _options.RetentionDaily,
+                _options.RetentionWeekly,
+                _options.RetentionMonthly)
+            .SelectExpiredBackups(_options.S3Prefix, backups);
 
         foreach (var backup in expired)
         {

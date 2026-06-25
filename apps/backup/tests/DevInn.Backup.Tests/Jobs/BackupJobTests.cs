@@ -4,6 +4,7 @@ using DevInn.Backup.Observability;
 using DevInn.Backup.Postgres;
 using DevInn.Backup.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Shouldly;
 
 namespace DevInn.Backup.Tests.Jobs;
@@ -17,7 +18,12 @@ public sealed class BackupJobTests
         using var metrics = new BackupMetrics();
         var storage = new FakeStorage();
         var dump = new FakeDumpService { FailValidation = true };
-        var job = new BackupJob(CreateOptions(workingDirectory.Path), dump, storage, NullLogger<BackupJob>.Instance, metrics);
+        var job = new BackupJob(
+            Options.Create(CreateOptions(workingDirectory.Path)),
+            dump,
+            storage,
+            NullLogger<BackupJob>.Instance,
+            metrics);
 
         await Should.ThrowAsync<InvalidOperationException>(() => job.RunAsync(CancellationToken.None));
 

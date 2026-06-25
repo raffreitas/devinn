@@ -1,5 +1,6 @@
 using DevInn.Backup.Configuration;
 using DevInn.Backup.System;
+using Microsoft.Extensions.Options;
 
 namespace DevInn.Backup.Postgres;
 
@@ -9,19 +10,21 @@ internal interface IDumpService
     Task ValidateDumpAsync(string dumpPath, CancellationToken cancellationToken);
 }
 
-internal sealed class PostgresDumpService(BackupOptions options, ProcessRunner processRunner) : IDumpService
+internal sealed class PostgresDumpService(IOptions<BackupOptions> options, ProcessRunner processRunner) : IDumpService
 {
+    private readonly BackupOptions _options = options.Value;
+
     public Task CreateDumpAsync(
         PostgresConnectionSettings connection,
         string outputPath,
         CancellationToken cancellationToken)
     {
-        var args = $"--format=custom --compress={options.DumpCompressionLevel} --no-owner --no-acl --file \"{outputPath}\"";
+        var args = $"--format=custom --compress={_options.DumpCompressionLevel} --no-owner --no-acl --file \"{outputPath}\"";
         return processRunner.RunAsync(
-            options.PgDumpPath,
+            _options.PgDumpPath,
             args,
             connection.ToPgEnvironment(),
-            TimeSpan.FromMinutes(options.DumpTimeoutMinutes),
+            TimeSpan.FromMinutes(_options.DumpTimeoutMinutes),
             cancellationToken);
     }
 
@@ -29,10 +32,10 @@ internal sealed class PostgresDumpService(BackupOptions options, ProcessRunner p
     {
         var args = $"--list \"{dumpPath}\"";
         return processRunner.RunAsync(
-            options.PgRestorePath,
+            _options.PgRestorePath,
             args,
             environment: null,
-            TimeSpan.FromMinutes(options.DumpTimeoutMinutes),
+            TimeSpan.FromMinutes(_options.DumpTimeoutMinutes),
             cancellationToken);
     }
 }

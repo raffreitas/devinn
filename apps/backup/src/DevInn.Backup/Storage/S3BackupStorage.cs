@@ -2,6 +2,7 @@ using System.Text.Json;
 using Amazon.S3;
 using Amazon.S3.Model;
 using DevInn.Backup.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace DevInn.Backup.Storage;
 
@@ -13,8 +14,10 @@ internal interface IBackupStorage
     Task DeleteAsync(string key, CancellationToken cancellationToken);
 }
 
-internal sealed class S3BackupStorage(IAmazonS3 amazonS3, BackupOptions options) : IBackupStorage
+internal sealed class S3BackupStorage(IAmazonS3 amazonS3, IOptions<BackupOptions> options) : IBackupStorage
 {
+    private readonly BackupOptions _options = options.Value;
+
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         WriteIndented = true
@@ -24,7 +27,7 @@ internal sealed class S3BackupStorage(IAmazonS3 amazonS3, BackupOptions options)
         => amazonS3.PutObjectAsync(
             new PutObjectRequest
             {
-                BucketName = options.S3Bucket,
+                BucketName = _options.S3Bucket,
                 Key = key,
                 FilePath = filePath,
                 ContentType = "application/octet-stream",
@@ -37,7 +40,7 @@ internal sealed class S3BackupStorage(IAmazonS3 amazonS3, BackupOptions options)
         => amazonS3.PutObjectAsync(
             new PutObjectRequest
             {
-                BucketName = options.S3Bucket,
+                BucketName = _options.S3Bucket,
                 Key = key,
                 ContentBody = JsonSerializer.Serialize(content, JsonSerializerOptions),
                 ContentType = "application/json; charset=utf-8",
@@ -56,7 +59,7 @@ internal sealed class S3BackupStorage(IAmazonS3 amazonS3, BackupOptions options)
             var response = await amazonS3.ListObjectsV2Async(
                 new ListObjectsV2Request
                 {
-                    BucketName = options.S3Bucket,
+                    BucketName = _options.S3Bucket,
                     Prefix = prefix,
                     ContinuationToken = continuationToken
                 },
@@ -78,7 +81,7 @@ internal sealed class S3BackupStorage(IAmazonS3 amazonS3, BackupOptions options)
         => amazonS3.DeleteObjectAsync(
             new DeleteObjectRequest
             {
-                BucketName = options.S3Bucket,
+                BucketName = _options.S3Bucket,
                 Key = key
             },
             cancellationToken);

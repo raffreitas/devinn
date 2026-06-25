@@ -23,6 +23,8 @@ devinn/postgres/manifests/devinn-postgres-YYYYMMDD-HHmmssZ.json
 
 ## Variaveis De Ambiente Obrigatorias
 
+Internamente o app usa Options Pattern com a secao `Backup`. As variaveis `BACKUP_*` abaixo sao convertidas para essa secao na inicializacao para manter a configuracao simples no Railway.
+
 ```text
 BACKUP_DATABASE_URL
 BACKUP_S3_ENDPOINT

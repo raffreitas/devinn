@@ -1,41 +1,61 @@
-using Amazon.Runtime;
-using Amazon.S3;
-using DevInn.Backup;
 using DevInn.Backup.Configuration;
 using DevInn.Backup.Jobs;
 using DevInn.Backup.Observability;
 using DevInn.Backup.Postgres;
 using DevInn.Backup.Storage;
 using DevInn.Backup.System;
+using Amazon.Runtime;
+using Amazon.S3;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OpenTelemetry;
+using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using OpenTelemetry;
 
-var loggerFactory = LoggerFactory.Create(builder =>
+var builder = Host.CreateApplicationBuilder(args);
+
+builder.Configuration.AddBackupEnvironmentVariables();
+
+builder.Logging.AddSimpleConsole(options =>
 {
-    builder.AddSimpleConsole(options =>
-    {
-        options.SingleLine = true;
-        options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ ";
-        options.UseUtcTimestamp = true;
-    });
-    builder.SetMinimumLevel(LogLevel.Information);
+    options.SingleLine = true;
+    options.TimestampFormat = "yyyy-MM-ddTHH:mm:ss.fffZ ";
+    options.UseUtcTimestamp = true;
+});
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+builder.Services.AddOptions<BackupOptions>()
+    .Bind(builder.Configuration.GetSection(BackupOptions.SectionName))
+    .ValidateOnStart();
+builder.Services.AddSingleton<IValidateOptions<BackupOptions>, BackupOptionsValidator>();
+
+builder.Services.AddSingleton<BackupMetrics>();
+builder.Services.AddSingleton<ProcessRunner>();
+builder.Services.AddSingleton<IDumpService, PostgresDumpService>();
+builder.Services.AddSingleton<IBackupStorage, S3BackupStorage>();
+builder.Services.AddSingleton<BackupJob>();
+builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<BackupOptions>>().Value;
+
+    return new AmazonS3Client(
+        new BasicAWSCredentials(options.S3AccessKeyId, options.S3SecretAccessKey),
+        new AmazonS3Config
+        {
+            ServiceURL = options.S3Endpoint!.ToString(),
+            AuthenticationRegion = options.S3Region,
+            ForcePathStyle = options.S3ForcePathStyle
+        });
 });
 
-var logger = loggerFactory.CreateLogger("DevInn.Backup");
-using var metrics = new BackupMetrics();
+using var app = builder.Build();
+var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("DevInn.Backup");
 MeterProvider? meterProvider = null;
 
 try
 {
-    var environment = Environment.GetEnvironmentVariables()
-        .Cast<System.Collections.DictionaryEntry>()
-        .ToDictionary(
-            entry => (string)entry.Key,
-            entry => entry.Value?.ToString(),
-            StringComparer.Ordinal);
-
-    var options = BackupOptions.FromEnvironment(environment);
+    var options = app.Services.GetRequiredService<IOptions<BackupOptions>>().Value;
     if (options.OTelEnabled)
     {
         meterProvider = Sdk.CreateMeterProviderBuilder()
@@ -44,24 +64,7 @@ try
             .Build();
     }
 
-    using var amazonS3 = new AmazonS3Client(
-        new BasicAWSCredentials(options.S3AccessKeyId, options.S3SecretAccessKey),
-        new AmazonS3Config
-        {
-            ServiceURL = options.S3Endpoint.ToString(),
-            AuthenticationRegion = options.S3Region,
-            ForcePathStyle = options.S3ForcePathStyle
-        });
-
-    var storage = new S3BackupStorage(amazonS3, options);
-
-    var job = new BackupJob(
-        options,
-        new PostgresDumpService(options, new ProcessRunner()),
-        storage,
-        loggerFactory.CreateLogger<BackupJob>(),
-        metrics);
-
+    var job = app.Services.GetRequiredService<BackupJob>();
     await job.RunAsync(CancellationToken.None);
     return 0;
 }
