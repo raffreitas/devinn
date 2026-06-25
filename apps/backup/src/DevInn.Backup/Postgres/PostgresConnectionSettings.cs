@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Net;
 
 namespace DevInn.Backup.Postgres;
@@ -60,22 +61,22 @@ internal sealed record PostgresConnectionSettings(
 
     private static PostgresConnectionSettings ParseKeywordConnectionString(string connectionString)
     {
-        var values = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(part => part.Split('=', 2, StringSplitOptions.TrimEntries))
-            .Where(pair => pair.Length == 2)
-            .ToDictionary(pair => pair[0], pair => pair[1], StringComparer.OrdinalIgnoreCase);
+        var values = new DbConnectionStringBuilder
+        {
+            ConnectionString = connectionString
+        };
 
         var host = Get(values, "Host");
         var database = Get(values, "Database");
-        var username = values.GetValueOrDefault("Username") ??
-                       values.GetValueOrDefault("User Id") ??
-                       values.GetValueOrDefault("UserID") ??
+        var username = GetOptional(values, "Username") ??
+                       GetOptional(values, "User Id") ??
+                       GetOptional(values, "UserID") ??
                        throw new InvalidOperationException("BACKUP_DATABASE_URL must include Username.");
         var password = Get(values, "Password");
-        var sslMode = values.GetValueOrDefault("SSL Mode") ?? values.GetValueOrDefault("SslMode");
+        var sslMode = GetOptional(values, "SSL Mode") ?? GetOptional(values, "SslMode");
 
         int? port = null;
-        if (values.TryGetValue("Port", out var portText) && int.TryParse(portText, out var parsedPort))
+        if (GetOptional(values, "Port") is { } portText && int.TryParse(portText, out var parsedPort))
             port = parsedPort;
 
         return new PostgresConnectionSettings(host, database, username, password, port, sslMode);
@@ -93,10 +94,17 @@ internal sealed record PostgresConnectionSettings(
                 StringComparer.OrdinalIgnoreCase);
     }
 
-    private static string Get(IReadOnlyDictionary<string, string> values, string key)
-        => values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+    private static string Get(DbConnectionStringBuilder values, string key)
+        => GetOptional(values, key) is { } value
             ? value
             : throw new InvalidOperationException($"BACKUP_DATABASE_URL must include {key}.");
+
+    private static string? GetOptional(DbConnectionStringBuilder values, string key)
+        => values.TryGetValue(key, out var value) &&
+           value?.ToString() is { } text &&
+           !string.IsNullOrWhiteSpace(text)
+            ? text
+            : null;
 
     private static string NormalizeSslMode(string sslMode)
         => sslMode.ToLowerInvariant() switch

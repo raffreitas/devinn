@@ -36,4 +36,15 @@ public sealed class PostgresConnectionSettingsTests
         environment["PGPORT"].ShouldBe("5433");
         environment["PGSSLMODE"].ShouldBe("disable");
     }
+
+    [Fact]
+    public void Parse_KeywordConnectionString_WithQuotedSemicolonInPassword_MapsFullPasswordToPgEnvironment()
+    {
+        var settings = PostgresConnectionSettings.Parse(
+            "Host=localhost;Database=devinn;Username=postgres;Password=\"abc;def\";SSL Mode=Disable");
+
+        var environment = settings.ToPgEnvironment();
+
+        environment["PGPASSWORD"].ShouldBe("abc;def");
+    }
 }
