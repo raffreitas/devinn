@@ -16,6 +16,14 @@ export function isICalSource(source: BookingSource): boolean {
   return source === "BookingIcal" || source === "AirbnbIcal";
 }
 
+export function isPendingImportedICalBooking(booking: Booking): boolean {
+  return (
+    isICalSource(booking.source) &&
+    booking.guest === null &&
+    booking.reconciliationStatus === "NeedsReview"
+  );
+}
+
 export function isImportedUnpricedBlock(booking: Booking): boolean {
   return needsReconciliation(booking);
 }
@@ -57,6 +65,54 @@ export function getBookingSourceLabel(source: BookingSource): string {
     DirectWebsite: "Website Direto",
   };
   return labels[source];
+}
+
+export function getBookingDisplayTitle(booking: Booking): string {
+  if (isPendingImportedICalBooking(booking)) {
+    return "Reserva importada";
+  }
+
+  if (isBlock(booking)) {
+    return getBlockLabel(booking.source);
+  }
+
+  return booking.guest?.name ?? "Reserva";
+}
+
+export function getImportedBookingActionLabel(
+  booking: Booking,
+): string | undefined {
+  if (isPendingImportedICalBooking(booking)) {
+    return "Completar financeiro";
+  }
+
+  return undefined;
+}
+
+export function getFriendlyICalNote(note?: string | null): string | undefined {
+  const normalizedNote = note?.trim();
+
+  if (!normalizedNote) {
+    return undefined;
+  }
+
+  const knownNotes: Record<string, string> = {
+    "CLOSED - Not available": "Indisponível no canal externo",
+  };
+
+  return knownNotes[normalizedNote] ?? normalizedNote;
+}
+
+export function getImportedBookingTechnicalNote(
+  booking: Booking,
+): string | undefined {
+  const note = booking.notes?.trim();
+
+  if (!isPendingImportedICalBooking(booking) || !note) {
+    return undefined;
+  }
+
+  return note;
 }
 
 export function getBlockLabel(source: BookingSource): string {
