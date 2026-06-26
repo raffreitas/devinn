@@ -38,16 +38,17 @@ function getSummary(integrations: IntegrationSummary[]) {
     return { text: "Sem sincronização", variant: "outline" as const };
   }
 
-  const failed = integrations.find(
+  const activeIntegrations = integrations.filter(
+    (integration) => integration.isActive,
+  );
+
+  const failed = activeIntegrations.find(
     (integration) => integration.syncStatus.status === "Failed",
   );
   if (failed) {
     return { text: "Erro na sincronização", variant: "destructive" as const };
   }
 
-  const activeIntegrations = integrations.filter(
-    (integration) => integration.isActive,
-  );
   const latestSync = activeIntegrations
     .map((integration) => integration.syncStatus.lastSyncAt)
     .filter(Boolean)
