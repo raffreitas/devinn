@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
+import { CalendarPlus, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { IntegrationForm } from "@/features/integrations/components/integration-form";
 import {
@@ -38,6 +38,11 @@ interface RoomIntegrationsStepApiProps {
 type RoomIntegrationsStepProps =
   | RoomIntegrationsStepLocalProps
   | RoomIntegrationsStepApiProps;
+
+const INTEGRATION_SKELETON_KEYS = [
+  "integration-skeleton-primary",
+  "integration-skeleton-secondary",
+];
 
 function getChannelName(channelType: string) {
   return channelType === "Booking" ? "Booking.com" : "Airbnb";
@@ -216,8 +221,8 @@ function ApiMode({
 
       {isLoading ? (
         <div className="space-y-2">
-          {[...Array(2)].map((_, i) => (
-            <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+          {INTEGRATION_SKELETON_KEYS.map((key) => (
+            <div key={key} className="h-20 bg-muted animate-pulse rounded-lg" />
           ))}
         </div>
       ) : roomIntegrations.length > 0 ? (
@@ -253,7 +258,7 @@ function StepHeader({
     <div className="flex items-center justify-between">
       <div>
         <h3 className="font-semibold text-sm">
-          Integrações iCal
+          Receber reservas
           {count > 0 && (
             <span className="ml-1.5 text-muted-foreground font-normal">
               ({count})
@@ -261,13 +266,14 @@ function StepHeader({
           )}
         </h3>
         <p className="text-xs text-muted-foreground">
-          Sincronize reservas de plataformas externas
+          Cole aqui o link do calendário do Booking.com, Airbnb ou outra
+          plataforma para importar reservas e bloqueios.
         </p>
       </div>
-      {!isAdding && (
+      {!isAdding && count > 0 && (
         <Button onClick={onAdd} size="sm" variant="outline">
           <Plus className="mr-1.5 h-4 w-4" />
-          Adicionar
+          Adicionar sincronização
         </Button>
       )}
     </div>
@@ -303,12 +309,13 @@ function InlineForm({
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center border border-dashed rounded-lg">
+      <CalendarPlus className="mb-3 h-8 w-8 text-muted-foreground" />
       <p className="text-sm text-muted-foreground mb-3">
-        Nenhuma integração configurada.
+        Este quarto ainda não recebe reservas de calendários externos.
       </p>
       <Button onClick={onAdd} size="sm" variant="outline">
         <Plus className="mr-1.5 h-4 w-4" />
-        Criar Primeira Integração
+        Configurar sincronização
       </Button>
     </div>
   );

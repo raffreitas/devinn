@@ -49,6 +49,11 @@ public sealed class CreateRoomValidator : AbstractValidator<CreateRoomCommand>
 
         When(x => x.Integrations != null && x.Integrations.Count > 0, () =>
         {
+            RuleFor(x => x.Integrations)
+                .Must(integrations => integrations is null ||
+                                      integrations.Select(i => i.ChannelType).Distinct().Count() == integrations.Count)
+                .WithMessage("Cada canal de sincronização pode ser configurado apenas uma vez por quarto.");
+
             RuleForEach(x => x.Integrations)
                 .ChildRules(integration =>
                 {

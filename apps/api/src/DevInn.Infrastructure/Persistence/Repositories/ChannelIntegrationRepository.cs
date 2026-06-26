@@ -1,5 +1,6 @@
 using DevInn.Domain.Aggregates.Integrations;
 using DevInn.Domain.Aggregates.Integrations.Abstractions;
+using DevInn.Domain.Aggregates.Integrations.Enums;
 using DevInn.Infrastructure.Persistence.Context;
 
 using Microsoft.EntityFrameworkCore;
@@ -30,4 +31,13 @@ internal sealed class ChannelIntegrationRepository(ApplicationDbContext dbContex
         CancellationToken cancellationToken = default)
         => await dbContext.ChannelIntegrations
             .AnyAsync(ci => ci.RoomId == roomId && (excludeId == null || ci.Id != excludeId), cancellationToken);
+
+    public async Task<bool> ExistsByRoomIdAndChannelTypeAsync(Guid roomId, ChannelType channelType, Guid? excludeId = null,
+        CancellationToken cancellationToken = default)
+        => await dbContext.ChannelIntegrations
+            .AnyAsync(ci =>
+                    ci.RoomId == roomId &&
+                    ci.ChannelType == channelType &&
+                    (excludeId == null || ci.Id != excludeId),
+                cancellationToken);
 }

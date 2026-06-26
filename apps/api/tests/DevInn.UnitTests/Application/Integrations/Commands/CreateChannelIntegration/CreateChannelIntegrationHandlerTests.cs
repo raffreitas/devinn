@@ -43,12 +43,14 @@ public sealed class CreateChannelIntegrationHandlerTests
     }
 
     [Fact]
-    public async Task Handle_ShouldReturnConflict_WhenRoomAlreadyHasIntegration()
+    public async Task Handle_ShouldReturnConflict_WhenRoomAlreadyHasIntegrationForSameChannel()
     {
         var room = new Room(Guid.NewGuid(), 201);
         var command = new CreateChannelIntegrationCommand(ChannelType.Booking, "https://example.com/feed.ics", room.Id);
         _roomRepository.GetByIdAsync(command.RoomId, TestContext.Current.CancellationToken).Returns(room);
-        _integrationRepository.ExistsByRoomIdAsync(room.Id, null, TestContext.Current.CancellationToken).Returns(true);
+        _integrationRepository
+            .ExistsByRoomIdAndChannelTypeAsync(room.Id, command.ChannelType, null, TestContext.Current.CancellationToken)
+            .Returns(true);
 
         var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
 
@@ -62,7 +64,9 @@ public sealed class CreateChannelIntegrationHandlerTests
         var room = new Room(Guid.NewGuid(), 201);
         var command = new CreateChannelIntegrationCommand(ChannelType.Airbnb, "https://example.com/feed.ics", room.Id);
         _roomRepository.GetByIdAsync(command.RoomId, TestContext.Current.CancellationToken).Returns(room);
-        _integrationRepository.ExistsByRoomIdAsync(room.Id, null, TestContext.Current.CancellationToken).Returns(false);
+        _integrationRepository
+            .ExistsByRoomIdAndChannelTypeAsync(room.Id, command.ChannelType, null, TestContext.Current.CancellationToken)
+            .Returns(false);
 
         var result = await _sut.Handle(command, TestContext.Current.CancellationToken);
 

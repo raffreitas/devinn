@@ -49,11 +49,10 @@ export function ICalExportCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Exportar iCal</CardTitle>
+        <CardTitle className="text-lg">Enviar disponibilidade</CardTitle>
         <CardDescription>
-          Use esta URL para sincronizar disponibilidade do{" "}
-          {roomName || `Quarto ${roomNumber}`} com outras plataformas (Airbnb,
-          Booking.com, Google Calendar, etc.)
+          Copie este link do DevInn para usar em outro sistema e bloquear datas
+          ocupadas do {roomName || `Quarto ${roomNumber}`}.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -92,11 +91,10 @@ export function ICalExportCard({
 
         <Alert>
           <InfoIcon />
-          <AlertTitle>Segurança</AlertTitle>
+          <AlertTitle>Link privado</AlertTitle>
           <AlertDescription>
-            Esta URL é privada e específica deste quarto. Não compartilhe
-            publicamente. Apenas datas ficam visíveis (sem dados pessoais dos
-            hóspedes).
+            Esta URL é específica deste quarto. Apenas datas ocupadas ficam
+            visíveis, sem dados pessoais dos hóspedes.
           </AlertDescription>
         </Alert>
       </CardContent>

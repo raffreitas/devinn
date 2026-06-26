@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { integrationsService } from "../services/integrations-service";
 import type {
   CreateChannelIntegrationRequest,
+  PreviewICalFeedRequest,
   UpdateChannelIntegrationRequest,
 } from "../types";
 
@@ -37,6 +38,7 @@ export function useCreateIntegration() {
       integrationsService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: INTEGRATIONS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
       toast.success("Integração criada com sucesso!");
     },
     onError: () => {
@@ -60,6 +62,7 @@ export function useUpdateIntegration() {
     }) => integrationsService.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: INTEGRATIONS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
       queryClient.invalidateQueries({
         queryKey: INTEGRATIONS_KEYS.detail(variables.id),
       });
@@ -80,6 +83,7 @@ export function useDeleteIntegration() {
     mutationFn: (id: string) => integrationsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: INTEGRATIONS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
       toast.success("Integração removida com sucesso!");
     },
     onError: () => {
@@ -97,6 +101,7 @@ export function useSyncIntegration() {
     mutationFn: (id: string) => integrationsService.sync(id),
     onSuccess: (data, id) => {
       queryClient.invalidateQueries({ queryKey: INTEGRATIONS_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
       queryClient.invalidateQueries({ queryKey: INTEGRATIONS_KEYS.detail(id) });
       toast.success(`Sincronização concluída! ${data} reservas importadas.`);
     },
@@ -106,4 +111,16 @@ export function useSyncIntegration() {
   });
 
   return { syncIntegration: mutateAsync, isPending };
+}
+
+export function usePreviewICalFeed() {
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: (data: PreviewICalFeedRequest) =>
+      integrationsService.previewICalFeed(data),
+    onError: () => {
+      toast.error("Não foi possível testar o link do calendário");
+    },
+  });
+
+  return { previewICalFeed: mutateAsync, isPending };
 }

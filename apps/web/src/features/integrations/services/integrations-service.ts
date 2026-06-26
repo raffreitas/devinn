@@ -3,6 +3,8 @@ import type { ApiResponse } from "@/shared/types";
 import type {
   ChannelIntegration,
   CreateChannelIntegrationRequest,
+  PreviewICalFeedRequest,
+  PreviewICalFeedResponse,
   UpdateChannelIntegrationRequest,
 } from "../types";
 
@@ -31,6 +33,16 @@ export const integrationsService = {
     return response.data.data;
   },
 
+  previewICalFeed: async (
+    data: PreviewICalFeedRequest,
+  ): Promise<PreviewICalFeedResponse> => {
+    const response = await api.post<ApiResponse<PreviewICalFeedResponse>>(
+      "/api/v1/integrations/preview",
+      data,
+    );
+    return response.data.data;
+  },
+
   update: async (
     id: string,
     data: UpdateChannelIntegrationRequest,
@@ -42,8 +54,8 @@ export const integrationsService = {
     await api.delete(`/api/v1/integrations/${id}`);
   },
 
-  sync: async (id: string): Promise<{ importedCount: number }> => {
-    const response = await api.post<ApiResponse<{ importedCount: number }>>(
+  sync: async (id: string): Promise<number> => {
+    const response = await api.post<ApiResponse<number>>(
       `/api/v1/integrations/${id}/sync`,
     );
     return response.data.data;

@@ -1,3 +1,5 @@
+using DevInn.Domain.Aggregates.Integrations.Enums;
+
 namespace DevInn.Domain.Aggregates.Integrations.Abstractions;
 
 public interface IChannelIntegrationRepository
@@ -7,4 +9,6 @@ public interface IChannelIntegrationRepository
     Task<ChannelIntegration?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ChannelIntegration>> GetAllActiveAsync(CancellationToken cancellationToken = default);
     Task<bool> ExistsByRoomIdAsync(Guid roomId, Guid? excludeId = null, CancellationToken cancellationToken = default);
+    Task<bool> ExistsByRoomIdAndChannelTypeAsync(Guid roomId, ChannelType channelType, Guid? excludeId = null,
+        CancellationToken cancellationToken = default);
 }

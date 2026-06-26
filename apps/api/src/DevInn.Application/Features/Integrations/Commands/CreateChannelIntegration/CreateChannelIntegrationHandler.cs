@@ -28,11 +28,14 @@ internal sealed class CreateChannelIntegrationHandler(
         if (room is null)
             return Result.Fail(new NotFoundError("Quarto não encontrado"));
 
-        // Check if room already has an integration
+        // A room can connect more than one channel, but each channel should be configured only once.
         var hasExisting =
-            await integrationRepository.ExistsByRoomIdAsync(command.RoomId, cancellationToken: cancellationToken);
+            await integrationRepository.ExistsByRoomIdAndChannelTypeAsync(
+                command.RoomId,
+                command.ChannelType,
+                cancellationToken: cancellationToken);
         if (hasExisting)
-            return Result.Fail(new ConflictError("Este quarto já possui uma integração de canal configurada"));
+            return Result.Fail(new ConflictError("Este quarto já possui uma integração configurada para este canal"));
 
         var integration = new ChannelIntegration(
             command.ChannelType,
