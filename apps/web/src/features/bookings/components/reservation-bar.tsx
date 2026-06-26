@@ -41,7 +41,7 @@ export function ReservationBar({
 
   const importedActionLabel = getImportedBookingActionLabel(booking);
   const label = isPendingImportedICalBooking(booking)
-    ? "Importada"
+    ? `Importada ${getBookingSourceLabel(booking.source)}`
     : bookingIsBlock
       ? "Bloqueio"
       : booking.guest?.name;
