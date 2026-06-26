@@ -56,10 +56,15 @@ import type {
   PaymentStatus,
 } from "../types";
 import {
-  getBlockLabel,
+  getBookingDisplayTitle,
+  getBookingSourceLabel,
+  getFriendlyICalNote,
+  getImportedBookingActionLabel,
+  getImportedBookingTechnicalNote,
   getReconciliationStatusLabel,
   isBlock,
   isICalSource,
+  isPendingImportedICalBooking,
 } from "../utils/booking-helpers";
 import { BookingReceiptPrinter } from "./booking-receipt-printer";
 import { BookingSourceBadge } from "./booking-source-badge";
@@ -200,6 +205,10 @@ export function BookingDetails({
   const nights = differenceInDays(checkOut, checkIn);
 
   const bookingIsBlock = isBlock(booking);
+  const bookingIsPendingImportedICal = isPendingImportedICalBooking(booking);
+  const importedActionLabel = getImportedBookingActionLabel(booking);
+  const friendlyICalNote = getFriendlyICalNote(booking.notes);
+  const technicalICalNote = getImportedBookingTechnicalNote(booking);
   const canIgnoreExternalBlock =
     bookingIsBlock &&
     isICalSource(booking.source) &&
@@ -210,9 +219,7 @@ export function BookingDetails({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2 min-w-0">
           <h3 className="text-2xl font-bold tracking-tight text-foreground wrap-break-word">
-            {bookingIsBlock
-              ? getBlockLabel(booking.source)
-              : booking.guest?.name}
+            {getBookingDisplayTitle(booking)}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
             <BookingSourceBadge source={booking.source} />
@@ -256,9 +263,10 @@ export function BookingDetails({
                   size="icon"
                   onClick={() => onEdit(booking)}
                   title={
-                    bookingIsBlock
+                    importedActionLabel ??
+                    (bookingIsBlock
                       ? "Adicionar dados ao bloqueio iCAL"
-                      : "Editar reserva"
+                      : "Editar reserva")
                   }
                 >
                   <Pencil className="w-4 h-4" />
@@ -266,7 +274,7 @@ export function BookingDetails({
               </TooltipTrigger>
               {bookingIsBlock && (
                 <TooltipContent>
-                  <p>Adicionar dados do hóspede</p>
+                  <p>{importedActionLabel ?? "Adicionar dados do hóspede"}</p>
                 </TooltipContent>
               )}
             </Tooltip>
@@ -373,7 +381,9 @@ export function BookingDetails({
           <CardHeader>
             <CardTitle className="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
               <LinkIcon className="w-4 h-4 text-primary" />
-              Bloqueio Externo
+              {bookingIsPendingImportedICal
+                ? "Reserva importada"
+                : "Bloqueio Externo"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -383,27 +393,49 @@ export function BookingDetails({
               </div>
               <div>
                 <p className="text-sm">
-                  Este período está bloqueado via sincronização com{" "}
-                  <span className="font-semibold">
-                    {getBlockLabel(booking.source)}
-                  </span>
+                  {bookingIsPendingImportedICal
+                    ? "Esta reserva foi importada via iCal e ainda não tem dados financeiros completos."
+                    : "Este período está bloqueado via sincronização com "}
+                  {!bookingIsPendingImportedICal && (
+                    <span className="font-semibold">
+                      {getBookingSourceLabel(booking.source)}
+                    </span>
+                  )}
                 </p>
-                {isICalSource(booking.source) && (
+                {bookingIsPendingImportedICal ? (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Clique em editar para adicionar dados do hóspede, pagamento
-                    e observações, ou ignore no financeiro quando for apenas um
-                    bloqueio externo.
+                    Clique em editar para completar hóspede, pagamento e
+                    observações.
+                  </p>
+                ) : (
+                  isICalSource(booking.source) && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Clique em editar para adicionar dados do hóspede,
+                      pagamento e observações, ou ignore no financeiro quando
+                      for apenas um bloqueio externo.
+                    </p>
+                  )
+                )}
+                {bookingIsPendingImportedICal && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Origem: {getBookingSourceLabel(booking.source)}
                   </p>
                 )}
               </div>
             </div>
 
-            {booking.notes && (
+            {friendlyICalNote && (
               <div className="mt-4 p-3 bg-muted/50 rounded-lg border border-dashed">
                 <p className="text-xs text-muted-foreground font-medium mb-1">
-                  Observações:
+                  Detalhe do canal:
                 </p>
-                <p className="text-sm">{booking.notes}</p>
+                <p className="text-sm">{friendlyICalNote}</p>
+                {technicalICalNote &&
+                  technicalICalNote !== friendlyICalNote && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Nota técnica: {technicalICalNote}
+                    </p>
+                  )}
               </div>
             )}
           </CardContent>

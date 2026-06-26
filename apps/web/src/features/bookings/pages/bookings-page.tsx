@@ -71,8 +71,8 @@ import {
   useBookings,
   useCreateBooking,
   useDeleteBooking,
-  useUpdateBookingReconciliationStatus,
   useUpdateBooking,
+  useUpdateBookingReconciliationStatus,
 } from "../hooks/use-booking";
 import {
   type Booking,
@@ -84,10 +84,13 @@ import {
 } from "../types";
 
 import {
-  getBlockLabel,
+  getBookingDisplayTitle,
+  getBookingSourceLabel,
+  getImportedBookingActionLabel,
   getReconciliationStatusLabel,
   isBlock,
   isICalSource,
+  isPendingImportedICalBooking,
 } from "../utils/booking-helpers";
 
 function generatePaginationPages(currentPage: number, totalPages: number) {
@@ -218,10 +221,8 @@ export function BookingsPage() {
   const { createBooking, isLoading: isCreating } = useCreateBooking();
   const { updateBooking, isLoading: isUpdating } = useUpdateBooking();
   const { deleteBooking } = useDeleteBooking();
-  const {
-    ignoreExternalBlock,
-    isLoading: isIgnoringExternalBlock,
-  } = useUpdateBookingReconciliationStatus();
+  const { ignoreExternalBlock, isLoading: isIgnoringExternalBlock } =
+    useUpdateBookingReconciliationStatus();
 
   const handleCreateOrUpdate = async (data: BookingFormData) => {
     const payload = {
@@ -425,91 +426,115 @@ export function BookingsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {bookings.items.map((booking) => (
-                        <TableRow key={booking.id}>
-                          <TableCell className="font-medium">
-                            {booking.number}
-                          </TableCell>
-                          <TableCell>
-                            {booking.guest?.name ||
-                              getBlockLabel(booking.source)}
-                          </TableCell>
-                          <TableCell>
-                            {format(new Date(booking.checkIn), "dd/MM/yyyy")}
-                          </TableCell>
-                          <TableCell>
-                            {format(new Date(booking.checkOut), "dd/MM/yyyy")}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={statusConfig[booking.status].variant}
-                            >
-                              {statusConfig[booking.status].label}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {booking.reconciliationStatus ? (
+                      {bookings.items.map((booking) => {
+                        const importedActionLabel =
+                          getImportedBookingActionLabel(booking);
+                        const reconciliationLabel =
+                          importedActionLabel ??
+                          (booking.reconciliationStatus
+                            ? getReconciliationStatusLabel(
+                                booking.reconciliationStatus,
+                              )
+                            : undefined);
+
+                        return (
+                          <TableRow key={booking.id}>
+                            <TableCell className="font-medium">
+                              {booking.number}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col gap-1">
+                                <span className="font-medium">
+                                  {getBookingDisplayTitle(booking)}
+                                </span>
+                                {isPendingImportedICalBooking(booking) && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {getBookingSourceLabel(booking.source)}
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {format(new Date(booking.checkIn), "dd/MM/yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              {format(new Date(booking.checkOut), "dd/MM/yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={statusConfig[booking.status].variant}
+                              >
+                                {statusConfig[booking.status].label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {booking.reconciliationStatus &&
+                              reconciliationLabel ? (
+                                <Badge
+                                  variant={
+                                    reconciliationStatusConfig[
+                                      booking.reconciliationStatus
+                                    ].variant
+                                  }
+                                >
+                                  {reconciliationLabel}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">
+                                  -
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="hidden sm:table-cell">
                               <Badge
                                 variant={
-                                  reconciliationStatusConfig[
-                                    booking.reconciliationStatus
-                                  ].variant
+                                  paymentStatusConfig[booking.paymentStatus]
+                                    .variant
                                 }
                               >
-                                {getReconciliationStatusLabel(
-                                  booking.reconciliationStatus,
-                                )}
+                                {
+                                  paymentStatusConfig[booking.paymentStatus]
+                                    .label
+                                }
                               </Badge>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">
-                                -
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                            <Badge
-                              variant={
-                                paymentStatusConfig[booking.paymentStatus]
-                                  .variant
-                              }
-                            >
-                              {paymentStatusConfig[booking.paymentStatus].label}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <EllipsisVerticalIcon className="h-4 w-4" />
-                                  <span className="sr-only">Ações</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => handleViewDetails(booking)}
-                                >
-                                  <EyeIcon className="h-4 w-4" />
-                                  Ver detalhes
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleEdit(booking)}
-                                >
-                                  <PenBoxIcon className="h-4 w-4" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  variant="destructive"
-                                  onClick={() => setDeleteConfirmId(booking.id)}
-                                >
-                                  <Trash2Icon className="h-4 w-4" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                    <EllipsisVerticalIcon className="h-4 w-4" />
+                                    <span className="sr-only">Ações</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => handleViewDetails(booking)}
+                                  >
+                                    <EyeIcon className="h-4 w-4" />
+                                    Ver detalhes
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleEdit(booking)}
+                                  >
+                                    <PenBoxIcon className="h-4 w-4" />
+                                    {importedActionLabel ?? "Editar"}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    variant="destructive"
+                                    onClick={() =>
+                                      setDeleteConfirmId(booking.id)
+                                    }
+                                  >
+                                    <Trash2Icon className="h-4 w-4" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

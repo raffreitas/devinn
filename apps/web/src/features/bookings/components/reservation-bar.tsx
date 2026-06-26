@@ -1,7 +1,13 @@
 import { AlertCircle, Check, Link, Lock, Pencil } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import type { Booking, PaymentStatus } from "../types";
-import { getBlockLabel, isBlock } from "../utils/booking-helpers";
+import {
+  getBookingSourceLabel,
+  getFriendlyICalNote,
+  getImportedBookingActionLabel,
+  isBlock,
+  isPendingImportedICalBooking,
+} from "../utils/booking-helpers";
 
 const paymentStatusColors: Record<PaymentStatus, string> = {
   Paid: "bg-emerald-500 hover:bg-emerald-600",
@@ -33,12 +39,25 @@ export function ReservationBar({
     ? "bg-gray-400/80 hover:bg-gray-500"
     : paymentStatusColors[booking.paymentStatus];
 
-  const label = bookingIsBlock
-    ? getBlockLabel(booking.source)
-    : booking.guest?.name;
+  const importedActionLabel = getImportedBookingActionLabel(booking);
+  const label = isPendingImportedICalBooking(booking)
+    ? "Importada"
+    : bookingIsBlock
+      ? "Bloqueio"
+      : booking.guest?.name;
+
+  const friendlyICalNote = getFriendlyICalNote(booking.notes);
 
   const tooltip = bookingIsBlock
-    ? `Período bloqueado via ${getBlockLabel(booking.source)}. Não editável.`
+    ? [
+        isPendingImportedICalBooking(booking)
+          ? `Reserva importada via ${getBookingSourceLabel(booking.source)}.`
+          : `Período bloqueado via ${getBookingSourceLabel(booking.source)}.`,
+        importedActionLabel,
+        friendlyICalNote,
+      ]
+        .filter(Boolean)
+        .join(" ")
     : `${booking.guest?.name} - ${remaining > 0 ? `Falta: ${remaining.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}` : "Pago"}`;
 
   return (
