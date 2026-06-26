@@ -1,4 +1,5 @@
 import z from "zod";
+import type { ChannelType, SyncStatus } from "@/features/integrations/types";
 
 // ############################# Category Types #############################
 
@@ -53,10 +54,18 @@ export interface Room {
   updatedAt: string;
   activeIntegrationsCount?: number;
   iCalExportToken: string;
+  integrations?: RoomIntegrationSummary[];
+}
+
+export interface RoomIntegrationSummary {
+  id: string;
+  channelType: ChannelType;
+  isActive: boolean;
+  syncStatus: SyncStatus;
 }
 
 export type CreateRoomIntegrationInput = {
-  channelType: "Booking" | "Airbnb";
+  channelType: ChannelType;
   iCalUrl: string;
 };
 

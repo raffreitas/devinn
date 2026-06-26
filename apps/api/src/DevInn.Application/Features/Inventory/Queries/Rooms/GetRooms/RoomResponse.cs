@@ -11,5 +11,19 @@ public sealed record RoomResponse(
     decimal BasePrice,
     decimal ExtraGuestPrice,
     long ActiveIntegrationsCount,
-    string ICalExportToken
+    string ICalExportToken,
+    RoomIntegrationSummaryResponse[] Integrations
 );
+
+public sealed record RoomIntegrationSummaryResponse(
+    Guid Id,
+    string ChannelType,
+    bool IsActive,
+    RoomIntegrationSyncStatusResponse SyncStatus);
+
+public sealed record RoomIntegrationSyncStatusResponse(
+    string Status,
+    DateTimeOffset? LastSyncAt,
+    DateTimeOffset? NextSyncAt,
+    string? ErrorMessage,
+    int ImportedCount);

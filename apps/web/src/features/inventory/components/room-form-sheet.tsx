@@ -1,5 +1,10 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarSync } from "lucide-react";
 import { useRef, useState } from "react";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import {
   Sheet,
@@ -10,18 +15,13 @@ import {
   SheetTitle,
 } from "@/shared/components/ui/sheet";
 import { useCreateRoom, useUpdateRoom } from "../hooks";
-import type { Room, RoomFormData } from "../types";
+import type { Room } from "../types";
+import { ICalExportCard } from "./ical-export-card";
 import { RoomForm, type RoomFormRef } from "./room-form";
 import {
   type PendingIntegration,
   RoomIntegrationsStep,
 } from "./room-integrations-step";
-import { RoomStepper } from "./room-stepper";
-
-const STEPS = [
-  { id: "room-data", label: "Dados do Quarto" },
-  { id: "integrations", label: "Integrações" },
-];
 
 interface RoomFormSheetProps {
   isOpen: boolean;
@@ -34,8 +34,6 @@ export function RoomFormSheet({
   onClose,
   editRoom,
 }: RoomFormSheetProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [roomFormData, setRoomFormData] = useState<RoomFormData | null>(null);
   const [pendingIntegrations, setPendingIntegrations] = useState<
     PendingIntegration[]
   >([]);
@@ -48,29 +46,9 @@ export function RoomFormSheet({
   const isEditMode = !!editRoom;
 
   const handleClose = () => {
-    setCurrentStep(0);
-    setRoomFormData(null);
     setPendingIntegrations([]);
     setIsSaving(false);
     onClose();
-  };
-
-  const handleNext = async () => {
-    if (currentStep === 0) {
-      const data = await roomFormRef.current?.validate();
-      if (!data) return;
-      setRoomFormData(data);
-      setCurrentStep(1);
-    }
-  };
-
-  const handleStepClick = (index: number) => {
-    if (index === 0) {
-      setCurrentStep(0);
-    }
-    if (index === 1 && roomFormData) {
-      setCurrentStep(1);
-    }
   };
 
   const handleAddPending = (integration: PendingIntegration) => {
@@ -82,17 +60,16 @@ export function RoomFormSheet({
   };
 
   const handleFinish = async () => {
+    const data = await roomFormRef.current?.validate();
+    if (!data) return;
+
     setIsSaving(true);
     try {
       if (isEditMode && editRoom) {
-        // Edit mode: update room, integrations are managed via API mode
-        if (roomFormData) {
-          await updateRoom({ id: editRoom.id, data: roomFormData });
-        }
-      } else if (roomFormData) {
-        // Create mode: create room with all pending integrations in a single request
+        await updateRoom({ id: editRoom.id, data });
+      } else {
         await createRoom({
-          ...roomFormData,
+          ...data,
           integrations: pendingIntegrations.map((i) => ({
             channelType: i.channelType,
             iCalUrl: i.iCalUrl,
@@ -114,31 +91,37 @@ export function RoomFormSheet({
           </SheetTitle>
           <SheetDescription>
             {isEditMode
-              ? "Atualize os dados e integrações do quarto"
-              : "Preencha os dados e configure integrações"}
+              ? "Atualize os dados e gerencie a sincronização do quarto."
+              : "Cadastre o quarto e conecte calendários externos agora ou depois."}
           </SheetDescription>
         </SheetHeader>
 
-        <div className="px-4">
-          <RoomStepper
-            steps={STEPS}
-            currentStep={currentStep}
-            onStepClick={handleStepClick}
-          />
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-4 py-4">
-          {currentStep === 0 && (
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-8">
+          <section className="space-y-4">
+            <div>
+              <h3 className="font-semibold text-sm">Dados do quarto</h3>
+              <p className="text-xs text-muted-foreground">
+                Informe a categoria, número e status operacional.
+              </p>
+            </div>
             <RoomForm
               ref={roomFormRef}
-              initialData={editRoom || (roomFormData ?? undefined)}
+              initialData={editRoom}
               onSubmit={() => {}}
               showActions={false}
             />
-          )}
+          </section>
 
-          {currentStep === 1 &&
-            (isEditMode ? (
+          <section className="space-y-4">
+            <div>
+              <h3 className="font-semibold text-sm">Sincronização</h3>
+              <p className="text-xs text-muted-foreground">
+                Receba reservas de canais externos e envie a disponibilidade do
+                DevInn para outros sistemas.
+              </p>
+            </div>
+
+            {isEditMode ? (
               <RoomIntegrationsStep mode="api" roomId={editRoom.id} />
             ) : (
               <RoomIntegrationsStep
@@ -147,47 +130,45 @@ export function RoomFormSheet({
                 onAdd={handleAddPending}
                 onRemove={handleRemovePending}
               />
-            ))}
+            )}
+
+            {isEditMode ? (
+              <ICalExportCard
+                roomName={editRoom.description || ""}
+                roomNumber={editRoom.number}
+                iCalExportToken={editRoom.iCalExportToken}
+              />
+            ) : (
+              <Alert>
+                <CalendarSync />
+                <AlertTitle>Enviar disponibilidade</AlertTitle>
+                <AlertDescription>
+                  Após salvar o quarto, o DevInn gera um link iCal para copiar
+                  em Booking.com, Airbnb ou outro calendário externo.
+                </AlertDescription>
+              </Alert>
+            )}
+          </section>
         </div>
 
         <SheetFooter className="border-t pt-4">
           <div className="flex w-full gap-2">
-            {currentStep === 0 ? (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClose}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-                <Button type="button" onClick={handleNext} className="flex-1">
-                  Próximo
-                  <ChevronRight className="ml-1.5 h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setCurrentStep(0)}
-                  className="flex-1"
-                >
-                  <ChevronLeft className="mr-1.5 h-4 w-4" />
-                  Voltar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleFinish}
-                  disabled={isSaving}
-                  className="flex-1"
-                >
-                  {isSaving ? "Salvando..." : "Concluir"}
-                </Button>
-              </>
-            )}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="flex-1"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleFinish}
+              disabled={isSaving}
+              className="flex-1"
+            >
+              {isSaving ? "Salvando..." : "Salvar quarto"}
+            </Button>
           </div>
         </SheetFooter>
       </SheetContent>

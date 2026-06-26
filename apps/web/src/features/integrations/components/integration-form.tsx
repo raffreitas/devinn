@@ -1,7 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRooms } from "@/features/inventory/hooks";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
 import {
   Form,
@@ -19,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
+import { usePreviewICalFeed } from "../hooks/use-integrations";
+import type { PreviewICalFeedResponse } from "../types";
 
 const integrationSchema = z.object({
   channelType: z.enum(["Booking", "Airbnb"]),
@@ -44,6 +53,13 @@ export function IntegrationForm({
   inline,
 }: IntegrationFormProps) {
   const { data: rooms } = useRooms({ pageSize: 100 });
+  const { previewICalFeed, isPending: isPreviewing } = usePreviewICalFeed();
+  const [previewResult, setPreviewResult] =
+    useState<PreviewICalFeedResponse | null>(null);
+  const [previewedValues, setPreviewedValues] = useState<{
+    channelType: IntegrationFormData["channelType"];
+    iCalUrl: string;
+  } | null>(null);
 
   const form = useForm<IntegrationFormData>({
     resolver: zodResolver(integrationSchema),
@@ -54,9 +70,53 @@ export function IntegrationForm({
     },
   });
 
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      setPreviewResult(null);
+      setPreviewedValues(null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
+
+  const currentValues = form.watch(["channelType", "iCalUrl"]);
+  const hasValidPreview =
+    previewResult?.isValid === true &&
+    previewedValues?.channelType === currentValues[0] &&
+    previewedValues?.iCalUrl === currentValues[1];
+
+  const handlePreview = async () => {
+    const isValid = await form.trigger(["channelType", "iCalUrl"]);
+    if (!isValid) return;
+
+    const values = form.getValues();
+    const result = await previewICalFeed({
+      channelType: values.channelType,
+      iCalUrl: values.iCalUrl,
+    });
+
+    setPreviewResult(result);
+    setPreviewedValues({
+      channelType: values.channelType,
+      iCalUrl: values.iCalUrl,
+    });
+  };
+
+  const handleSubmit = async (data: IntegrationFormData) => {
+    if (!hasValidPreview) {
+      form.setError("iCalUrl", {
+        type: "manual",
+        message: "Teste o link antes de adicionar a sincronização.",
+      });
+      return;
+    }
+
+    await onSubmit(data);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div
           className={
             inline ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "space-y-4"
@@ -124,7 +184,7 @@ export function IntegrationForm({
               <FormItem
                 className={inline && fixedRoomId ? "sm:col-span-2" : ""}
               >
-                <FormLabel>URL do iCal</FormLabel>
+                <FormLabel>URL do calendário</FormLabel>
                 <FormControl>
                   <Input placeholder="https://..." {...field} className="h-9" />
                 </FormControl>
@@ -132,6 +192,31 @@ export function IntegrationForm({
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="space-y-3">
+          <Button
+            type="button"
+            variant="outline"
+            size={inline ? "sm" : "default"}
+            onClick={handlePreview}
+            disabled={isPreviewing || isSubmitting}
+          >
+            {isPreviewing && (
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            )}
+            Testar link
+          </Button>
+
+          {previewResult && (
+            <Alert variant={previewResult.isValid ? "default" : "destructive"}>
+              {previewResult.isValid ? <CheckCircle2 /> : <AlertCircle />}
+              <AlertTitle>
+                {previewResult.isValid ? "Link validado" : "Link não validado"}
+              </AlertTitle>
+              <AlertDescription>{previewResult.message}</AlertDescription>
+            </Alert>
+          )}
         </div>
 
         <div className="flex justify-end gap-2">
@@ -147,7 +232,7 @@ export function IntegrationForm({
           <Button
             type="submit"
             size={inline ? "sm" : "default"}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !hasValidPreview}
           >
             {isSubmitting ? "Criando..." : "Adicionar"}
           </Button>

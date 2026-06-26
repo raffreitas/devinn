@@ -29,6 +29,17 @@ export interface CreateChannelIntegrationRequest {
   roomId: string;
 }
 
+export interface PreviewICalFeedRequest {
+  channelType: ChannelType;
+  iCalUrl: string;
+}
+
+export interface PreviewICalFeedResponse {
+  isValid: boolean;
+  eventCount: number;
+  message: string;
+}
+
 export interface UpdateChannelIntegrationRequest {
   iCalUrl?: string;
   roomId?: string;

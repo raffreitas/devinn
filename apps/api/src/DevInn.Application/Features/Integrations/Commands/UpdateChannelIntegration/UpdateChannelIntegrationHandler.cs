@@ -30,14 +30,14 @@ internal sealed class UpdateChannelIntegrationHandler(
         if (room is null)
             return Result.Fail(new NotFoundError("Quarto não encontrado"));
 
-        // Check if another integration already uses this room
-        if (integration.RoomId != command.RoomId)
-        {
-            var hasExisting =
-                await integrationRepository.ExistsByRoomIdAsync(command.RoomId, command.Id, cancellationToken);
-            if (hasExisting)
-                return Result.Fail(new ConflictError("Este quarto já possui outra integração de canal configurada"));
-        }
+        var hasExisting =
+            await integrationRepository.ExistsByRoomIdAndChannelTypeAsync(
+                command.RoomId,
+                integration.ChannelType,
+                command.Id,
+                cancellationToken);
+        if (hasExisting)
+            return Result.Fail(new ConflictError("Este quarto já possui outra integração configurada para este canal"));
 
         integration.UpdateICalUrl(command.ICalUrl);
         integration.UpdateRoomId(command.RoomId);
