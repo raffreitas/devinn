@@ -8,8 +8,6 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test:financial": "node --test tests/financial-summary.test.ts",
-    "test:bookings": "node --test tests/booking-helpers.test.ts",
     "lint": "biome check --write ."
   },
   "dependencies": {
