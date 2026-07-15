@@ -1,4 +1,6 @@
-﻿using Microsoft.OpenApi;
+﻿using DevInn.Infrastructure.Common.Constants;
+
+using Microsoft.OpenApi;
 
 using Scalar.AspNetCore;
 
@@ -38,6 +40,32 @@ public static class ScalarOpenApiConfiguration
                         []
                     }
                 });
+
+                foreach (var operation in document.Paths.Values.SelectMany(o => o.Operations?.Values ?? Enumerable.Empty<OpenApiOperation>()))
+                {
+                    operation.Parameters ??= [];
+
+                    var alreadyExists = operation.Parameters.Any(parameter =>
+                        parameter.In == ParameterLocation.Header &&
+                        parameter.Name is not null &&
+                        parameter.Name.Equals(TenantKeys.InnHeader, StringComparison.OrdinalIgnoreCase));
+
+                    if (alreadyExists) continue;
+
+                    operation.Parameters.Add(new OpenApiParameter
+                    {
+                        Name = TenantKeys.InnHeader,
+                        In = ParameterLocation.Header,
+                        Required = false,
+                        Description = "ID da Inn para a qual a requisição está sendo feita.",
+                        Schema = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.String,
+                            Format = "uuid"
+                        }
+                    });
+
+                }
 
                 return Task.CompletedTask;
             });
