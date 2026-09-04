@@ -1,28 +1,32 @@
-name: CI Backup
+name: Backup CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "apps/backup/**"
-      - ".github/workflows/backup-cicd.yaml"
+      - ".github/workflows/backup-ci.yaml"
   pull_request:
     paths:
       - "apps/backup/**"
-      - ".github/workflows/backup-cicd.yaml"
+      - ".github/workflows/backup-ci.yaml"
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
   DOTNET_VERSION: "10.0.x"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-backup
+  group: backup-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  ci:
-    name: Build & Test Backup
+  build-and-test:
+    name: Build and Test Backup
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -45,12 +49,12 @@ jobs:
 
       - name: Restore
         working-directory: apps/backup
-        run: dotnet restore tests/DevInn.Backup.Tests/DevInn.Backup.Tests.csproj
+        run: dotnet restore DevInn.Backup.slnx
 
       - name: Build
         working-directory: apps/backup
-        run: dotnet build src/DevInn.Backup/DevInn.Backup.csproj --no-restore --configuration Release --verbosity minimal
+        run: dotnet build DevInn.Backup.slnx --no-restore --configuration Release --verbosity minimal
 
       - name: Test
         working-directory: apps/backup
-        run: dotnet test tests/DevInn.Backup.Tests/DevInn.Backup.Tests.csproj --no-restore --configuration Release --verbosity normal
+        run: dotnet test DevInn.Backup.slnx --no-restore --no-build --configuration Release --verbosity normal

@@ -1,43 +1,53 @@
-name: CI/CD Web APP
+name: Web App CI
 
 on:
   push:
     branches: [main]
     paths:
       - "apps/web/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/web-app-ci.yaml"
   pull_request:
     paths:
       - "apps/web/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/web-app-ci.yaml"
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
   NODE_VERSION: 24
   PNPM_VERSION: 10
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-web
+  group: web-app-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    name: Build & Test React
+  lint-and-build:
+    name: Lint and Build Web App
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ env.NODE_VERSION }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
           version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Cache pnpm packages
         uses: actions/cache@v6
@@ -48,36 +58,21 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        working-directory: apps/web
         run: pnpm install --frozen-lockfile
 
-      - name: Check case-sensitive filename conflicts
+      - name: Check filename casing
         working-directory: apps/web
         run: |
-          echo "🔍 Checking for case-sensitive filename issues..."
           duplicates=$(find src -type f \( -iname "*.tsx" -o -iname "*.ts" \) | \
             awk 'BEGIN{IGNORECASE=1} {count[tolower($0)]++; files[tolower($0)]=files[tolower($0)]" "$0} END{for(f in count) if(count[f]>1) print files[f]}')
           if [ -n "$duplicates" ]; then
-            echo "❌ Found case-sensitive duplicates:"
+            echo "Found case-sensitive duplicates:"
             echo "$duplicates"
             exit 1
           fi
-          echo "✅ No case-sensitive conflicts found"
 
-      - name: Type check with TypeScript
-        working-directory: apps/web
-        run: pnpm exec tsc -b
+      - name: Lint
+        run: pnpm --filter @dev-inn/web exec biome check .
 
-      - name: Build project
-        working-directory: apps/web
-        run: pnpm run build
-
-      - name: Verify build output
-        working-directory: apps/web
-        run: |
-          if [ ! -d "dist" ]; then
-            echo "❌ Build failed: dist directory not found"
-            exit 1
-          fi
-          echo "✅ Build successful"
-          ls -lah dist/
+      - name: Build
+        run: pnpm --filter @dev-inn/web run build
