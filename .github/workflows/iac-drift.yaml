@@ -1,26 +1,40 @@
-name: IaC Drift Check
+name: Infrastructure Drift Check
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/iac-drift.yaml"
+      - ".railway/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
   pull_request:
     paths:
       - ".github/workflows/iac-drift.yaml"
       - ".railway/**"
       - "package.json"
       - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
   NODE_VERSION: 24
   PNPM_VERSION: 10
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: infrastructure-drift-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  plan:
-    name: Plan Railway config
+  plan-railway-configuration:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+    name: Plan Railway configuration
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -40,9 +54,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Install Railway CLI
-        run: npm install --global @railway/cli@5.23.1
 
       - name: Check Railway drift
         env:

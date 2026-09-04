@@ -1,26 +1,32 @@
-name: CI/CD Web API
+name: API CI
 
 on:
   push:
     branches: [main]
     paths:
       - "apps/api/**"
+      - ".github/workflows/api-ci.yaml"
   pull_request:
     paths:
       - "apps/api/**"
+      - ".github/workflows/api-ci.yaml"
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
   DOTNET_VERSION: "10.0.x"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-api
+  group: api-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  ci:
-    name: Build & Test .NET
+  build-and-test:
+    name: Build and Test API
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -32,9 +38,9 @@ jobs:
           path: |
             ~/.nuget/packages
             ~/.local/share/NuGet
-          key: nuget-${{ runner.os }}-dotnet-${{ hashFiles('**/*.csproj') }}
+          key: api-nuget-${{ runner.os }}-dotnet-${{ hashFiles('apps/api/**/*.csproj') }}
           restore-keys: |
-            nuget-${{ runner.os }}-dotnet-
+            api-nuget-${{ runner.os }}-dotnet-
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v6
@@ -43,12 +49,12 @@ jobs:
 
       - name: Restore .NET packages
         working-directory: apps/api
-        run: dotnet restore
+        run: dotnet restore DevInn.slnx
 
       - name: Build .NET projects
         working-directory: apps/api
-        run: dotnet build --no-restore --configuration Release --verbosity minimal
+        run: dotnet build DevInn.slnx --no-restore --configuration Release --verbosity minimal
 
       - name: Run .NET tests
         working-directory: apps/api
-        run: dotnet test --no-restore --no-build --configuration Release --verbosity normal
+        run: dotnet test DevInn.slnx --no-restore --no-build --configuration Release --verbosity normal
