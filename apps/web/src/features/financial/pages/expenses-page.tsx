@@ -273,9 +273,14 @@ export function ExpensesPage() {
         <CardContent className="p-0">
           {isLoadingExpenses || isLoadingCategories ? (
             <div className="p-6 space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full rounded-lg" />
-              ))}
+              {Array.from({ length: 5 }, (_, skeletonId) => skeletonId + 1).map(
+                (skeletonId) => (
+                  <Skeleton
+                    key={skeletonId}
+                    className="h-16 w-full rounded-lg"
+                  />
+                ),
+              )}
             </div>
           ) : (
             <ExpenseList

@@ -445,16 +445,22 @@ export function BookingForm({
                               />
                             </SelectTrigger>
                             <SelectContent>
-                              {Array.from({ length: 18 }, (_, age) => (
-                                <SelectItem key={age} value={String(age)}>
-                                  {age} {age === 1 ? "ano" : "anos"}
-                                  {age < 5
-                                    ? " (grátis)"
-                                    : age <= 10
-                                      ? " (metade)"
-                                      : ""}
-                                </SelectItem>
-                              ))}
+                              {Array.from({ length: 18 }, (_, age) =>
+                                String(age),
+                              ).map((age) => {
+                                const ageNumber = Number(age);
+
+                                return (
+                                  <SelectItem key={age} value={age}>
+                                    {age} {ageNumber === 1 ? "ano" : "anos"}
+                                    {ageNumber < 5
+                                      ? " (grátis)"
+                                      : ageNumber <= 10
+                                        ? " (metade)"
+                                        : ""}
+                                  </SelectItem>
+                                );
+                              })}
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -505,8 +511,8 @@ export function BookingForm({
                 </div>
               )}
 
-              {displayData.childrenDetails.map((detail, i) => (
-                <div key={i} className="flex justify-between text-xs">
+              {displayData.childrenDetails.map((detail) => (
+                <div key={detail} className="flex justify-between text-xs">
                   <span className="text-muted-foreground">
                     {detail.split(":")[0]}:
                   </span>

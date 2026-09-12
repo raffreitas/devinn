@@ -23,7 +23,10 @@ export function calculateFinancialSummary(
         return summary;
       }
 
-      if (isIgnoredExternalBlock(booking) || !isFinanciallyReconciled(booking)) {
+      if (
+        isIgnoredExternalBlock(booking) ||
+        !isFinanciallyReconciled(booking)
+      ) {
         return summary;
       }
 
