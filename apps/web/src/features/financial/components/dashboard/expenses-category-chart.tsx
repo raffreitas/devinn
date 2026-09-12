@@ -122,8 +122,8 @@ export function ExpensesCategoryChart({
                 innerRadius={60}
                 strokeWidth={5}
               >
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                {data.map((entry) => (
+                  <Cell key={entry.name} fill={entry.fill} />
                 ))}
               </Pie>
               <ChartLegend

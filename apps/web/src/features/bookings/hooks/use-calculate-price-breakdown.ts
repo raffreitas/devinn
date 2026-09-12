@@ -47,9 +47,9 @@ export function useCalculatePriceBreakdown({
     .filter((age) => Number.isFinite(age) && age >= 0);
 
   const queryParams =
-    !!roomCategoryId &&
-    !!checkIn &&
-    !!checkOut &&
+    roomCategoryId &&
+    checkIn &&
+    checkOut &&
     adults > 0 &&
     children >= 0 &&
     normalizedChildrenAges.length === children

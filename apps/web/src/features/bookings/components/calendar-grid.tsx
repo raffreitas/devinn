@@ -113,7 +113,10 @@ export function CalendarGrid({
                 );
 
                 return (
-                  <div key={room.id} className="flex min-h-14 border-b border-border">
+                  <div
+                    key={room.id}
+                    className="flex min-h-14 border-b border-border"
+                  >
                     <div className="w-20 sm:w-28 shrink-0 h-14 p-3 flex items-center border-r border-border sticky left-0 z-10 bg-muted truncate">
                       <div>
                         <div className="font-medium text-sm">{room.number}</div>

@@ -245,9 +245,14 @@ export function IntegrationsPage() {
         <CardContent>
           {isLoading ? (
             <div className="space-y-3">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-24 w-full rounded-lg" />
-              ))}
+              {Array.from({ length: 3 }, (_, skeletonId) => skeletonId + 1).map(
+                (skeletonId) => (
+                  <Skeleton
+                    key={skeletonId}
+                    className="h-24 w-full rounded-lg"
+                  />
+                ),
+              )}
             </div>
           ) : filteredIntegrations && filteredIntegrations.length > 0 ? (
             <div className="space-y-3">

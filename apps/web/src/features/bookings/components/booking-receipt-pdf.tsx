@@ -1,11 +1,12 @@
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { differenceInDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { Booking } from "../types";
+import type { Booking, BookingReceiptOptions } from "../types";
 
 interface BookingReceiptPdfProps {
   booking: Booking;
   innName?: string;
+  options?: BookingReceiptOptions;
 }
 
 const styles = StyleSheet.create({
@@ -115,6 +116,7 @@ function statusLabel(status: Booking["status"]) {
 export function BookingReceiptPdf({
   booking,
   innName,
+  options,
 }: BookingReceiptPdfProps) {
   const checkIn = new Date(booking.checkIn);
   const checkOut = new Date(booking.checkOut);
@@ -215,81 +217,96 @@ export function BookingReceiptPdf({
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>RESUMO FINANCEIRO</Text>
           <View style={styles.box}>
-            <View style={styles.row}>
-              <Text style={{ color: "#6b7280" }}>
-                Diária base ({booking.categoryName})
-              </Text>
-              <Text>{formatCurrency(booking.pricing.basePrice)}</Text>
-            </View>
-
-            {booking.pricing.numberOfExtraGuests > 0 ? (
-              <View style={styles.row}>
-                <Text style={{ color: "#6b7280" }}>
-                  {booking.pricing.numberOfExtraGuests} hóspede(s) extra(s)
-                </Text>
-                <Text>
-                  {formatCurrency(
-                    booking.pricing.extraGuestPrice *
-                      booking.pricing.numberOfExtraGuests,
-                  )}
-                </Text>
-              </View>
-            ) : null}
-
-            <View style={[styles.totalRow]}>
-              <View style={styles.row}>
-                <Text style={{ color: "#6b7280" }}>Subtotal por diária</Text>
-                <Text>
-                  {formatCurrency(
-                    booking.pricing.basePrice +
-                      booking.pricing.extraGuestPrice *
-                        booking.pricing.numberOfExtraGuests,
-                  )}
-                </Text>
-              </View>
-              <View style={styles.row}>
-                <Text style={{ color: "#6b7280" }}>
-                  Total por {nights} noite(s)
-                </Text>
-                <Text style={{ fontWeight: 700 }}>
-                  {formatCurrency(booking.pricing.subtotal)}
-                </Text>
-              </View>
-              {booking.pricing.discounts > 0 ? (
-                <View style={styles.row}>
-                  <Text style={{ color: "#dc2626" }}>Descontos</Text>
-                  <Text style={{ color: "#dc2626" }}>
-                    - {formatCurrency(booking.pricing.discounts)}
-                  </Text>
-                </View>
-              ) : null}
-              <View style={[styles.row, { marginBottom: 0, marginTop: 6 }]}>
-                <Text style={{ fontWeight: 700 }}>Total da Reserva</Text>
+            {options?.customAmount !== undefined ? (
+              <View style={[styles.row, { marginBottom: 0 }]}>
+                <Text style={{ fontWeight: 700 }}>Valor da reserva</Text>
                 <Text style={[styles.totalValue]}>
-                  {formatCurrency(booking.pricing.total)}
+                  {formatCurrency(options.customAmount)}
+                </Text>
+              </View>
+            ) : (
+              <>
+                <View style={styles.row}>
+                  <Text style={{ color: "#6b7280" }}>
+                    Diária base ({booking.categoryName})
+                  </Text>
+                  <Text>{formatCurrency(booking.pricing.basePrice)}</Text>
+                </View>
+
+                {booking.pricing.numberOfExtraGuests > 0 ? (
+                  <View style={styles.row}>
+                    <Text style={{ color: "#6b7280" }}>
+                      {booking.pricing.numberOfExtraGuests} hóspede(s) extra(s)
+                    </Text>
+                    <Text>
+                      {formatCurrency(
+                        booking.pricing.extraGuestPrice *
+                          booking.pricing.numberOfExtraGuests,
+                      )}
+                    </Text>
+                  </View>
+                ) : null}
+
+                <View style={[styles.totalRow]}>
+                  <View style={styles.row}>
+                    <Text style={{ color: "#6b7280" }}>
+                      Subtotal por diária
+                    </Text>
+                    <Text>
+                      {formatCurrency(
+                        booking.pricing.basePrice +
+                          booking.pricing.extraGuestPrice *
+                            booking.pricing.numberOfExtraGuests,
+                      )}
+                    </Text>
+                  </View>
+                  <View style={styles.row}>
+                    <Text style={{ color: "#6b7280" }}>
+                      Total por {nights} noite(s)
+                    </Text>
+                    <Text style={{ fontWeight: 700 }}>
+                      {formatCurrency(booking.pricing.subtotal)}
+                    </Text>
+                  </View>
+                  {booking.pricing.discounts > 0 ? (
+                    <View style={styles.row}>
+                      <Text style={{ color: "#dc2626" }}>Descontos</Text>
+                      <Text style={{ color: "#dc2626" }}>
+                        - {formatCurrency(booking.pricing.discounts)}
+                      </Text>
+                    </View>
+                  ) : null}
+                  <View style={[styles.row, { marginBottom: 0, marginTop: 6 }]}>
+                    <Text style={{ fontWeight: 700 }}>Total da Reserva</Text>
+                    <Text style={[styles.totalValue]}>
+                      {formatCurrency(booking.pricing.total)}
+                    </Text>
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+
+        {options?.customAmount === undefined && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>INFORMAÇÕES DE PAGAMENTO</Text>
+            <View style={styles.grid2}>
+              <View style={styles.col}>
+                <Text style={styles.label}>VALOR PAGO</Text>
+                <Text style={styles.value}>
+                  {formatCurrency(booking.totalPaid)}
+                </Text>
+              </View>
+              <View style={styles.col}>
+                <Text style={styles.label}>SALDO DEVEDOR</Text>
+                <Text style={styles.value}>
+                  {formatCurrency(booking.balanceDue)}
                 </Text>
               </View>
             </View>
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>INFORMAÇÕES DE PAGAMENTO</Text>
-          <View style={styles.grid2}>
-            <View style={styles.col}>
-              <Text style={styles.label}>VALOR PAGO</Text>
-              <Text style={styles.value}>
-                {formatCurrency(booking.totalPaid)}
-              </Text>
-            </View>
-            <View style={styles.col}>
-              <Text style={styles.label}>SALDO DEVEDOR</Text>
-              <Text style={styles.value}>
-                {formatCurrency(booking.balanceDue)}
-              </Text>
-            </View>
-          </View>
-        </View>
+        )}
 
         <View style={styles.footer}>
           <Text>Este é um comprovante oficial de sua reserva.</Text>

@@ -400,9 +400,11 @@ export function BookingsPage() {
         <CardContent>
           {isLoading ? (
             <div className="space-y-2">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
+              {Array.from({ length: 5 }, (_, skeletonId) => skeletonId + 1).map(
+                (skeletonId) => (
+                  <Skeleton key={skeletonId} className="h-12 w-full" />
+                ),
+              )}
             </div>
           ) : bookings && bookings.items.length > 0 ? (
             <>
@@ -558,9 +560,9 @@ export function BookingsPage() {
                       </PaginationItem>
 
                       {generatePaginationPages(page, bookings.totalPages).map(
-                        (pageNum, idx) =>
+                        (pageNum) =>
                           pageNum === "..." ? (
-                            <PaginationItem key={`ellipsis-${idx}`}>
+                            <PaginationItem key={pageNum}>
                               <PaginationEllipsis />
                             </PaginationItem>
                           ) : (

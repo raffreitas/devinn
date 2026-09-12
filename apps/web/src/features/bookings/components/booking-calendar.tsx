@@ -67,10 +67,8 @@ export function BookingCalendar() {
     pageSize: 200,
   });
   const { deleteBooking } = useDeleteBooking();
-  const {
-    ignoreExternalBlock,
-    isLoading: isIgnoringExternalBlock,
-  } = useUpdateBookingReconciliationStatus();
+  const { ignoreExternalBlock, isLoading: isIgnoringExternalBlock } =
+    useUpdateBookingReconciliationStatus();
 
   const handleNavigatePrev = () => {
     if (viewMode === "month") {

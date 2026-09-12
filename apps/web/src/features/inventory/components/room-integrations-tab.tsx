@@ -88,9 +88,11 @@ export function RoomIntegrationsTab({ room }: RoomIntegrationsTabProps) {
 
         {isLoading ? (
           <div className="space-y-2">
-            {[...Array(2)].map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
+            {Array.from({ length: 2 }, (_, skeletonId) => skeletonId + 1).map(
+              (skeletonId) => (
+                <Skeleton key={skeletonId} className="h-12 w-full" />
+              ),
+            )}
           </div>
         ) : roomIntegrations.length > 0 ? (
           <div className="overflow-x-auto">

@@ -64,6 +64,10 @@ export interface PricingBreakdown {
   total: number;
 }
 
+export interface BookingReceiptOptions {
+  customAmount?: number;
+}
+
 export interface Payment {
   id: string;
   amount: number;

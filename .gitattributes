@@ -1,0 +1,2 @@
+# Biome follows the repository's CRLF convention for the web workspace.
+apps/web/** text eol=crlf

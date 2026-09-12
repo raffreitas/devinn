@@ -88,9 +88,11 @@ export function CategoriesPage() {
         <CardContent>
           {isLoading ? (
             <div className="space-y-2">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
+              {Array.from({ length: 5 }, (_, skeletonId) => skeletonId + 1).map(
+                (skeletonId) => (
+                  <Skeleton key={skeletonId} className="h-12 w-full" />
+                ),
+              )}
             </div>
           ) : data && data.length > 0 ? (
             <div className="overflow-x-auto -mx-6 sm:mx-0">

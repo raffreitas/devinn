@@ -3,13 +3,10 @@ using DevInn.Application.Common.Tenancy.Abstractions;
 using DevInn.Application.Features.Integrations.Commands.SyncChannelIntegration;
 using DevInn.Infrastructure.BackgroundJobs.Options;
 using DevInn.Infrastructure.BackgroundJobs.Stores;
-
 using Mediator;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using Quartz;
 
 namespace DevInn.Infrastructure.BackgroundJobs.Jobs;
@@ -22,13 +19,13 @@ internal sealed class SyncAllChannelsJob(
     IServiceScopeFactory serviceScopeFactory
 ) : IJob
 {
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Starting SyncAllChannelsJob execution");
 
         var integrations = await syncWorkStore.ClaimDueAsync(
             options.Value.ChannelSyncBatchSize,
-            context.CancellationToken);
+            cancellationToken);
 
         if (integrations.Count == 0)
         {
@@ -36,16 +33,14 @@ internal sealed class SyncAllChannelsJob(
             return;
         }
 
-        logger.LogInformation("Claimed {Count} channel integrations for sync", integrations.Count);
-
         await Parallel.ForEachAsync(
             integrations,
             new ParallelOptions
             {
                 MaxDegreeOfParallelism = options.Value.ChannelSyncMaxDegreeOfParallelism,
-                CancellationToken = context.CancellationToken
+                CancellationToken = cancellationToken
             },
-            async (integration, cancellationToken) => await SyncIntegrationAsync(integration, cancellationToken));
+            async (integration, ct) => await SyncIntegrationAsync(integration, ct));
 
         logger.LogInformation("SyncAllChannelsJob execution completed");
     }
