@@ -1,7 +1,7 @@
 {
   "name": "@dev-inn/api",
   "version": "1.0.0",
-  "description": "DevInn API (.NET/C#)",
+  "description": "DevInn API",
   "private": true,
   "scripts": {
     "dev": "dotnet watch run --project ./src/DevInn/DevInn.csproj",
