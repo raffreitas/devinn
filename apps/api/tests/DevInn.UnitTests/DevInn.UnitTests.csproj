@@ -33,5 +33,9 @@
         <ProjectReference Include="..\..\src\DevInn.Infrastructure\DevInn.Infrastructure.csproj"/>
         <ProjectReference Include="..\..\src\DevInn.WebApi\DevInn.WebApi.csproj"/>
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Infrastructure\Persistence\" />
+    </ItemGroup>
     
 </Project>

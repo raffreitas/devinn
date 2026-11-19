@@ -1,98 +1,91 @@
 # DevInn
 
-DevInn é um sistema de gestão de reservas para pousadas e pequenos hotéis — um monorepo com frontend em React + Vite e backend em .NET/C#.
+DevInn é um sistema de gestão de reservas para pousadas e pequenos hotéis. Ele reúne controle de disponibilidade, gestão
+de quartos e categorias, acompanhamento financeiro e sincronização de calendários iCal.
 
-## Visão geral
+| Componente                   | Responsabilidade                                                 |
+|------------------------------|------------------------------------------------------------------|
+| [`apps/web`](apps/web)       | Interface em React, TypeScript e Vite                            |
+| [`apps/api`](apps/api)       | API ASP.NET Core, persistência em PostgreSQL e migrações         |
+| [`apps/backup`](apps/backup) | Worker de backup PostgreSQL para armazenamento compatível com S3 |
 
-- Frontend: apps/web — React 19, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query.
-- Backend: apps/api — .NET (Clean Architecture), C#, Entity Framework Core, PostgreSQL.
-- Monorepo gerenciado com pnpm.
+## Desenvolvimento local
 
-Para detalhes técnicos e documentação do projeto veja o arquivo `AGENTS.md` na raiz do repositório.
+Você precisa de Node.js 24 ou superior, pnpm 10 ou superior, SDK do .NET 10 e Docker com Compose. Execute os comandos a
+partir da raiz do repositório.
 
-## Pré-requisitos
+### 1. Instale as dependências e prepare o banco
 
-- Node.js >= 18
-- pnpm >= 8
-- .NET SDK (versão compatível com o projeto)
-- PostgreSQL (para rodar a API localmente, se necessário)
-
-Docker Compose está incluído para subir serviços (Postgres e outros). Para usar o docker-compose:
-
-```bash
-# a partir da pasta da api
-docker compose up -d
-# para subir e reconstruir imagens (se houver Dockerfiles)
-docker compose up -d --build
-# parar e remover containers
-docker compose down
+```sh
+pnpm install --frozen-lockfile
+docker compose up -d --wait postgres
+dotnet run --project apps/api/src/DevInn.DatabaseMigrator -- "--ConnectionStrings:DatabaseConnection=Host=localhost;Database=devinn;Username=postgres;Password=postgres"
 ```
 
-Por padrão o serviço Postgres expõe a porta 5432; verifique o arquivo `docker-compose.yml` para variáveis de ambiente e credenciais (ex.: POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB). Ajuste seu `.env` da API conforme necessário (ex.: DATABASE_URL ou conexões separadas).
+O Compose publica o PostgreSQL apenas em `127.0.0.1:5432`. Se você já usou um Compose antigo do DevInn, faça um backup
+do banco local antes de recriar o contêiner. A versão anterior podia armazenar dados em um volume anônimo.
 
-## Instalação
+### 2. Configure a API e os dados de demonstração
 
-No diretório raiz do repositório:
+Gere uma chave de assinatura para esta instalação e salve-a em User Secrets. O comando funciona em Bash e PowerShell.
 
-```bash
-pnpm install
+```sh
+node -p "require('node:crypto').randomBytes(32).toString('hex')"
+dotnet user-secrets set "Jwt:SecretKey" "COLE_A_CHAVE_GERADA" --project apps/api/src/DevInn.WebApi
 ```
 
-## Rodando em desenvolvimento
+Para criar uma pousada, reservas de exemplo e as duas contas administrativas locais, configure duas senhas fortes e
+diferentes. Substitua cada marcador por uma senha gerada para essa instalação. O seed só roda em `Development` e precisa
+ser habilitado explicitamente.
 
-- Frontend (dev server):
-
-```bash
-pnpm dev:web
+```sh
+dotnet user-secrets set "DevelopmentSeed:SuperAdminPassword" "SENHA_DO_SUPERADMIN" --project apps/api/src/DevInn.WebApi
+dotnet user-secrets set "DevelopmentSeed:InnAdminPassword" "SENHA_DO_ADMIN_DA_POUSADA" --project apps/api/src/DevInn.WebApi
+dotnet user-secrets set "DevelopmentSeed:Enabled" "true" --project apps/api/src/DevInn.WebApi
 ```
 
-- Backend (API em modo watch):
+Use `innadmin@pousada.local` para acessar a pousada de exemplo ou `superadmin@devinn.local` para administração global. O
+seed usa as senhas apenas na criação dessas contas. Depois do primeiro início, você pode desabilitar o seed definindo
+`DevelopmentSeed:Enabled` como `false`.
 
-```bash
-pnpm dev:api
+A recuperação de senha por e-mail exige configurar `EmailOptions:ApiKey` e `EmailOptions:FromAddress` com uma conta
+Resend.
+
+### 3. Inicie a API e o frontend
+
+Abra dois terminais na raiz do repositório.
+
+```sh
+pnpm --filter @dev-inn/api dev
 ```
 
-Esses scripts iniciam os serviços de frontend e backend em modo de desenvolvimento. Consulte `package.json` na raiz e em `apps/web` / `apps/api` para scripts adicionais.
-
-## Build para produção
-
-- Build do frontend:
-
-```bash
-pnpm build:web
+```sh
+cp apps/web/.env.example apps/web/.env.local
+pnpm --filter @dev-inn/web dev --strictPort
 ```
 
-- Build do backend:
+A interface fica em `http://localhost:5173` e a API em `http://localhost:5109`. Ajuste `VITE_API_URL` em
+`apps/web/.env.local` se usar outro endereço. Para outra origem do frontend, configure também `ALLOWED_ORIGINS` na API.
 
-```bash
-pnpm build:api
+## Build e testes
+
+```sh
+pnpm --filter @dev-inn/web lint
+pnpm --filter @dev-inn/web build
+dotnet build apps/api/DevInn.slnx
+dotnet test --solution apps/api/DevInn.slnx
+dotnet test --solution apps/backup/DevInn.Backup.slnx
 ```
 
-## Estrutura do repositório (resumo)
-
-- apps/web — aplicação frontend React + Vite
-- apps/api — backend .NET/C# (DevInn.WebApi e projetos correlatos)
-- docs — documentação adicional
+Consulte o [guia do worker](apps/backup/README.md) para configuração e restauração de backups.
 
 ## Contribuição
 
-1. Abra uma issue descrevendo a mudança ou bug.
-2. Crie uma branch com um nome descritivo: `feature/descricao` ou `fix/descricao`.
-3. Faça commits pequenos e claros.
-4. Abra um Pull Request apontando a branch `main`.
-6. Inclua uma das tags no **título** do PR para indicar o tipo de mudança:
-  - `[Major]` — incrementa a versão major (X.0.0)
-  - `[Minor]` — incrementa a versão minor (X.Y.0)
-  - `[Patch]` — incrementa a versão patch (X.Y.Z)
+Abra uma issue para discutir uma mudança ou relatar um bug. Envie pull requests para `main` com uma descrição e os
+testes realizados. Inclua exatamente um marcador de versão no título, entre `[Patch]`, `[Minor]` e `[Major]`. Siga as
+convenções do [AGENTS.md](AGENTS.md).
 
-Considere seguir as convenções de código do projeto descritas em `AGENTS.md`.
+## Licença
 
-## CI/CD
-
-O repositório possui workflows de CI/CD configurados em `.github/workflows` para builds, testes e deploy (Railway). As regras de release são acionadas por tags semânticas (ex.: `v1.2.3`).
-
-## Onde encontrar mais informação
-
-- Documentação do projeto: `AGENTS.md`
-- Frontend: `apps/web/README.md`
-- Backend: `apps/api/README.md` (quando existente)
+O DevInn é distribuído sob a [Apache License 2.0](LICENSE). As atribuições dos materiais incorporados estão
+em [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES).

@@ -36,8 +36,8 @@ public static class InfrastructureModule
         if (!app.Environment.IsDevelopment()) return app;
 
         using var scope = app.Services.CreateScope();
-        var seeder = scope.ServiceProvider.GetService<DatabaseSeed>();
-        seeder?.SeedAsync().GetAwaiter().GetResult();
+        var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeed>();
+        seeder.SeedAsync().GetAwaiter().GetResult();
 
         return app;
     }
