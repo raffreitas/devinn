@@ -5,6 +5,7 @@ namespace DevInn.Application.Common.Identity.Abstractions;
 public interface IIdentityGateway
 {
     Task<Result<User>> LoginAsync(string email, string password, CancellationToken cancellationToken = default);
+    Task RecordSuccessfulLoginAsync(Guid userId, DateTimeOffset loggedInAt, CancellationToken cancellationToken = default);
     Task<Result<User>> RegisterAsync(RegisterUserRequest request, CancellationToken cancellationToken = default);
     Task<Result<User>> GetUserByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result> UpdateProfileAsync(User user, CancellationToken cancellationToken = default);

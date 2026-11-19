@@ -18,7 +18,7 @@ namespace DevInn.Infrastructure.Identity.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("identity")
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -51,6 +51,10 @@ namespace DevInn.Infrastructure.Identity.Migrations
                     b.Property<Guid?>("InnId")
                         .HasColumnType("uuid")
                         .HasColumnName("inn_id");
+
+                    b.Property<DateTimeOffset?>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_login_at");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean")

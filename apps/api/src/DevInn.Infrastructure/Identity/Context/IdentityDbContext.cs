@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace DevInn.Infrastructure.Identity.Context;
 
@@ -20,6 +21,8 @@ public class IdentityDbContext(DbContextOptions<IdentityDbContext> options)
             entity.ToTable("asp_net_users");
             entity.Property(x => x.InnId);
             entity.Property(x => x.Name).IsRequired().HasMaxLength(255);
+            // Identity updates the entire tracked user. Only the login update should write this column.
+            entity.Property(x => x.LastLoginAt).Metadata.SetAfterSaveBehavior(PropertySaveBehavior.Ignore);
         });
         builder.Entity<IdentityRole<Guid>>().ToTable("asp_net_roles");
         builder.Entity<IdentityUserRole<Guid>>().ToTable("asp_net_user_roles");
