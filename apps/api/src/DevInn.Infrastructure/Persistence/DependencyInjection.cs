@@ -71,10 +71,7 @@ public static class DependencyInjection
         services.AddScoped<IICalFeedGateway, HttpICalFeedGateway>();
         services.AddScoped<IICalExportService, ICalExportService>();
 
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == EnvironmentNames.Development)
-        {
-            services.AddTransient<DatabaseSeed>();
-        }
+        services.AddTransient<DatabaseSeed>();
 
         return services;
     }

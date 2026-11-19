@@ -4,7 +4,7 @@
   "description": "DevInn API (.NET/C#)",
   "private": true,
   "scripts": {
-    "dev": "dotnet watch run --project ./src/DevInn/DevInn.csproj",
+    "dev": "dotnet watch run --project ./src/DevInn.WebApi/DevInn.WebApi.csproj --launch-profile http",
     "build": "dotnet build"
   }
 }

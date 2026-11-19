@@ -1,70 +1,25 @@
 # DevInn Web
 
-Este projeto é o frontend do sistema DevInn, uma plataforma moderna de gestão de reservas para pousadas e hotéis.
+Interface de gestão de reservas do DevInn, construída com React, TypeScript, Vite, Tailwind CSS e shadcn/ui. As
+funcionalidades ficam em `src/features`, e os componentes e utilitários compartilhados em `src/shared`.
 
-## Visão Geral
+## Desenvolvimento
 
-O DevInn Web é uma aplicação React 19 com TypeScript, construída com Vite, Tailwind CSS e shadcn/ui. Ela oferece uma interface rica para visualização de reservas (Gantt), dashboard financeiro e gestão de inventário.
+Siga o [guia de desenvolvimento do monorepo](../../README.md#desenvolvimento-local) para instalar as dependências,
+configurar a API e criar os dados de demonstração. A partir da raiz do repositório, rode:
 
-## Tecnologias Utilizadas
-
-- **React 19**
-- **TypeScript**
-- **Vite**
-- **Tailwind CSS v4** (com oklch colors)
-- **shadcn/ui** (Radix UI)
-- **TanStack Query v5**
-- **React Router v7**
-- **React Hook Form + Zod**
-- **date-fns**
-- **Biome** (lint/format)
-
-## Estrutura do Projeto
-
-O frontend segue a estrutura de feature folders, com código organizado por funcionalidades. Utiliza aliases (@/) para imports absolutos.
-
-## Como rodar o projeto
-
-### Pré-requisitos
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
-
-### Instalação
-
-No diretório raiz do monorepo:
-
-```bash
-pnpm install
+```sh
+cp apps/web/.env.example apps/web/.env.local
+pnpm --filter @dev-inn/web dev --strictPort
 ```
 
-### Ambiente de desenvolvimento
+A interface roda em `http://localhost:5173`. `VITE_API_URL` deve apontar para a origem da API, sem o prefixo `/api/v1`.
 
-Para rodar o frontend em modo desenvolvimento:
+## Lint e build
 
-```bash
-pnpm dev:web
+```sh
+pnpm --filter @dev-inn/web lint
+pnpm --filter @dev-inn/web build
 ```
 
-Acesse: http://localhost:5173
-
-### Build de produção
-
-```bash
-pnpm build:web
-```
-
-Os arquivos finais estarão em `apps/web/dist`.
-
-## Convenções
-- Código organizado por feature
-- Uso de TypeScript para segurança de tipos
-- Tailwind para estilização
-- Biome para lint/format
-
-## Sobre o Monorepo
-
-O DevInn é um monorepo gerenciado por pnpm, contendo também a API backend em .NET. Consulte o README na raiz para mais detalhes sobre a arquitetura geral.
-
----
-
-Para dúvidas ou contribuições, abra uma issue ou pull request.
+O build é gravado em `apps/web/dist`.

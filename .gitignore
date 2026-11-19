@@ -5,6 +5,16 @@
 
 # dotenv files
 .env
+.env.*
+!.env.example
+!.env.*.example
+
+# Local database exports and private keys
+*.dump
+*.backup
+*.pem
+*.key
+*.p12
 
 # User-specific files
 *.rsuser
@@ -263,7 +273,7 @@ Generated_Code/
 _UpgradeReport_Files/
 Backup*/
 !apps/backup/
-!apps/backup/**
+!apps/backup/src/DevInn.Backup/
 apps/backup/**/bin/
 apps/backup/**/obj/
 apps/backup/artifacts/
