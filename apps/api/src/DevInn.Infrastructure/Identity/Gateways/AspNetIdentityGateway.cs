@@ -1,9 +1,11 @@
+using System.Data.Common;
 using System.Text;
 
 using DevInn.Application.Common.Email.Abstractions;
 using DevInn.Application.Common.Errors;
 using DevInn.Application.Common.Identity;
 using DevInn.Application.Common.Identity.Abstractions;
+using DevInn.Infrastructure.Identity.Context;
 using DevInn.Infrastructure.Identity.Models;
 using DevInn.Infrastructure.Identity.Options;
 
@@ -11,6 +13,8 @@ using FluentResults;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,6 +23,7 @@ namespace DevInn.Infrastructure.Identity.Gateways;
 internal sealed class AspNetIdentityGateway(
     UserManager<ApplicationUser> userManager,
     RoleManager<IdentityRole<Guid>> roleManager,
+    IdentityDbContext identityDbContext,
     IEmailGateway emailGateway,
     IOptions<PasswordResetOptions> passwordResetOptions,
     ILogger<AspNetIdentityGateway> logger)
@@ -35,9 +40,26 @@ internal sealed class AspNetIdentityGateway(
 
         var roles = await userManager.GetRolesAsync(user);
         var userRoles = roles.Select(Enum.Parse<UserRole>).ToArray();
-        var resultUser = new User(user.Id, user.InnId, user.Name, user.Email!, userRoles, user.SecurityStamp ?? string.Empty);
+        var resultUser = new User(user.Id, user.InnId, user.Name, user.Email!, userRoles,
+            user.SecurityStamp ?? string.Empty);
 
         return Result.Ok(resultUser);
+    }
+
+    public async Task RecordSuccessfulLoginAsync(Guid userId, DateTimeOffset loggedInAt,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await identityDbContext.Users
+                .Where(user => user.Id == userId && (user.LastLoginAt == null || user.LastLoginAt < loggedInAt))
+                .ExecuteUpdateAsync(setters => setters.SetProperty(user => user.LastLoginAt, loggedInAt),
+                    cancellationToken);
+        }
+        catch (Exception exception) when (exception is DbException or RetryLimitExceededException or TimeoutException)
+        {
+            logger.LogWarning(exception, "Falha ao registrar o último login do usuário {UserId}.", userId);
+        }
     }
 
     public async Task<Result<User>> RegisterAsync(RegisterUserRequest request,
@@ -96,7 +118,8 @@ internal sealed class AspNetIdentityGateway(
 
         var roles = await userManager.GetRolesAsync(user);
         var userRoles = roles.Select(Enum.Parse<UserRole>).ToArray();
-        var resultUser = new User(user.Id, user.InnId, user.Name, user.Email!, userRoles, user.SecurityStamp ?? string.Empty);
+        var resultUser = new User(user.Id, user.InnId, user.Name, user.Email!, userRoles,
+            user.SecurityStamp ?? string.Empty);
 
         return Result.Ok(resultUser);
     }

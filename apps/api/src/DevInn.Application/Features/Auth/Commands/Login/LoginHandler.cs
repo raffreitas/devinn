@@ -10,7 +10,10 @@ using Mediator;
 
 namespace DevInn.Application.Features.Auth.Commands.Login;
 
-internal sealed class LoginHandler(IIdentityGateway identityGateway, IAccessTokenProvider accessTokenProvider)
+internal sealed class LoginHandler(
+    IIdentityGateway identityGateway,
+    IAccessTokenProvider accessTokenProvider,
+    TimeProvider timeProvider)
     : ICommandHandler<LoginCommand, Result<LoginResult>>
 {
     public async ValueTask<Result<LoginResult>> Handle(LoginCommand command, CancellationToken cancellationToken)
@@ -28,6 +31,7 @@ internal sealed class LoginHandler(IIdentityGateway identityGateway, IAccessToke
         var tokenRequest = new TokenRequest(user.Id, user.TenantId, userRoles, user.Email, user.SecurityStamp);
 
         var token = await accessTokenProvider.GenerateTokenAsync(tokenRequest, cancellationToken);
+        await identityGateway.RecordSuccessfulLoginAsync(user.Id, timeProvider.GetUtcNow(), cancellationToken);
 
         return Result.Ok(new LoginResult(token.AccessToken));
     }
