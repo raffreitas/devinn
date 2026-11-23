@@ -1,91 +1,70 @@
 # DevInn
 
-DevInn é um sistema de gestão de reservas para pousadas e pequenos hotéis. Ele reúne controle de disponibilidade, gestão
-de quartos e categorias, acompanhamento financeiro e sincronização de calendários iCal.
+DevInn é um sistema de gestão de reservas para pousadas e pequenos hotéis. Em um só painel, a equipe consulta a ocupação por quarto, calcula o preço de uma estadia, registra reservas e acompanha receitas e despesas.
 
-| Componente                   | Responsabilidade                                                 |
-|------------------------------|------------------------------------------------------------------|
-| [`apps/web`](apps/web)       | Interface em React, TypeScript e Vite                            |
-| [`apps/api`](apps/api)       | API ASP.NET Core, persistência em PostgreSQL e migrações         |
-| [`apps/backup`](apps/backup) | Worker de backup PostgreSQL para armazenamento compatível com S3 |
+[Rodar localmente](#desenvolvimento-local) · [Explorar a demonstração](#roteiro-da-demonstração) · [Ver a arquitetura](#arquitetura)
+
+## O que o DevInn faz
+
+| Módulo | Funcionalidades |
+| --- | --- |
+| Reservas | Calendário de ocupação, consulta de disponibilidade, cadastro de reservas e comprovantes em PDF. |
+| Inventário | Cadastro de quartos e categorias, capacidade de ocupação e regras de preço para hóspedes adicionais e crianças. |
+| Financeiro | Registro e categorização de despesas, acompanhamento de receitas e despesas e atualização do status de conciliação das reservas. |
+| Integrações | Importação de reservas de feeds iCal e exportação da disponibilidade de cada quarto por iCal. |
+| Administração | Gestão de múltiplas pousadas, com perfis de administração global e por pousada. |
 
 ## Desenvolvimento local
 
-Você precisa de Node.js 24 ou superior, pnpm 10 ou superior, SDK do .NET 10 e Docker com Compose. Execute os comandos a
-partir da raiz do repositório.
+O [guia de desenvolvimento](docs/desenvolvimento-local.md) mostra como rodar o frontend, a API e o PostgreSQL em Windows, macOS ou Linux. Você vai precisar de Git, Node.js 24+, pnpm 10+, SDK do .NET 10 e Docker.
 
-### 1. Instale as dependências e prepare o banco
+A interface roda em `http://localhost:5173` e a documentação interativa da API fica em `http://localhost:5109/scalar`.
 
-```sh
-pnpm install --frozen-lockfile
-docker compose up -d --wait postgres
-dotnet run --project apps/api/src/DevInn.DatabaseMigrator -- "--ConnectionStrings:DatabaseConnection=Host=localhost;Database=devinn;Username=postgres;Password=postgres"
+## Roteiro da demonstração
+
+1. Entre com a conta local `innadmin@pousada.local` seguindo o [guia de desenvolvimento](docs/desenvolvimento-local.md#explore-os-dados-de-demonstração).
+2. Abra o **Calendário** e avance pelas próximas semanas para encontrar as reservas de exemplo no quarto 101.
+3. Crie uma reserva para um período livre e confira como a ocupação afeta o preço antes de salvar. Abra a reserva para gerar o comprovante.
+4. Na área **Financeiro**, registre uma despesa de exemplo e confira os gráficos de receitas e despesas.
+
+## Arquitetura
+
+```mermaid
+flowchart LR
+  Web["Frontend React"] -->|HTTP / JSON| API["API ASP.NET Core"]
+  API --> DB[("PostgreSQL")]
+  API <-->|iCal| Calendarios["Calendários externos"]
+  Migrator["DatabaseMigrator"] -->|Migrações| DB
+  DB -->|pg_dump| Backup["Worker de backup"]
+  Backup -->|Dump e manifesto| S3["Armazenamento compatível com S3"]
 ```
 
-O Compose publica o PostgreSQL apenas em `127.0.0.1:5432`. Se você já usou um Compose antigo do DevInn, faça um backup
-do banco local antes de recriar o contêiner. A versão anterior podia armazenar dados em um volume anônimo.
+| Componente | Responsabilidade |
+| --- | --- |
+| [Frontend](apps/web/README.md) | Aplicação em React, TypeScript, Vite, Tailwind CSS e shadcn/ui. Usa TanStack Query para consultar a API. |
+| [API](apps/api/src) | API REST em ASP.NET Core. Organiza regras de negócio em `Domain`, casos de uso em `Application`, persistência e integrações em `Infrastructure` e endpoints em `WebApi`. |
+| [Migrador](apps/api/src/DevInn.DatabaseMigrator) | Executa as migrações do banco da aplicação e do esquema de identidade em um processo separado. |
+| [Worker de backup](apps/backup/README.md) | Gera e valida dumps lógicos do PostgreSQL, envia os arquivos para armazenamento compatível com S3 e aplica retenção. |
 
-### 2. Configure a API e os dados de demonstração
-
-Gere uma chave de assinatura para esta instalação e salve-a em User Secrets. O comando funciona em Bash e PowerShell.
-
-```sh
-node -p "require('node:crypto').randomBytes(32).toString('hex')"
-dotnet user-secrets set "Jwt:SecretKey" "COLE_A_CHAVE_GERADA" --project apps/api/src/DevInn.WebApi
-```
-
-Para criar uma pousada, reservas de exemplo e as duas contas administrativas locais, configure duas senhas fortes e
-diferentes. Substitua cada marcador por uma senha gerada para essa instalação. O seed só roda em `Development` e precisa
-ser habilitado explicitamente.
-
-```sh
-dotnet user-secrets set "DevelopmentSeed:SuperAdminPassword" "SENHA_DO_SUPERADMIN" --project apps/api/src/DevInn.WebApi
-dotnet user-secrets set "DevelopmentSeed:InnAdminPassword" "SENHA_DO_ADMIN_DA_POUSADA" --project apps/api/src/DevInn.WebApi
-dotnet user-secrets set "DevelopmentSeed:Enabled" "true" --project apps/api/src/DevInn.WebApi
-```
-
-Use `innadmin@pousada.local` para acessar a pousada de exemplo ou `superadmin@devinn.local` para administração global. O
-seed usa as senhas apenas na criação dessas contas. Depois do primeiro início, você pode desabilitar o seed definindo
-`DevelopmentSeed:Enabled` como `false`.
-
-A recuperação de senha por e-mail exige configurar `EmailOptions:ApiKey` e `EmailOptions:FromAddress` com uma conta
-Resend.
-
-### 3. Inicie a API e o frontend
-
-Abra dois terminais na raiz do repositório.
-
-```sh
-pnpm --filter @dev-inn/api dev
-```
-
-```sh
-cp apps/web/.env.example apps/web/.env.local
-pnpm --filter @dev-inn/web dev --strictPort
-```
-
-A interface fica em `http://localhost:5173` e a API em `http://localhost:5109`. Ajuste `VITE_API_URL` em
-`apps/web/.env.local` se usar outro endereço. Para outra origem do frontend, configure também `ALLOWED_ORIGINS` na API.
+A API usa ASP.NET Core Identity e JWT para autenticação. Os acessos administrativos usam papéis distintos e as consultas de dados operacionais são feitas no contexto da pousada. A persistência combina EF Core com consultas SQL via Dapper. A sincronização periódica de iCal usa Quartz quando os jobs estão habilitados. A API e o worker emitem telemetria via OpenTelemetry.
 
 ## Build e testes
+
+Execute na raiz do repositório após instalar as dependências.
 
 ```sh
 pnpm --filter @dev-inn/web lint
 pnpm --filter @dev-inn/web build
-dotnet build apps/api/DevInn.slnx
 dotnet test --solution apps/api/DevInn.slnx
 dotnet test --solution apps/backup/DevInn.Backup.slnx
 ```
 
-Consulte o [guia do worker](apps/backup/README.md) para configuração e restauração de backups.
+O GitHub Actions executa lint e build do frontend e compila e testa as soluções .NET.
 
 ## Contribuição
 
-Abra uma issue para discutir uma mudança ou relatar um bug. Envie pull requests para `main` com uma descrição e os
-testes realizados. Inclua exatamente um marcador de versão no título, entre `[Patch]`, `[Minor]` e `[Major]`. Siga as
-convenções do [AGENTS.md](AGENTS.md).
+Abra uma issue para discutir uma mudança ou relatar um bug. Envie pull requests para `main` com uma descrição e os testes realizados. Inclua exatamente um marcador de versão entre `[Patch]`, `[Minor]` e `[Major]` no título ou no corpo do PR. Siga as [convenções do repositório](AGENTS.md).
 
 ## Licença
 
-O DevInn é distribuído sob a [Apache License 2.0](LICENSE). As atribuições dos materiais incorporados estão
-em [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES).
+O código do DevInn é distribuído sob a [Apache License 2.0](LICENSE).
