@@ -1,21 +1,16 @@
 # DevInn Web
 
-Interface de gestão de reservas do DevInn, construída com React, TypeScript, Vite, Tailwind CSS e shadcn/ui. As
-funcionalidades ficam em `src/features`, e os componentes e utilitários compartilhados em `src/shared`.
+Interface de gestão de reservas em React, TypeScript e Vite. Os módulos ficam em [`src/features`](src/features), os componentes e utilitários reutilizáveis em [`src/shared`](src/shared) e as rotas em [`src/routes.tsx`](src/routes.tsx).
 
 ## Desenvolvimento
 
-Siga o [guia de desenvolvimento do monorepo](../../README.md#desenvolvimento-local) para instalar as dependências,
-configurar a API e criar os dados de demonstração. A partir da raiz do repositório, rode:
+Siga o [guia de desenvolvimento local](../../docs/desenvolvimento-local.md) para preparar o banco, iniciar a API e configurar o frontend.
 
-```sh
-cp apps/web/.env.example apps/web/.env.local
-pnpm --filter @dev-inn/web dev --strictPort
-```
-
-A interface roda em `http://localhost:5173`. `VITE_API_URL` deve apontar para a origem da API, sem o prefixo `/api/v1`.
+A interface roda em `http://localhost:5173`. A variável `VITE_API_URL`, definida em `.env.local` a partir de [`.env.example`](.env.example), aponta para a origem da API, como `http://localhost:5109`. O cliente acrescenta o prefixo `/api/v1`.
 
 ## Lint e build
+
+Execute na raiz do repositório.
 
 ```sh
 pnpm --filter @dev-inn/web lint
